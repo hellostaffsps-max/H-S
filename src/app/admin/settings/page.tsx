@@ -40,8 +40,7 @@ export default function PlatformSettings() {
     const { data, error } = await supabase
       .from('platform_settings')
       .select('*')
-      .limit(1)
-      .single();
+      .maybeSingle(); // Better than single() if it might be empty
     
     if (data) {
       setSettings({
@@ -61,23 +60,36 @@ export default function PlatformSettings() {
     setSuccessMsg('');
     
     try {
-      const { error } = await supabase
-        .from('platform_settings')
-        .update({
-          site_name: settings.site_name,
-          bank_details: settings.bank_details,
-          maintenance_mode: settings.maintenance_mode,
-          logo_url: settings.logo_url,
-          wallet_qr_url: settings.wallet_qr_url
-        })
-        .eq('id', settings.id);
+      const payload = {
+        site_name: settings.site_name,
+        bank_details: settings.bank_details,
+        maintenance_mode: settings.maintenance_mode,
+        logo_url: settings.logo_url,
+        wallet_qr_url: settings.wallet_qr_url
+      };
+
+      let result;
+      if (settings.id) {
+        result = await supabase
+          .from('platform_settings')
+          .update(payload)
+          .eq('id', settings.id);
+      } else {
+        result = await supabase
+          .from('platform_settings')
+          .insert(payload)
+          .select()
+          .single();
+        if (result.data) setSettings(prev => ({ ...prev, id: result.data.id }));
+      }
         
-      if (error) throw error;
+      if (result.error) throw result.error;
       
       setSuccessMsg('تم حفظ الإعدادات بنجاح!');
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (error: any) {
       console.error('Error saving settings:', error.message);
+      alert('خطأ في الحفظ: ' + error.message);
     } finally {
       setSaving(false);
     }

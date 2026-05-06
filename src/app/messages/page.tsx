@@ -112,19 +112,78 @@ function MessagesPage() {
     setLoadingMessages(false);
   }
 
+  useEffect(() => {
+    if (!myId) return;
+
+    const channel = supabase
+      .channel("realtime_messages")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `receiver_id=eq.${myId}`,
+        },
+        (payload) => {
+          const newMsg = payload.new as Message;
+          // If the message is from the currently selected partner, add it to messages
+          if (newMsg.sender_id === selectedPartner) {
+            setMessages((prev) => {
+              // Avoid duplicates
+              if (prev.find((m) => m.id === newMsg.id)) return prev;
+              return [...prev, newMsg];
+            });
+          }
+          // Refresh conversations list to update last message and unread count
+          loadConversations();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `sender_id=eq.${myId}`,
+        },
+        (payload) => {
+          const newMsg = payload.new as Message;
+          // If we sent the message to the current partner, it's already added by handleSend locally,
+          // but we sync it here just in case or for multi-tab sync.
+          if (newMsg.receiver_id === selectedPartner) {
+            setMessages((prev) => {
+              if (prev.find((m) => m.id === newMsg.id)) return prev;
+              return [...prev, newMsg];
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [myId, selectedPartner]);
+
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
     if (!newMessage.trim() || !selectedPartner) return;
 
+    const msgContent = newMessage.trim();
+    setNewMessage(""); // Clear early for better UX
     setSending(true);
+    
     const formData = new FormData();
     formData.append("receiver_id", selectedPartner);
-    formData.append("content", newMessage.trim());
+    formData.append("content", msgContent);
 
     const result = await sendMessage(formData);
-    if (result.success) {
-      setNewMessage("");
-      await loadMessages(selectedPartner);
+    if (!result.success) {
+      alert("فشل إرسال الرسالة");
+      setNewMessage(msgContent); // Restore content on failure
+    } else {
+      // Message will be added via Realtime subscription or we could add it manually for even faster feel
       await loadConversations();
     }
     setSending(false);
