@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "لوحة الإدارة",
-  description: "لوحة تحكم المشرفين في Hello Staff.",
+  title: "الملف الشخصي",
+  description: "إدارة ملفك الشخصي، سيرتك الذاتية، وإعدادات حسابك.",
   robots: {
     index: false,
     follow: false,
   },
 };
 
-export default function AdminLayout({
+export default function ProfileLayout({
   children,
 }: {
   children: React.ReactNode;

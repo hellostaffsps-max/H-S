@@ -22,7 +22,8 @@ export async function POST() {
   );
 
   await supabase.auth.signOut();
-  return NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'), {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.staffps.com';
+  return NextResponse.redirect(new URL('/', appUrl), {
     status: 302,
   });
 }

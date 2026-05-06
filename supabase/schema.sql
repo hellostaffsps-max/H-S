@@ -1,4 +1,4 @@
-﻿-- Supabase Schema for Hello Staff Recruitment
+-- Supabase Schema for Hello Staff Recruitment
 -- SECURITY HARDENED VERSION
 
 -- Enable UUID extension
@@ -337,8 +337,8 @@ begin
   insert into public.notifications (user_id, title, message, type)
   values (
     job_employer_id,
-    'Ø·Ù„Ø¨ ØªÙˆØ¸ÙŠÙ Ø¬Ø¯ÙŠØ¯',
-    'Ù‚Ø¯Ù… ' || coalesce(seeker_name_text, 'Ù…Ø³ØªØ®Ø¯Ù…') || ' Ø·Ù„Ø¨Ø§Ù‹ Ù„ÙˆØ¸ÙŠÙØ©: ' || job_title_text,
+    'طلب توظيف جديد',
+    'قدم ' || coalesce(seeker_name_text, 'مستخدم') || ' طلباً لوظيفة: ' || job_title_text,
     'application_received'
   );
   return new;
@@ -361,8 +361,8 @@ begin
     insert into public.notifications (user_id, title, message, type)
     values (
       new.seeker_id,
-      'ØªØ­Ø¯ÙŠØ« Ø­Ø§Ù„Ø© Ø§Ù„Ø·Ù„Ø¨',
-      'ØªÙ… ØªØºÙŠÙŠØ± Ø­Ø§Ù„Ø© Ø·Ù„Ø¨Ùƒ Ù„ÙˆØ¸ÙŠÙØ© ' || job_title_text || ' Ø¥Ù„Ù‰: ' || new.status,
+      'تحديث حالة الطلب',
+      'تم تغيير حالة طلبك لوظيفة ' || job_title_text || ' إلى: ' || new.status,
       'status_update'
     );
   end if;
@@ -494,14 +494,14 @@ create policy "Payment receipt delete own" on storage.objects for delete to auth
 -- DEFAULT DATA
 -- ==========================================
 insert into public.platform_settings (wallet_qr_url, bank_details)
-select '', 'Ù„Ù… ÙŠØªÙ… ØªØ­Ø¯ÙŠØ¯ ØªÙØ§ØµÙŠÙ„ Ø§Ù„Ø¨Ù†Ùƒ Ø¨Ø¹Ø¯.'
+select '', 'لم يتم تحديد تفاصيل البنك بعد.'
 where not exists (select 1 from public.platform_settings);
 
 insert into public.subscription_plans (name, price, features, is_active)
-select * from (values
-  ('Ø§Ù„Ø¨Ø§Ù‚Ø© Ø§Ù„Ø£Ø³Ø§Ø³ÙŠØ©', 29, ARRAY['Ù†Ø´Ø± Ø­ØªÙ‰ 3 ÙˆØ¸Ø§Ø¦Ù Ø´Ù‡Ø±ÙŠØ§Ù‹', 'Ø¸Ù‡ÙˆØ± ÙÙŠ Ù†ØªØ§Ø¦Ø¬ Ø§Ù„Ø¨Ø­Ø«', 'Ø¯Ø¹Ù… Ø¹Ø¨Ø± Ø§Ù„Ø¨Ø±ÙŠØ¯ Ø§Ù„Ø¥Ù„ÙƒØªØ±ÙˆÙ†ÙŠ'], true),
-  ('Ø§Ù„Ø¨Ø§Ù‚Ø© Ø§Ù„Ø§Ø­ØªØ±Ø§ÙÙŠØ©', 79, ARRAY['Ù†Ø´Ø± ÙˆØ¸Ø§Ø¦Ù ØºÙŠØ± Ù…Ø­Ø¯ÙˆØ¯', 'Ø¸Ù‡ÙˆØ± Ù…Ù…ÙŠØ² ÙÙŠ Ù†ØªØ§Ø¦Ø¬ Ø§Ù„Ø¨Ø­Ø«', 'Ø£ÙˆÙ„ÙˆÙŠØ© ÙÙŠ Ø§Ù„Ù…Ø±Ø§Ø¬Ø¹Ø§Øª', 'ØªÙ‚Ø§Ø±ÙŠØ± ÙˆØ¥Ø­ØµØ§Ø¦ÙŠØ§Øª', 'Ø¯Ø¹Ù… Ù…Ø¨Ø§Ø´Ø± Ø¹Ø¨Ø± ÙˆØ§ØªØ³Ø§Ø¨'], true),
-  ('Ø§Ù„Ø¨Ø§Ù‚Ø© Ø§Ù„Ù…ØªÙ‚Ø¯Ù…Ø©', 149, ARRAY['ÙƒÙ„ Ù…Ù…ÙŠØ²Ø§Øª Ø§Ù„Ø¨Ø§Ù‚Ø© Ø§Ù„Ø§Ø­ØªØ±Ø§ÙÙŠØ©', 'Ø¥Ø¹Ù„Ø§Ù†Ø§Øª Ù…Ù…ÙŠØ²Ø© Ø¹Ù„Ù‰ Ø§Ù„ØµÙØ­Ø© Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©', 'ÙˆØµÙˆÙ„ Ù„Ù‚Ø§Ø¹Ø¯Ø© Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ø³ÙŠØ± Ø§Ù„Ø°Ø§ØªÙŠØ©', 'Ù…Ø¯ÙŠØ± Ø­Ø³Ø§Ø¨ Ù…Ø®ØµØµ'], true)
+select v.* from (values 
+  ('الباقة الأساسية', 29, ARRAY['نشر حتى 3 وظائف شهرياً', 'ظهور في نتائج البحث', 'دعم عبر البريد الإلكتروني'], true),
+  ('الباقة الاحترافية', 79, ARRAY['نشر وظائف غير محدود', 'ظهور مميز في نتائج البحث', 'أولوية في المراجعات', 'تقارير وإحصائيات', 'دعم مباشر عبر واتساب'], true),
+  ('الباقة المتقدمة', 149, ARRAY['كل مميزات الباقة الاحترافية', 'إعلانات مميزة على الصفحة الرئيسية', 'وصول لقاعدة بيانات السير الذاتية', 'مدير حساب مخصص'], true)
 ) as v(name, price, features, is_active)
 where not exists (select 1 from public.subscription_plans);
 
