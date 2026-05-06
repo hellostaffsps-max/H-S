@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Search, MapPin, Briefcase, Star, Filter, Loader2 } from "lucide-react";
+import { Search, MapPin, Briefcase, Star, Filter, Loader2, MessageCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import Link from "next/link";
 
 interface SeekerProfile {
   profile_id: string;
@@ -238,9 +239,13 @@ export default function SearchResumes() {
               </div>
 
               <div className="pt-3.5 border-t border-slate-50 mt-auto">
-                <button className="w-full bg-white border border-brand-200 text-brand-700 hover:bg-brand-50 hover:border-brand-300 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 shadow-sm">
-                  عرض السيرة الذاتية
-                </button>
+                <Link
+                  href={`/messages?with=${candidate.profile_id}`}
+                  className="w-full flex items-center justify-center gap-2 bg-white border border-brand-200 text-brand-700 hover:bg-brand-50 hover:border-brand-300 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 shadow-sm"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  تواصل
+                </Link>
               </div>
             </div>
           ))}

@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase-server';
 import { revalidatePath } from 'next/cache';
 
-export async function getJobs(filters?: { category?: string; type?: string; location?: string; search?: string }) {
+export async function getJobs(filters?: { category?: string; type?: string; location?: string; search?: string; experience_level?: string; has_salary?: boolean }) {
   const supabase = await createClient();
 
   let query = supabase
@@ -23,6 +23,12 @@ export async function getJobs(filters?: { category?: string; type?: string; loca
   }
   if (filters?.search) {
     query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+  }
+  if (filters?.experience_level) {
+    query = query.eq('experience_level', filters.experience_level);
+  }
+  if (filters?.has_salary) {
+    query = query.not('salary_min', 'is', null);
   }
 
   const { data, error } = await query;

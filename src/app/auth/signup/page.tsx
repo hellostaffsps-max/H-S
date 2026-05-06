@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { ChefHat, Lock, Mail, User, AlertCircle, Loader2, Building2, Search } from 'lucide-react';
 
-export default function SignupPage() {
+function SignupForm() {
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -15,6 +16,13 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { signUp } = useAuth();
+
+  useEffect(() => {
+    const roleParam = searchParams.get('role');
+    if (roleParam === 'employer' || roleParam === 'seeker') {
+      setRole(roleParam);
+    }
+  }, [searchParams]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,6 +158,20 @@ export default function SignupPage() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans" dir="rtl">
+      <Suspense fallback={
+        <div className="max-w-md w-full text-center">
+          <div className="h-12 w-12 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+        </div>
+      }>
+        <SignupForm />
+      </Suspense>
     </div>
   );
 }
