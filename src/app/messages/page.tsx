@@ -7,7 +7,7 @@ import {
   sendMessage,
   getUnreadMessagesCount,
 } from "@/app/actions/messages";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "../../lib/supabase";
 import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
