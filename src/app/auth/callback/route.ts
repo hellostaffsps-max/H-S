@@ -7,6 +7,12 @@ export async function GET(request: Request) {
   const code = searchParams.get('code');
   const next = searchParams.get('next') ?? '/';
 
+  // Sanitize next param to prevent open redirect
+  let redirectTo = '/';
+  if (next && next.startsWith('/') && !next.startsWith('//')) {
+    redirectTo = next;
+  }
+
   if (code) {
     const cookieStore = await cookies();
     const supabase = createServerClient(
@@ -28,7 +34,7 @@ export async function GET(request: Request) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
+      return NextResponse.redirect(`${origin}${redirectTo}`);
     }
   }
 

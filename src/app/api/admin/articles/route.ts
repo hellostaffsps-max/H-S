@@ -28,7 +28,13 @@ export async function POST(request: NextRequest) {
   const guard = adminGuard(auth);
   if (guard) return guard;
 
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ success: false, error: 'Invalid JSON body' }, { status: 400 });
+  }
+
   const { title, content, excerpt, cover_image, status } = body;
 
   if (!title || !content) {
@@ -44,6 +50,21 @@ export async function POST(request: NextRequest) {
     .replace(/\s+/g, '-');
 
   const supabase = await createClient();
+
+  // Check slug uniqueness
+  const { data: existing } = await supabase
+    .from('articles')
+    .select('id')
+    .eq('slug', slug)
+    .single();
+
+  if (existing) {
+    return NextResponse.json(
+      { success: false, error: 'An article with this title already exists' },
+      { status: 409 }
+    );
+  }
+
   const { data, error } = await supabase
     .from('articles')
     .insert([{

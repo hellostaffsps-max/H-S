@@ -16,7 +16,8 @@ export async function getConversations() {
     .from('messages')
     .select('*, sender:profiles!sender_id(full_name, avatar_url, role), receiver:profiles!receiver_id(full_name, avatar_url, role)')
     .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(500);
 
   if (error) {
     return { success: false, error: error.message, data: [] };
@@ -73,19 +74,25 @@ export async function getMessages(partnerId: string) {
     .from('messages')
     .select('*, sender:profiles!sender_id(full_name, avatar_url)')
     .or(`and(sender_id.eq.${user.id},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${user.id})`)
-    .order('created_at', { ascending: true });
+    .order('created_at', { ascending: true })
+    .limit(200);
 
   if (error) {
     return { success: false, error: error.message, data: [] };
   }
 
-  // Mark messages as read
-  await supabase
+  // Mark messages as read — handle errors properly
+  const { error: updateError } = await supabase
     .from('messages')
     .update({ is_read: true })
     .eq('receiver_id', user.id)
     .eq('sender_id', partnerId)
     .eq('is_read', false);
+
+  if (updateError) {
+    console.error('Failed to mark messages as read:', updateError);
+    // Don't fail the whole request; just log the error
+  }
 
   return { success: true, data: data || [] };
 }

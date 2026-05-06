@@ -637,3 +637,123 @@ drop trigger if exists on_job_approved_alert on public.jobs;
 create trigger on_job_approved_alert
   after insert or update on public.jobs
   for each row execute procedure public.handle_new_job_approved();
+
+-- ==========================================
+-- BACKEND FIXES — Applied 2026-05-06
+-- ==========================================
+
+-- 1. Add email column to profiles (synced from auth.users)
+alter table public.profiles
+  add column if not exists email text;
+
+-- Trigger to sync email from auth.users to profiles
+-- This ensures profiles.email stays in sync with auth.users.email
+create or replace function public.sync_user_email()
+returns trigger as $$
+begin
+  update public.profiles set email = new.email where id = new.id;
+  return new;
+end;
+$$ language plpgsql security definer;
+
+drop trigger if exists on_auth_user_email_updated on auth.users;
+create trigger on_auth_user_email_updated
+  after update of email on auth.users
+  for each row execute procedure public.sync_user_email();
+
+-- Also sync on insert via the existing profile creation flow
+-- (profiles are created client-side in useAuth.ts; this trigger
+-- catches cases where auth.users email changes later)
+
+-- Backfill existing profiles with email from auth.users
+update public.profiles
+set email = auth.users.email
+from auth.users
+where public.profiles.id = auth.users.id
+  and public.profiles.email is null;
+
+-- 2. Fix applications.status check constraint
+-- The dashboard uses: قيد المراجعة, مراجعة, قائمة مختصرة, تجربة عمل, مقابلة, مقبول, مرفوض
+alter table public.applications drop constraint if exists applications_status_check;
+alter table public.applications add constraint applications_status_check
+  check (status in ('قيد المراجعة', 'مراجعة', 'قائمة مختصرة', 'تجربة عمل', 'مقابلة', 'مقبول', 'مرفوض'));
+
+-- 3. Fix articles.status check constraint — add 'rejected'
+alter table public.articles drop constraint if exists articles_status_check;
+alter table public.articles add constraint articles_status_check
+  check (status in ('draft', 'pending_approval', 'published', 'rejected'));
+
+-- 4. Fix user_subscriptions.status check constraint — add 'pending'
+alter table public.user_subscriptions drop constraint if exists user_subscriptions_status_check;
+alter table public.user_subscriptions add constraint user_subscriptions_status_check
+  check (status in ('active', 'canceled', 'expired', 'pending'));
+
+-- 5. Missing RLS policies for messages
+
+-- Allow receivers to mark messages as read (update is_read)
+drop policy if exists "Users can update received messages" on public.messages;
+create policy "Users can update received messages"
+  on public.messages for update
+  using (auth.uid() = receiver_id)
+  with check (auth.uid() = receiver_id);
+
+-- Allow anonymous contact form submissions (both sender_id and receiver_id are null)
+drop policy if exists "Anonymous contact form inserts" on public.messages;
+create policy "Anonymous contact form inserts"
+  on public.messages for insert
+  with check (sender_id is null and receiver_id is null);
+
+-- 6. Missing RLS policies for articles (author/employer can manage own articles)
+drop policy if exists "Authors can view own articles" on public.articles;
+create policy "Authors can view own articles"
+  on public.articles for select
+  using (auth.uid() = author_id);
+
+drop policy if exists "Authors can insert own articles" on public.articles;
+create policy "Authors can insert own articles"
+  on public.articles for insert
+  with check (auth.uid() = author_id);
+
+drop policy if exists "Authors can update own articles" on public.articles;
+create policy "Authors can update own articles"
+  on public.articles for update
+  using (auth.uid() = author_id)
+  with check (auth.uid() = author_id);
+
+drop policy if exists "Authors can delete own articles" on public.articles;
+create policy "Authors can delete own articles"
+  on public.articles for delete
+  using (auth.uid() = author_id);
+
+-- 7. Missing RLS policy for user_subscriptions (users can insert own pending subscriptions)
+drop policy if exists "Users can insert own subscriptions" on public.user_subscriptions;
+create policy "Users can insert own subscriptions"
+  on public.user_subscriptions for insert
+  with check (auth.uid() = user_id);
+
+-- 8. Missing indexes for performance
+create index if not exists idx_job_alerts_user_id on public.job_alerts(user_id);
+create index if not exists idx_messages_sender_id on public.messages(sender_id);
+create index if not exists idx_messages_receiver_id on public.messages(receiver_id);
+create index if not exists idx_profiles_role on public.profiles(role);
+create index if not exists idx_articles_author_id on public.articles(author_id);
+create index if not exists idx_user_subscriptions_plan_id on public.user_subscriptions(plan_id);
+
+-- 9. Auto-update updated_at for articles and platform_settings
+create or replace function public.update_updated_at_column()
+returns trigger as $$
+begin
+  new.updated_at = timezone('utc'::text, now());
+  return new;
+end;
+$$ language plpgsql;
+
+drop trigger if exists on_articles_updated on public.articles;
+create trigger on_articles_updated
+  before update on public.articles
+  for each row execute procedure public.update_updated_at_column();
+
+drop trigger if exists on_platform_settings_updated on public.platform_settings;
+create trigger on_platform_settings_updated
+  before update on public.platform_settings
+  for each row execute procedure public.update_updated_at_column();

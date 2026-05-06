@@ -11,7 +11,14 @@ export async function PATCH(
   if (guard) return guard;
 
   const { id } = await params;
-  const body = await request.json();
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ success: false, error: 'Invalid JSON body' }, { status: 400 });
+  }
+
   const { title, content, excerpt, cover_image, status } = body;
 
   const updates: Record<string, unknown> = {};
@@ -20,9 +27,15 @@ export async function PATCH(
   if (excerpt !== undefined) updates.excerpt = excerpt;
   if (cover_image !== undefined) updates.cover_image = cover_image;
   if (status !== undefined) {
+    const validStatuses = ['draft', 'pending_approval', 'published', 'rejected'];
+    if (!validStatuses.includes(status)) {
+      return NextResponse.json({ success: false, error: 'Invalid status' }, { status: 400 });
+    }
     updates.status = status;
     if (status === 'published') {
       updates.published_at = new Date().toISOString();
+    } else if (status !== 'published') {
+      updates.published_at = null;
     }
   }
 
@@ -34,6 +47,18 @@ export async function PATCH(
   }
 
   const supabase = await createClient();
+
+  // Check existence
+  const { data: existing } = await supabase
+    .from('articles')
+    .select('id')
+    .eq('id', id)
+    .single();
+
+  if (!existing) {
+    return NextResponse.json({ success: false, error: 'Article not found' }, { status: 404 });
+  }
+
   const { data, error } = await supabase
     .from('articles')
     .update(updates)

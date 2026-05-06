@@ -11,7 +11,14 @@ export async function PATCH(
   if (guard) return guard;
 
   const { id } = await params;
-  const body = await request.json();
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ success: false, error: 'Invalid JSON body' }, { status: 400 });
+  }
+
   const { role } = body;
 
   if (!role || !['admin', 'seeker', 'employer'].includes(role)) {
@@ -22,6 +29,33 @@ export async function PATCH(
   }
 
   const supabase = await createClient();
+
+  // Check existence
+  const { data: existing } = await supabase
+    .from('profiles')
+    .select('id, role')
+    .eq('id', id)
+    .single();
+
+  if (!existing) {
+    return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
+  }
+
+  // Prevent removing the last admin
+  if (existing.role === 'admin' && role !== 'admin') {
+    const { count } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('role', 'admin');
+
+    if (count === 1) {
+      return NextResponse.json(
+        { success: false, error: 'Cannot downgrade the last admin' },
+        { status: 403 }
+      );
+    }
+  }
+
   const { data, error } = await supabase
     .from('profiles')
     .update({ role })
@@ -55,10 +89,46 @@ export async function DELETE(
     );
   }
 
-  // Delete from auth (requires admin client)
-  const { error: authError } = await supabase.auth.admin.deleteUser(id);
-  if (authError) {
-    return NextResponse.json({ success: false, error: authError.message }, { status: 500 });
+  // Check existence
+  const { data: existing } = await supabase
+    .from('profiles')
+    .select('id, role')
+    .eq('id', id)
+    .single();
+
+  if (!existing) {
+    return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
+  }
+
+  // Prevent deleting the last admin
+  if (existing.role === 'admin') {
+    const { count } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('role', 'admin');
+
+    if (count === 1) {
+      return NextResponse.json(
+        { success: false, error: 'Cannot delete the last admin' },
+        { status: 403 }
+      );
+    }
+  }
+
+  // Delete from profiles (cascades to related tables via FK constraints)
+  // NOTE: auth.users deletion requires a service-role Supabase client.
+  // If SUPABASE_SERVICE_ROLE_KEY is available, use it here. Otherwise,
+  // the auth user remains but their profile and data are removed.
+  const { error: profileError } = await supabase
+    .from('profiles')
+    .delete()
+    .eq('id', id);
+
+  if (profileError) {
+    return NextResponse.json(
+      { success: false, error: profileError.message },
+      { status: 500 }
+    );
   }
 
   return NextResponse.json({ success: true, message: 'User deleted' });

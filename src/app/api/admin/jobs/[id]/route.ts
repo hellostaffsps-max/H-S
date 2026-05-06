@@ -11,7 +11,14 @@ export async function PATCH(
   if (guard) return guard;
 
   const { id } = await params;
-  const body = await request.json();
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ success: false, error: 'Invalid JSON body' }, { status: 400 });
+  }
+
   const { status } = body;
 
   if (!status || !['approved', 'rejected', 'pending'].includes(status)) {
@@ -22,6 +29,18 @@ export async function PATCH(
   }
 
   const supabase = await createClient();
+
+  // Check existence
+  const { data: existing } = await supabase
+    .from('jobs')
+    .select('id')
+    .eq('id', id)
+    .single();
+
+  if (!existing) {
+    return NextResponse.json({ success: false, error: 'Job not found' }, { status: 404 });
+  }
+
   const { data, error } = await supabase
     .from('jobs')
     .update({ status })

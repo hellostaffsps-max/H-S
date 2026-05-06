@@ -76,8 +76,10 @@ export function useAuth() {
         email,
         password,
         options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
             full_name: fullName,
+            role,
           },
         },
       });
@@ -102,7 +104,7 @@ export function useAuth() {
         }
       }
 
-      return { success: true };
+      return { success: true, session: data.session };
     } catch (e: any) {
       setError(e.message);
       return { success: false, error: e.message };
