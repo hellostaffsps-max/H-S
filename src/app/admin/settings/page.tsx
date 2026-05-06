@@ -68,7 +68,7 @@ export default function PlatformSettings() {
         wallet_qr_url: settings.wallet_qr_url
       };
 
-      let result;
+      let result: any;
       if (settings.id) {
         result = await supabase
           .from('platform_settings')
