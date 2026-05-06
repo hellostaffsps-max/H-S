@@ -1,0 +1,32 @@
+[
+  {
+    "id": "TC001",
+    "title": "getadminsubscriptionswithadmincredentials",
+    "description": "Verify that GET /admin/subscriptions with valid admin credentials returns 200 OK and a list of all subscriptions."
+  },
+  {
+    "id": "TC002",
+    "title": "postapisubscriptionsupgradewithvalidpayload",
+    "description": "Verify that POST /api/subscriptions/upgrade with valid admin credentials and a valid target user payload upgrades the user's subscription plan and returns 200 or 201 status."
+  },
+  {
+    "id": "TC003",
+    "title": "getadminuserswithadmincredentials",
+    "description": "Verify that GET /admin/users with valid admin credentials returns 200 OK and a list of all platform users."
+  },
+  {
+    "id": "TC004",
+    "title": "getadminarticleswithadmincredentials",
+    "description": "Verify that GET /admin/articles with valid admin credentials returns 200 OK and a list of all articles."
+  },
+  {
+    "id": "TC005",
+    "title": "postapiarticleswithvalidadminpayload",
+    "description": "Verify that POST /api/articles with valid admin credentials and valid article content creates a new article and returns 201 Created."
+  },
+  {
+    "id": "TC006",
+    "title": "getblogslugwithvalidslug",
+    "description": "Verify that GET /blog/[slug] with a valid published slug returns 200 OK and the article content for public access."
+  }
+]

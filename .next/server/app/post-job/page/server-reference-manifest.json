@@ -1,0 +1,17 @@
+{
+  "node": {
+    "40605e3a0341d3107a1f0837eb47b8bdc7878d4859": {
+      "workers": {
+        "app/post-job/page": {
+          "moduleId": 87523,
+          "async": false,
+          "exportedName": "createJob",
+          "filename": "src/app/actions/jobs.ts"
+        }
+      },
+      "exportedName": "createJob",
+      "filename": "src/app/actions/jobs.ts"
+    }
+  },
+  "edge": {}
+}

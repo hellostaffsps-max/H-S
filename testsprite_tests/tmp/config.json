@@ -1,0 +1,21 @@
+{
+  "status": "commited",
+  "type": "backend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:3000",
+  "backendAuthType": "basic token",
+  "backendUsername": "wallykht1@gmail.com",
+  "backendPassword": "Wael@2026",
+  "executionArgs": {
+    "projectName": "H-S",
+    "projectPath": "c:\\Users\\hello\\OneDrive\\Desktop\\H-S",
+    "testIds": [],
+    "additionalInstruction": "Run tests in production mode. Project is running on port 3000.",
+    "serverMode": "production",
+    "envs": {
+      "API_KEY": "sk-user-kO0MKGq8HVBMF7ok3_EbmjAoYJKkb2vlE8kS3ONnesoBsiDDcVPHnr2H-hE41FQc3Jcp83IJyP0Mc1LtXIhRIoHxlFVyG15vQEbKKe9Lw3gZGqYXmoRsjessUQdyUrJMBAg"
+    }
+  },
+  "serverPort": 49753,
+  "proxy": "http://60ff49d6-2c7a-4f16-8184-416dfa9a12dd:Hn43rPKxUpDvBtOqWpxG6nebWA02Zjmj@tun.testsprite.com:8080"
+}
