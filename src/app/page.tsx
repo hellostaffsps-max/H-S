@@ -29,6 +29,17 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase-server";
 import SearchBox from "@/components/SearchBox";
 
+const HOSPITALITY_CATEGORIES = [
+  "طاهي/ة",
+  "نادل/ة",
+  "باريستا",
+  "كاشير",
+  "مدير",
+  "توصيل",
+  "مضيف/ة",
+  "أخرى",
+];
+
 const categories = [
   { name: "باريستا", icon: Coffee, slug: "باريستا" },
   { name: "طاهي/ة", icon: ChefHat, slug: "طاهي/ة" },
@@ -61,70 +72,29 @@ const trustSignals = [
   { icon: Star, title: "تخصصات ضيافة فقط", desc: "ما فيش وظائف برّة القطاع — كل إعلان موجه لأهل الضيافة" },
 ];
 
-function SoftStat({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: number;
-}) {
-  const isSmall = value < 10;
-  return (
-    <div className="flex flex-col items-center text-center">
-      <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-brand-600 mb-2" />
-      {isSmall ? (
-        <div className="text-lg sm:text-xl font-bold text-slate-900 mb-0.5">—</div>
-      ) : (
-        <div className="text-xl sm:text-2xl font-bold text-slate-900 mb-0.5">
-          {value.toLocaleString("ar-EG")}
-        </div>
-      )}
-      <div className="text-[11px] sm:text-xs text-slate-500 font-medium">
-        {label}
-      </div>
-    </div>
-  );
-}
-
 export default async function Home() {
   const supabase = await createClient();
 
-  const [
-    { count: jobsCount },
-    { count: usersCount },
-    { count: employersCount },
-    { data: recentJobs },
-  ] = await Promise.all([
+  // Only count and fetch HOSPITALITY jobs
+  const [{ count: jobsCount }, { data: recentJobs }] = await Promise.all([
     supabase
       .from("jobs")
       .select("*", { count: "exact", head: true })
-      .eq("status", "approved"),
-    supabase.from("profiles").select("*", { count: "exact", head: true }),
-    supabase
-      .from("profiles")
-      .select("*", { count: "exact", head: true })
-      .eq("role", "employer"),
+      .eq("status", "approved")
+      .in("category", HOSPITALITY_CATEGORIES),
     supabase
       .from("jobs")
       .select("*, employers(company_name)")
       .eq("status", "approved")
+      .in("category", HOSPITALITY_CATEGORIES)
       .order("created_at", { ascending: false })
       .limit(6),
   ]);
-
-  const stats = {
-    jobs: jobsCount || 0,
-    users: usersCount || 0,
-    employers: employersCount || 0,
-  };
 
   return (
     <div className="flex flex-col">
       {/* ===== HERO ===== */}
       <section className="relative bg-brand-700 overflow-hidden">
-        {/* Decorative bg pattern */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-white" />
           <div className="absolute top-1/2 -left-32 w-80 h-80 rounded-full bg-white" />
@@ -171,14 +141,21 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ===== STATS BAR ===== */}
+      {/* ===== SOFT TRUST BAR ===== */}
       <section className="max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-lg shadow-slate-200/50 p-5 sm:p-6">
-          <div className="grid grid-cols-3 gap-4 sm:gap-6 divide-x divide-x-reverse divide-slate-100">
-            <SoftStat icon={Briefcase} label="وظيفة متاحة" value={stats.jobs} />
-            <SoftStat icon={Building2} label="صاحب عمل" value={stats.employers} />
-            <SoftStat icon={Users} label="باحث عن عمل" value={stats.users} />
-          </div>
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-lg shadow-slate-200/50 p-6 sm:p-8 text-center">
+          <p className="text-sm sm:text-base text-slate-600 font-medium">
+            نبدأ حالياً مع مجموعة مختارة من المقاهي والمطاعم في فلسطين
+          </p>
+          <p className="text-xs text-slate-400 mt-2">
+            انضم إلينا وكن من أوائل المستفيدين من المنصة
+          </p>
+          {jobsCount && jobsCount > 0 ? (
+            <div className="mt-4 inline-flex items-center gap-2 bg-brand-50 text-brand-700 px-4 py-2 rounded-xl text-sm font-bold">
+              <Briefcase className="h-4 w-4" />
+              {jobsCount} وظيفة متاحة حالياً
+            </div>
+          ) : null}
         </div>
       </section>
 
@@ -246,12 +223,8 @@ export default async function Home() {
                     )}
                   </div>
                   <div className="pb-4">
-                    <h4 className="text-sm font-bold text-slate-900 mb-0.5">
-                      {step.title}
-                    </h4>
-                    <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-                      {step.desc}
-                    </p>
+                    <h4 className="text-sm font-bold text-slate-900 mb-0.5">{step.title}</h4>
+                    <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">{step.desc}</p>
                   </div>
                 </div>
               ))}
@@ -264,9 +237,7 @@ export default async function Home() {
               <div className="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center">
                 <Briefcase className="w-5 h-5 text-sky-600" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900">
-                للباحثين عن عمل
-              </h3>
+              <h3 className="text-lg font-bold text-slate-900">للباحثين عن عمل</h3>
             </div>
             <div className="space-y-5">
               {candidateSteps.map((step, i) => (
@@ -280,12 +251,8 @@ export default async function Home() {
                     )}
                   </div>
                   <div className="pb-4">
-                    <h4 className="text-sm font-bold text-slate-900 mb-0.5">
-                      {step.title}
-                    </h4>
-                    <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-                      {step.desc}
-                    </p>
+                    <h4 className="text-sm font-bold text-slate-900 mb-0.5">{step.title}</h4>
+                    <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">{step.desc}</p>
                   </div>
                 </div>
               ))}
@@ -337,9 +304,7 @@ export default async function Home() {
             <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 mb-1 tracking-tight">
               أحدث الوظائف
             </h2>
-            <p className="text-slate-500 text-sm">
-              فرص جديدة في قطاع الضيافة
-            </p>
+            <p className="text-slate-500 text-sm">فرص جديدة في قطاع الضيافة</p>
           </div>
           <Link
             href="/jobs"
@@ -440,9 +405,7 @@ function JobCard({ job }: { job: any }) {
           <h3 className="text-base font-bold text-slate-900 line-clamp-1">
             {job.title}
           </h3>
-          <p className="text-sm text-slate-500 line-clamp-1">
-            {job.company_name}
-          </p>
+          <p className="text-sm text-slate-500 line-clamp-1">{job.company_name}</p>
         </div>
       </div>
 
@@ -480,13 +443,7 @@ function JobCard({ job }: { job: any }) {
 
 function PlusIcon() {
   return (
-    <svg
-      className="h-4 w-4"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={2.5}
-    >
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
     </svg>
   );

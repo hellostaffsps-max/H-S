@@ -11,6 +11,7 @@ import {
   X,
   Bell,
   Building2,
+  AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,7 @@ function JobsContent() {
   const searchParams = useSearchParams();
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
@@ -36,16 +38,25 @@ function JobsContent() {
 
   async function fetchJobs() {
     setLoading(true);
-    const result = await getJobs({
-      search: searchTerm || undefined,
-      category: category || undefined,
-      type: type || undefined,
-      location: location || undefined,
-      experience_level: experienceLevel || undefined,
-      has_salary: hasSalary || undefined,
-    });
-    if (result.success) {
-      setJobs(result.data);
+    setError(null);
+    try {
+      const result = await getJobs({
+        search: searchTerm || undefined,
+        category: category || undefined,
+        type: type || undefined,
+        location: location || undefined,
+        experience_level: experienceLevel || undefined,
+        has_salary: hasSalary || undefined,
+      });
+      if (result.success) {
+        setJobs(result.data);
+      } else {
+        setError(result.error || "فشل تحميل الوظائف");
+        setJobs([]);
+      }
+    } catch (e: any) {
+      setError("حدث خطأ في الاتصال. حاول مرة أخرى.");
+      setJobs([]);
     }
     setLoading(false);
   }
@@ -149,9 +160,7 @@ function JobsContent() {
         {showFilters && (
           <div className="mt-3 pt-3 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1.5">
-                التخصص
-              </label>
+              <label className="block text-xs font-bold text-slate-500 mb-1.5">التخصص</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
@@ -159,16 +168,12 @@ function JobsContent() {
               >
                 <option value="">الكل</option>
                 {categories.map((c) => (
-                  <option key={c.value} value={c.value}>
-                    {c.label}
-                  </option>
+                  <option key={c.value} value={c.value}>{c.label}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1.5">
-                نوع الدوام
-              </label>
+              <label className="block text-xs font-bold text-slate-500 mb-1.5">نوع الدوام</label>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value)}
@@ -180,9 +185,7 @@ function JobsContent() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1.5">
-                الخبرة المطلوبة
-              </label>
+              <label className="block text-xs font-bold text-slate-500 mb-1.5">الخبرة المطلوبة</label>
               <select
                 value={experienceLevel}
                 onChange={(e) => setExperienceLevel(e.target.value)}
@@ -190,16 +193,12 @@ function JobsContent() {
               >
                 <option value="">الكل</option>
                 {experienceLevels.map((e) => (
-                  <option key={e.value} value={e.value}>
-                    {e.label}
-                  </option>
+                  <option key={e.value} value={e.value}>{e.label}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1.5">
-                الموقع
-              </label>
+              <label className="block text-xs font-bold text-slate-500 mb-1.5">الموقع</label>
               <div className="relative">
                 <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <input
@@ -219,9 +218,7 @@ function JobsContent() {
                   onChange={(e) => setHasSalary(e.target.checked)}
                   className="w-4 h-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
                 />
-                <span className="text-sm text-slate-600">
-                  فقط وظائف بها راتب محدد
-                </span>
+                <span className="text-sm text-slate-600">فقط وظائف بها راتب محدد</span>
               </label>
               {activeFiltersCount > 0 && (
                 <button
@@ -237,48 +234,61 @@ function JobsContent() {
         )}
       </form>
 
+      {/* Error State */}
+      {error && (
+        <div className="bg-red-50 border border-red-100 rounded-2xl p-4 flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-bold text-red-700">{error}</p>
+            <button
+              onClick={fetchJobs}
+              className="text-xs text-red-600 font-bold mt-1 hover:underline"
+            >
+              إعادة المحاولة
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Results count */}
-      <div className="flex items-center justify-between">
-        <div className="text-sm font-medium text-slate-500">
-          {loading ? (
-            <span className="inline-flex items-center gap-2">
-              <span className="w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
-              جاري التحميل...
-            </span>
-          ) : (
-            <>
-              <span className="font-bold text-slate-900">{jobs.length}</span>{" "}
-              وظيفة متاحة
-            </>
-          )}
+      {!error && (
+        <div className="flex items-center justify-between">
+          <div className="text-sm font-medium text-slate-500">
+            {loading ? (
+              <span className="inline-flex items-center gap-2">
+                <span className="w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
+                جاري التحميل...
+              </span>
+            ) : (
+              <>
+                <span className="font-bold text-slate-900">{jobs.length}</span>{" "}
+                وظيفة متاحة
+              </>
+            )}
+          </div>
+          <div className="text-xs text-slate-400">مرتبة حسب: الأحدث</div>
         </div>
-        <div className="text-xs text-slate-400">
-          مرتبة حسب: الأحدث
-        </div>
-      </div>
+      )}
 
       {/* Jobs Grid */}
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div
-              key={i}
-              className="bg-white border border-slate-100 rounded-2xl p-5 h-60 animate-pulse"
-            >
-              <div className="flex justify-between mb-4">
-                <div className="h-5 bg-slate-100 rounded w-20"></div>
-                <div className="h-5 bg-slate-100 rounded w-16"></div>
-              </div>
-              <div className="h-6 bg-slate-100 rounded w-3/4 mb-2"></div>
-              <div className="h-4 bg-slate-100 rounded w-1/2 mb-6"></div>
-              <div className="h-3 bg-slate-100 rounded w-full mb-2"></div>
-              <div className="h-3 bg-slate-100 rounded w-2/3"></div>
-            </div>
-          ))}
-        </div>
-      ) : (
+      {!error && (
         <>
-          {jobs.length === 0 ? (
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="bg-white border border-slate-100 rounded-2xl p-5 h-60 animate-pulse">
+                  <div className="flex justify-between mb-4">
+                    <div className="h-5 bg-slate-100 rounded w-20"></div>
+                    <div className="h-5 bg-slate-100 rounded w-16"></div>
+                  </div>
+                  <div className="h-6 bg-slate-100 rounded w-3/4 mb-2"></div>
+                  <div className="h-4 bg-slate-100 rounded w-1/2 mb-6"></div>
+                  <div className="h-3 bg-slate-100 rounded w-full mb-2"></div>
+                  <div className="h-3 bg-slate-100 rounded w-2/3"></div>
+                </div>
+              ))}
+            </div>
+          ) : jobs.length === 0 ? (
             <EmptyState onClear={clearFilters} />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -297,14 +307,10 @@ function JobCard({ job }: { job: any }) {
   return (
     <div className="group bg-white border border-slate-100 rounded-2xl p-5 hover:border-brand-200 hover:shadow-lg transition-all flex flex-col h-full">
       <div className="flex justify-between items-start mb-3">
-        <span
-          className={cn(
-            "px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide",
-            job.type === "دوام كامل"
-              ? "bg-brand-50 text-brand-700"
-              : "bg-sky-50 text-sky-700"
-          )}
-        >
+        <span className={cn(
+          "px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide",
+          job.type === "دوام كامل" ? "bg-brand-50 text-brand-700" : "bg-sky-50 text-sky-700"
+        )}>
           {job.type}
         </span>
         {job.status === "approved" && (
@@ -347,8 +353,7 @@ function JobCard({ job }: { job: any }) {
         {job.salary_min && job.salary_max && (
           <div className="flex items-center gap-1.5">
             <span className="text-brand-600 font-bold text-xs">
-              {job.currency || "₪"} {job.salary_min.toLocaleString("ar-EG")} -{" "}
-              {job.salary_max.toLocaleString("ar-EG")}
+              {job.currency || "₪"} {job.salary_min.toLocaleString("ar-EG")} - {job.salary_max.toLocaleString("ar-EG")}
             </span>
           </div>
         )}
@@ -379,8 +384,7 @@ function EmptyState({ onClear }: { onClear: () => void }) {
         لا توجد وظائف مطابقة حالياً
       </h3>
       <p className="text-slate-500 text-sm max-w-md mx-auto mb-6">
-        جرّب تعديل الفلاتر أو فعّل تنبيهات الوظائف لتصلك الفرص الجديدة فور
-        نشرها.
+        جرّب تعديل الفلاتر أو فعّل تنبيهات الوظائف لتصلك الفرص الجديدة فور نشرها.
       </p>
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
         <button
