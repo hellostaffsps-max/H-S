@@ -757,3 +757,31 @@ drop trigger if exists on_platform_settings_updated on public.platform_settings;
 create trigger on_platform_settings_updated
   before update on public.platform_settings
   for each row execute procedure public.update_updated_at_column();
+
+-- ==========================================
+-- EMPLOYER PROFILE EXPANSION — Applied 2026-05-07
+-- ==========================================
+
+-- Expand employers table with company profile fields
+alter table public.employers
+  add column if not exists business_type text,
+  add column if not exists city text,
+  add column if not exists area text,
+  add column if not exists whatsapp_number text,
+  add column if not exists business_email text,
+  add column if not exists number_of_branches integer,
+  add column if not exists number_of_employees text,
+  add column if not exists opening_hours text,
+  add column if not exists cover_image_url text,
+  add column if not exists verification_status text default 'pending',
+  add column if not exists application_preference text default 'platform_only',
+  add column if not exists show_whatsapp_to_candidates boolean default false;
+
+-- Add check constraints for new enum-like columns
+alter table public.employers drop constraint if exists employers_verification_status_check;
+alter table public.employers add constraint employers_verification_status_check
+  check (verification_status in ('pending', 'verified', 'rejected'));
+
+alter table public.employers drop constraint if exists employers_application_preference_check;
+alter table public.employers add constraint employers_application_preference_check
+  check (application_preference in ('platform_only', 'whatsapp_only', 'both'));

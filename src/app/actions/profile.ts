@@ -102,10 +102,34 @@ export async function updateEmployerProfile(formData: FormData) {
   }
 
   const updates: Record<string, any> = {};
-  const fields = ['company_name', 'description', 'logo_url'];
+  const fields = [
+    'company_name',
+    'description',
+    'logo_url',
+    'business_type',
+    'city',
+    'area',
+    'whatsapp_number',
+    'business_email',
+    'number_of_branches',
+    'number_of_employees',
+    'opening_hours',
+    'cover_image_url',
+    'application_preference',
+    'show_whatsapp_to_candidates',
+  ];
+
   fields.forEach((field) => {
     const value = formData.get(field);
-    if (value !== null) updates[field] = value;
+    if (value !== null) {
+      if (field === 'number_of_branches') {
+        updates[field] = parseInt(value as string) || 0;
+      } else if (field === 'show_whatsapp_to_candidates') {
+        updates[field] = value === 'true';
+      } else {
+        updates[field] = value;
+      }
+    }
   });
 
   const { data, error } = await supabase
