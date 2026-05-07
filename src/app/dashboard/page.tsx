@@ -378,11 +378,11 @@ function ApplicantModal({
           )}
 
           {/* Resume */}
-          {seeker?.resume_url && (
+          {seeker?.cv_url && (
             <div>
               <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">السيرة الذاتية</h4>
               <a
-                href={seeker.resume_url}
+                href={seeker.cv_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-slate-900 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-800 transition-colors"
