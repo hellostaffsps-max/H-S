@@ -24,6 +24,8 @@ import {
   ListChecks,
   Eye,
   HeartHandshake,
+  Calendar,
+  Newspaper,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase-server";
@@ -78,7 +80,7 @@ export default async function Home() {
   const { data: { user } } = await supabase.auth.getUser();
 
   // Only count and fetch HOSPITALITY jobs
-  const [{ count: jobsCount }, { data: recentJobs }] = await Promise.all([
+  const [{ count: jobsCount }, { data: recentJobs }, { data: recentArticles }] = await Promise.all([
     supabase
       .from("jobs")
       .select("*", { count: "exact", head: true })
@@ -91,6 +93,12 @@ export default async function Home() {
       .in("category", HOSPITALITY_CATEGORIES)
       .order("created_at", { ascending: false })
       .limit(6),
+    supabase
+      .from("articles")
+      .select("id, title, slug, excerpt, cover_image, created_at")
+      .eq("status", "published")
+      .order("created_at", { ascending: false })
+      .limit(3),
   ]);
 
   return (
@@ -144,6 +152,67 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* ===== ARTICLES (Logged-in users only) ===== */}
+      {user && recentArticles && recentArticles.length > 0 && (
+        <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16">
+          <div className="flex items-center justify-between mb-6 sm:mb-8">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                <Newspaper className="h-6 w-6 text-brand-600" />
+                أحدث المقالات
+              </h2>
+              <p className="text-slate-500 text-sm mt-1">
+                نصائح وأخبار من عالم الضيافة والتوظيف
+              </p>
+            </div>
+            <Link
+              href="/blog"
+              className="text-brand-600 text-sm font-bold hover:text-brand-700 flex items-center gap-1 transition-colors shrink-0"
+            >
+              عرض الكل <ArrowLeft className="h-4 w-4" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {recentArticles.map((article: any) => (
+              <Link
+                key={article.id}
+                href={`/blog/${article.slug}`}
+                className="group bg-white border border-slate-100 rounded-2xl overflow-hidden hover:border-brand-200 hover:shadow-lg transition-all"
+              >
+                <div className="h-40 sm:h-44 bg-slate-100 relative overflow-hidden">
+                  {article.cover_image ? (
+                    <img
+                      src={article.cover_image}
+                      alt={article.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-slate-300">
+                      <Newspaper className="h-10 w-10" />
+                    </div>
+                  )}
+                </div>
+                <div className="p-5">
+                  <h3 className="font-bold text-sm sm:text-base text-slate-900 mb-2 line-clamp-2 group-hover:text-brand-600 transition-colors">
+                    {article.title}
+                  </h3>
+                  {article.excerpt && (
+                    <p className="text-xs sm:text-sm text-slate-500 mb-3 line-clamp-2 leading-relaxed">
+                      {article.excerpt}
+                    </p>
+                  )}
+                  <div className="flex items-center gap-1 text-xs text-slate-400">
+                    <Calendar className="h-3.5 w-3.5" />
+                    {new Date(article.created_at).toLocaleDateString("ar-EG")}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ===== SOFT TRUST BAR ===== */}
       <section className="max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
