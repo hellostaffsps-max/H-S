@@ -87,20 +87,26 @@ export function useAuth() {
       if (error) throw error;
 
       if (data.user) {
+        // Use upsert to avoid duplicate key errors if profile already exists
+        // (e.g., user already signed up, or a DB trigger created it)
         const { error: profileError } = await supabase
           .from('profiles')
-          .insert({
+          .upsert({
             id: data.user.id,
             role,
             full_name: fullName,
-          });
+          }, { onConflict: 'id' });
 
         if (profileError) throw profileError;
 
         if (role === 'employer') {
-          await supabase.from('employers').insert({ profile_id: data.user.id, company_name: fullName });
+          await supabase
+            .from('employers')
+            .upsert({ profile_id: data.user.id, company_name: fullName }, { onConflict: 'profile_id' });
         } else if (role === 'seeker') {
-          await supabase.from('seekers').insert({ profile_id: data.user.id, job_title: '' });
+          await supabase
+            .from('seekers')
+            .upsert({ profile_id: data.user.id, job_title: '' }, { onConflict: 'profile_id' });
         }
       }
 
