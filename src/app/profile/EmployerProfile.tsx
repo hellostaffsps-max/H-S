@@ -222,7 +222,6 @@ export default function EmployerProfile({ profile, user, employerData, onEmploye
                 currentUrl={logoUrl}
                 onUpload={handleLogoUpload}
                 bucket="avatars"
-                folder="company-logos"
                 aspectRatio="square"
                 label="شعار المنشأة"
                 placeholder="اضغط لرفع الشعار"
@@ -235,7 +234,6 @@ export default function EmployerProfile({ profile, user, employerData, onEmploye
                 currentUrl={coverUrl}
                 onUpload={handleCoverUpload}
                 bucket="avatars"
-                folder="company-covers"
                 aspectRatio="landscape"
                 label="صورة الغلاف"
                 placeholder="اضغط لرفع صورة الغلاف"
