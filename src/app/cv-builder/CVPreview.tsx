@@ -23,11 +23,11 @@ export default function CVPreview({ cvData, profile, componentRef, logoUrl }: Pr
   return (
     <div
       ref={componentRef}
-      className="bg-white shadow-xl w-full max-w-[210mm] min-h-[297mm] text-slate-900 print:shadow-none print:w-[210mm] print:h-auto print:min-h-0 relative overflow-hidden"
+      className="bg-white shadow-xl w-full max-w-[210mm] text-slate-900 print:shadow-none print:w-[210mm] print:min-h-[297mm] relative overflow-hidden"
       dir="rtl"
       style={{ fontFamily: "Inter, system-ui, sans-serif" }}
     >
-      <div className="flex min-h-[297mm]">
+      <div className="flex">
         {/* Sidebar */}
         <div className="w-[32%] bg-[#0f4c3a] text-white p-6 flex flex-col print:w-[32%]">
           {/* Photo */}
@@ -146,13 +146,12 @@ export default function CVPreview({ cvData, profile, componentRef, logoUrl }: Pr
             </section>
           )}
 
-          {/* Spacer to push footer down */}
-          <div className="flex-grow" />
+
         </div>
       </div>
 
       {/* Footer - Powered by HELLO STAFF */}
-      <div className="absolute bottom-0 left-0 right-0 bg-[#0f4c3a] py-2 px-4 flex items-center justify-center gap-2 print:block">
+      <div className="bg-[#0f4c3a] py-2 px-4 flex items-center justify-center gap-2">
         <span className="text-[9px] text-white/70">Powered by</span>
         {logoUrl && <img src={logoUrl} alt="Hello Staff" className="h-4 w-4 object-contain" />}
         <span className="text-[10px] text-white font-bold tracking-wide">HELLO STAFF</span>
