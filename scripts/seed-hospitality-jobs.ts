@@ -212,49 +212,64 @@ async function seed() {
   console.log('🌱 Seeding Hello Staff with real hospitality demo jobs...\n');
 
   for (const emp of DEMO_EMPLOYERS) {
-    // 1. Check if employer already exists
-    const { data: existing } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('email', emp.email)
+    // 1. Check if employer record already exists
+    const { data: existingEmployer } = await supabase
+      .from('employers')
+      .select('profile_id')
+      .eq('company_name', emp.company_name)
       .single();
 
     let userId: string;
 
-    if (existing) {
-      userId = existing.id;
+    if (existingEmployer) {
+      userId = existingEmployer.profile_id;
       console.log(`  ⏭️  Employer "${emp.company_name}" already exists`);
     } else {
-      // 2. Create auth user
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: emp.email,
-        password: emp.password,
-        email_confirm: true,
-        user_metadata: { full_name: emp.full_name, role: 'employer' },
-      });
+      // 2. Check if user profile exists (from previous run or trigger)
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', emp.email)
+        .single();
 
-      if (authError || !authData.user) {
-        console.error(`  ❌ Failed to create user for ${emp.company_name}:`, authError?.message);
-        continue;
+      if (existingProfile) {
+        userId = existingProfile.id;
+        console.log(`  ⏭️  User exists, adding employer record for ${emp.company_name}`);
+      } else {
+        // 3. Create auth user
+        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+          email: emp.email,
+          password: emp.password,
+          email_confirm: true,
+          user_metadata: { full_name: emp.full_name, role: 'employer' },
+        });
+
+        if (authError || !authData.user) {
+          console.error(`  ❌ Failed to create user for ${emp.company_name}:`, authError?.message);
+          continue;
+        }
+
+        userId = authData.user.id;
+        console.log(`  ✅ Created user: ${emp.company_name} (${userId})`);
+
+        // 4. Insert profile (ignore if already exists)
+        const { error: profileError } = await supabase.from('profiles').insert({
+          id: userId,
+          role: 'employer',
+          full_name: emp.full_name,
+          email: emp.email,
+        });
+
+        if (profileError && !profileError.message.includes('duplicate')) {
+          console.error(`  ❌ Failed to insert profile for ${emp.company_name}:`, profileError.message);
+          continue;
+        }
+        if (profileError?.message.includes('duplicate')) {
+          console.log(`    ⏭️  Profile already exists`);
+        }
       }
 
-      userId = authData.user.id;
-      console.log(`  ✅ Created user: ${emp.company_name} (${userId})`);
-
-      // 3. Insert profile
-      const { error: profileError } = await supabase.from('profiles').insert({
-        id: userId,
-        role: 'employer',
-        full_name: emp.full_name,
-        email: emp.email,
-      });
-
-      if (profileError) {
-        console.error(`  ❌ Failed to insert profile for ${emp.company_name}:`, profileError.message);
-        continue;
-      }
-
-      // 4. Insert employer
+      // 5. Insert employer record (we know it doesn't exist from step 1)
       const { error: employerError } = await supabase.from('employers').insert({
         profile_id: userId,
         company_name: emp.company_name,
@@ -265,6 +280,7 @@ async function seed() {
         console.error(`  ❌ Failed to insert employer for ${emp.company_name}:`, employerError.message);
         continue;
       }
+      console.log(`  ✅ Added employer record for ${emp.company_name}`);
     }
 
     // 5. Insert jobs (skip if already exist)
