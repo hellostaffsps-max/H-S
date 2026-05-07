@@ -76,7 +76,10 @@ export default function ImageUpload({
 
       const { error: uploadError, data } = await supabase.storage
         .from(bucket)
-        .upload(filePath, compressedFile);
+        .upload(filePath, compressedFile, {
+          contentType: compressedFile.type || 'image/jpeg',
+          upsert: true,
+        });
 
       if (uploadError) {
         throw uploadError;
