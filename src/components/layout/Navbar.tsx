@@ -1,14 +1,15 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { ChefHat, Bell, Home, Briefcase, PlusCircle, LayoutDashboard, MessageSquare, User, Menu, X, CheckCircle2, LogIn, LogOut, UserPlus } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { ChefHat, Bell, Home, Briefcase, PlusCircle, LayoutDashboard, MessageSquare, User, Menu, X, CheckCircle2, LogIn, LogOut, UserPlus, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, profile, signOut } = useAuth();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -56,21 +57,43 @@ export default function Navbar() {
     <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
+          {/* Logo & Back */}
           <div className="flex shrink-0 items-center justify-between w-full md:w-auto">
-            <Link href="/" className="flex items-center gap-2 min-w-0" onClick={closeMenu}>
-              <div className="bg-brand-600 p-1.5 rounded-lg shrink-0">
-                <ChefHat className="h-6 w-6 text-white" />
-              </div>
-              <span className="font-bold text-lg sm:text-xl text-slate-800 truncate">Hello <span className="text-xs sm:text-sm font-normal text-slate-500">Staff</span></span>
-            </Link>
+            <div className="flex items-center gap-2">
+              {pathname !== '/' && (
+                <button
+                  onClick={() => router.back()}
+                  className="hidden md:flex items-center justify-center text-slate-500 hover:text-brand-600 hover:bg-slate-100 p-2 rounded-lg transition-colors min-h-[44px] min-w-[44px]"
+                  title="رجوع"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+              )}
+              <Link href="/" className="flex items-center gap-2 min-w-0" onClick={closeMenu}>
+                <div className="bg-brand-600 p-1.5 rounded-lg shrink-0">
+                  <ChefHat className="h-6 w-6 text-white" />
+                </div>
+                <span className="font-bold text-lg sm:text-xl text-slate-800 truncate">Hello <span className="text-xs sm:text-sm font-normal text-slate-500">Staff</span></span>
+              </Link>
+            </div>
             
-            <button 
-              className="md:hidden text-slate-500 hover:text-slate-700 p-2 rounded-lg hover:bg-slate-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+            <div className="flex items-center gap-1">
+              {pathname !== '/' && (
+                <button
+                  onClick={() => router.back()}
+                  className="md:hidden text-slate-500 hover:text-brand-600 hover:bg-slate-100 p-2 rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                  title="رجوع"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+              )}
+              <button 
+                className="md:hidden text-slate-500 hover:text-slate-700 p-2 rounded-lg hover:bg-slate-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </button>
+            </div>
           </div>
 
           {/* Desktop Navigation */}

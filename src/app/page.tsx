@@ -75,6 +75,8 @@ const trustSignals = [
 export default async function Home() {
   const supabase = await createClient();
 
+  const { data: { user } } = await supabase.auth.getUser();
+
   // Only count and fetch HOSPITALITY jobs
   const [{ count: jobsCount }, { data: recentJobs }] = await Promise.all([
     supabase
@@ -119,22 +121,24 @@ export default async function Home() {
             </p>
 
             {/* Dual CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-12">
-              <Link
-                href="/auth/signup?role=employer"
-                className="w-full sm:w-auto group bg-white text-brand-700 hover:bg-brand-50 px-8 py-4 rounded-2xl text-sm font-bold transition-all shadow-xl shadow-black/10 flex items-center justify-center gap-2.5"
-              >
-                <Building2 className="h-5 w-5 transition-transform group-hover:-translate-y-0.5" />
-                أنا صاحب مطعم / مقهى
-              </Link>
-              <Link
-                href="/auth/signup?role=seeker"
-                className="w-full sm:w-auto group bg-brand-800/60 hover:bg-brand-800/80 text-white border border-white/20 px-8 py-4 rounded-2xl text-sm font-bold transition-all backdrop-blur-sm flex items-center justify-center gap-2.5"
-              >
-                <Briefcase className="h-5 w-5 transition-transform group-hover:-translate-y-0.5" />
-                أنا بدور على شغل
-              </Link>
-            </div>
+            {!user && (
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-12">
+                <Link
+                  href="/auth/signup?role=employer"
+                  className="w-full sm:w-auto group bg-white text-brand-700 hover:bg-brand-50 px-8 py-4 rounded-2xl text-sm font-bold transition-all shadow-xl shadow-black/10 flex items-center justify-center gap-2.5"
+                >
+                  <Building2 className="h-5 w-5 transition-transform group-hover:-translate-y-0.5" />
+                  أنا صاحب مطعم / مقهى
+                </Link>
+                <Link
+                  href="/auth/signup?role=seeker"
+                  className="w-full sm:w-auto group bg-brand-800/60 hover:bg-brand-800/80 text-white border border-white/20 px-8 py-4 rounded-2xl text-sm font-bold transition-all backdrop-blur-sm flex items-center justify-center gap-2.5"
+                >
+                  <Briefcase className="h-5 w-5 transition-transform group-hover:-translate-y-0.5" />
+                  أنا بدور على شغل
+                </Link>
+              </div>
+            )}
 
             <SearchBox />
           </div>
@@ -340,38 +344,40 @@ export default async function Home() {
       </section>
 
       {/* ===== FINAL CTA ===== */}
-      <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 pb-16 sm:pb-20">
-        <div className="bg-brand-700 rounded-3xl p-8 sm:p-12 lg:p-16 text-center relative overflow-hidden">
-          <div className="absolute inset-0 opacity-5">
-            <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full bg-white" />
-          </div>
-          <div className="relative z-10 max-w-2xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-4 tracking-tight">
-              جاهز توظّف كفاءات لمطعمك؟
-            </h2>
-            <p className="text-brand-100 text-sm sm:text-base mb-8 max-w-lg mx-auto">
-              أنشئ حسابك كصاحب عمل مجاناً وانشر أول وظيفة في دقائق. لا رسوم
-              خفية، ولا تعقيدات.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Link
-                href="/auth/signup?role=employer"
-                className="w-full sm:w-auto bg-white text-brand-700 hover:bg-brand-50 px-8 py-3.5 rounded-2xl text-sm font-bold transition-all shadow-lg flex items-center justify-center gap-2"
-              >
-                <Building2 className="h-5 w-5" />
-                أنشئ حساب صاحب عمل
-              </Link>
-              <Link
-                href="/auth/signup?role=seeker"
-                className="w-full sm:w-auto bg-brand-800/60 hover:bg-brand-800/80 text-white border border-white/20 px-8 py-3.5 rounded-2xl text-sm font-bold transition-all flex items-center justify-center gap-2"
-              >
-                <Briefcase className="h-5 w-5" />
-                أنشئ حساب باحث عن عمل
-              </Link>
+      {!user && (
+        <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 pb-16 sm:pb-20">
+          <div className="bg-brand-700 rounded-3xl p-8 sm:p-12 lg:p-16 text-center relative overflow-hidden">
+            <div className="absolute inset-0 opacity-5">
+              <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full bg-white" />
+            </div>
+            <div className="relative z-10 max-w-2xl mx-auto">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-4 tracking-tight">
+                جاهز توظّف كفاءات لمطعمك؟
+              </h2>
+              <p className="text-brand-100 text-sm sm:text-base mb-8 max-w-lg mx-auto">
+                أنشئ حسابك كصاحب عمل مجاناً وانشر أول وظيفة في دقائق. لا رسوم
+                خفية، ولا تعقيدات.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <Link
+                  href="/auth/signup?role=employer"
+                  className="w-full sm:w-auto bg-white text-brand-700 hover:bg-brand-50 px-8 py-3.5 rounded-2xl text-sm font-bold transition-all shadow-lg flex items-center justify-center gap-2"
+                >
+                  <Building2 className="h-5 w-5" />
+                  أنشئ حساب صاحب عمل
+                </Link>
+                <Link
+                  href="/auth/signup?role=seeker"
+                  className="w-full sm:w-auto bg-brand-800/60 hover:bg-brand-800/80 text-white border border-white/20 px-8 py-3.5 rounded-2xl text-sm font-bold transition-all flex items-center justify-center gap-2"
+                >
+                  <Briefcase className="h-5 w-5" />
+                  أنشئ حساب باحث عن عمل
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   );
 }
