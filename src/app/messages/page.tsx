@@ -204,15 +204,24 @@ function MessagesPage() {
     setNewMessage(""); // Clear early for better UX
     setSending(true);
 
-    const result = await sendMessageToUser(selectedPartner, msgContent);
-    if (!result.success) {
-      alert("فشل إرسال الرسالة: " + (result.error || "خطأ غير معروف"));
+    // Use browser client for direct insert with proper auth session
+    const { data, error } = await supabase
+      .from('messages')
+      .insert({
+        receiver_id: selectedPartner,
+        content: msgContent,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      alert("فشل إرسال الرسالة: " + error.message);
       setNewMessage(msgContent); // Restore content on failure
     } else {
       // Optimistically add message to UI
-      if (myId) {
+      if (myId && data) {
         const optimisticMsg: Message = {
-          id: `temp-${Date.now()}`,
+          id: data.id,
           sender_id: myId,
           receiver_id: selectedPartner,
           content: msgContent,
