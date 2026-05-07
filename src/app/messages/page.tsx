@@ -4,7 +4,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import {
   getConversations,
   getMessages,
-  sendMessage,
+  sendMessageToUser,
   getUnreadMessagesCount,
 } from "@/app/actions/messages";
 import { supabase } from "../../lib/supabase";
@@ -203,17 +203,25 @@ function MessagesPage() {
     const msgContent = newMessage.trim();
     setNewMessage(""); // Clear early for better UX
     setSending(true);
-    
-    const formData = new FormData();
-    formData.append("receiver_id", selectedPartner);
-    formData.append("content", msgContent);
 
-    const result = await sendMessage(formData);
+    const result = await sendMessageToUser(selectedPartner, msgContent);
     if (!result.success) {
-      alert("فشل إرسال الرسالة");
+      alert("فشل إرسال الرسالة: " + (result.error || "خطأ غير معروف"));
       setNewMessage(msgContent); // Restore content on failure
     } else {
-      // Message will be added via Realtime subscription or we could add it manually for even faster feel
+      // Optimistically add message to UI
+      if (myId) {
+        const optimisticMsg: Message = {
+          id: `temp-${Date.now()}`,
+          sender_id: myId,
+          receiver_id: selectedPartner,
+          content: msgContent,
+          is_read: false,
+          created_at: new Date().toISOString(),
+          sender: { full_name: "أنا", avatar_url: null },
+        };
+        setMessages((prev) => [...prev, optimisticMsg]);
+      }
       await loadConversations();
     }
     setSending(false);
