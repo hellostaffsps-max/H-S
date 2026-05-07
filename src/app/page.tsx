@@ -26,6 +26,7 @@ import {
   HeartHandshake,
   Calendar,
   Newspaper,
+  CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase-server";
@@ -79,8 +80,12 @@ export default async function Home() {
 
   const { data: { user } } = await supabase.auth.getUser();
 
+  const profilePromise = user
+    ? supabase.from("profiles").select("role").eq("id", user.id).single()
+    : Promise.resolve({ data: null });
+
   // Only count and fetch HOSPITALITY jobs
-  const [{ count: jobsCount }, { data: recentJobs }, { data: recentArticles }] = await Promise.all([
+  const [{ count: jobsCount }, { data: recentJobs }, { data: recentArticles }, { data: profileData }] = await Promise.all([
     supabase
       .from("jobs")
       .select("*", { count: "exact", head: true })
@@ -99,7 +104,22 @@ export default async function Home() {
       .eq("status", "published")
       .order("created_at", { ascending: false })
       .limit(3),
+    profilePromise,
   ]);
+
+  const userRole = profileData?.role;
+  const isEmployer = userRole === "employer";
+  const isSeeker = userRole === "seeker";
+
+  let plans = [];
+  if (isEmployer) {
+    const { data: plansData } = await supabase
+      .from("subscription_plans")
+      .select("*")
+      .eq("is_active", true)
+      .order("price", { ascending: true });
+    plans = plansData || [];
+  }
 
   return (
     <div className="flex flex-col">
@@ -153,8 +173,8 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ===== ARTICLES (Logged-in users only) ===== */}
-      {user && recentArticles && recentArticles.length > 0 && (
+      {/* ===== ARTICLES (Seekers only) ===== */}
+      {isSeeker && recentArticles && recentArticles.length > 0 && (
         <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16">
           <div className="flex items-center justify-between mb-6 sm:mb-8">
             <div>
@@ -214,6 +234,70 @@ export default async function Home() {
         </section>
       )}
 
+      {/* ===== PRICING PLANS (Employers only) ===== */}
+      {isEmployer && plans.length > 0 && (
+        <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16">
+          <div className="text-center mb-8 sm:mb-10">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 mb-2 tracking-tight flex items-center justify-center gap-2">
+              <Sparkles className="h-6 w-6 text-brand-600" />
+              باقات الاشتراك
+            </h2>
+            <p className="text-slate-500 text-sm sm:text-base max-w-lg mx-auto">
+              اختر الخطة المناسبة لشركتك ووظّف بكفاءة أكبر
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto">
+            {plans.map((plan: any) => (
+              <div
+                key={plan.id}
+                className="bg-white border border-slate-100 rounded-2xl p-5 sm:p-6 hover:border-brand-200 hover:shadow-lg transition-all relative overflow-hidden flex flex-col"
+              >
+                {plan.recommended && (
+                  <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-r from-brand-400 to-brand-600" />
+                )}
+                {plan.recommended && (
+                  <div className="absolute top-3 left-3 bg-brand-600 text-white text-[10px] font-bold px-2 py-1 rounded-full">
+                    الأكثر طلباً
+                  </div>
+                )}
+                <h3 className="text-lg font-bold text-slate-900 mb-2">
+                  {plan.name}
+                </h3>
+                <div className="flex items-baseline gap-1 mb-5">
+                  <span className="text-2xl sm:text-3xl font-black text-slate-900">
+                    ₪{plan.price}
+                  </span>
+                  <span className="text-sm font-medium text-slate-500">
+                    /شهرياً
+                  </span>
+                </div>
+
+                <ul className="space-y-3 mb-6 flex-grow">
+                  {(plan.features || []).map((feature: string, i: number) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-brand-500 shrink-0 mt-0.5" />
+                      <span className="text-sm text-slate-600">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Link
+                  href="/pricing"
+                  className={`w-full py-3 rounded-xl text-sm font-bold text-center transition-colors ${
+                    plan.recommended
+                      ? "bg-brand-600 text-white hover:bg-brand-700 shadow-lg shadow-brand-200"
+                      : "bg-slate-50 text-slate-900 hover:bg-slate-100"
+                  }`}
+                >
+                  اختر هذه الخطة
+                </Link>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* ===== SOFT TRUST BAR ===== */}
       <section className="max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
         <div className="bg-white rounded-2xl border border-slate-100 shadow-lg shadow-slate-200/50 p-6 sm:p-8 text-center">
@@ -233,7 +317,8 @@ export default async function Home() {
       </section>
 
       {/* ===== CATEGORIES ===== */}
-      <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20">
+      {!isEmployer && (
+        <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20">
         <div className="text-center mb-8 sm:mb-10">
           <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 mb-2 tracking-tight">
             وظائف الضيافة بالتخصص
@@ -263,6 +348,7 @@ export default async function Home() {
           })}
         </div>
       </section>
+      )}
 
       {/* ===== HOW IT WORKS ===== */}
       <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24">
