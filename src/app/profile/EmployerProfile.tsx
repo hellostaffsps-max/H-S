@@ -84,26 +84,31 @@ export default function EmployerProfile({ profile, user, employerData, onEmploye
     setSuccess(false);
     setError(null);
 
-    const formData = new FormData(e.currentTarget);
+    try {
+      const formData = new FormData(e.currentTarget);
 
-    const [profileResult, employerResult] = await Promise.all([
-      updateProfile(formData),
-      updateEmployerProfile(formData),
-    ]);
+      const [profileResult, employerResult] = await Promise.all([
+        updateProfile(formData),
+        updateEmployerProfile(formData),
+      ]);
 
-    if (profileResult.success || employerResult.success) {
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
-      if (user) {
-        const { data } = await supabase
-          .from("employers")
-          .select("*")
-          .eq("profile_id", user.id)
-          .single();
-        onEmployerDataUpdate(data);
+      if (profileResult.success || employerResult.success) {
+        setSuccess(true);
+        setTimeout(() => setSuccess(false), 3000);
+        if (user) {
+          const { data } = await supabase
+            .from("employers")
+            .select("*")
+            .eq("profile_id", user.id)
+            .single();
+          onEmployerDataUpdate(data);
+        }
+      } else {
+        setError(profileResult.error || employerResult.error || "حدث خطأ");
       }
-    } else {
-      setError(profileResult.error || employerResult.error || "حدث خطأ");
+    } catch (err: any) {
+      console.error("Submit error:", err);
+      setError(err?.message || "حدث خطأ غير متوقع. جرّب مرة أخرى.");
     }
 
     setLoading(false);
@@ -213,6 +218,12 @@ export default function EmployerProfile({ profile, user, employerData, onEmploye
 
       {/* Content Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Hidden inputs for updateProfile */}
+        <input type="hidden" name="full_name" value={employerData?.company_name || profile?.full_name || ""} />
+        <input type="hidden" name="location" value={employerData?.city || profile?.location || ""} />
+        {/* Hidden inputs for logo/cover URLs so they save with the form */}
+        <input type="hidden" name="logo_url" value={logoUrl || ""} />
+        <input type="hidden" name="cover_image_url" value={coverUrl || ""} />
         {/* Images Section */}
         <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
           <h2 className="text-lg font-black text-slate-900 mb-6">صور المنشأة</h2>
@@ -474,6 +485,12 @@ export default function EmployerProfile({ profile, user, employerData, onEmploye
 
             <div className="pt-3 border-t border-slate-100">
               <label className="flex items-center gap-3 cursor-pointer">
+                {/* Hidden input ensures false is sent when checkbox is unchecked */}
+                <input
+                  type="hidden"
+                  name="show_whatsapp_to_candidates"
+                  value="false"
+                />
                 <input
                   type="checkbox"
                   name="show_whatsapp_to_candidates"
