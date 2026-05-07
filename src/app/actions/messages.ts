@@ -2,6 +2,8 @@
 
 import { createClient } from '@/lib/supabase-server';
 import { revalidatePath } from 'next/cache';
+import { checkRateLimit } from '@/lib/rate-limit';
+import { toArabicError } from '@/lib/error-messages';
 
 export async function getConversations() {
   const supabase = await createClient();
@@ -17,10 +19,10 @@ export async function getConversations() {
     .select('*, sender:profiles!sender_id(full_name, avatar_url, role), receiver:profiles!receiver_id(full_name, avatar_url, role)')
     .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
     .order('created_at', { ascending: false })
-    .limit(500);
+    .limit(200);
 
   if (error) {
-    return { success: false, error: error.message, data: [] };
+    return { success: false, error: toArabicError(error.message), data: [] };
   }
 
   // Group by conversation partner
@@ -102,7 +104,13 @@ export async function sendMessage(formData: FormData) {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    return { success: false, error: 'Unauthorized' };
+    return { success: false, error: 'يجب تسجيل الدخول أولاً' };
+  }
+
+  // Rate limit: 10 messages per minute
+  const rateLimitResult = await checkRateLimit(`msg:${user.id}`, 10, 60 * 1000);
+  if (!rateLimitResult.success) {
+    return { success: false, error: 'لقد تجاوزت الحد المسموح لإرسال الرسائل، انتظر دقيقة' };
   }
 
   const receiverId = formData.get('receiver_id') as string;
@@ -125,7 +133,7 @@ export async function sendMessage(formData: FormData) {
     .single();
 
   if (error) {
-    return { success: false, error: error.message };
+    return { success: false, error: toArabicError(error.message) };
   }
 
   revalidatePath('/messages');
@@ -137,7 +145,13 @@ export async function sendMessageToUser(receiverId: string, content: string, tit
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    return { success: false, error: 'Unauthorized' };
+    return { success: false, error: 'يجب تسجيل الدخول أولاً' };
+  }
+
+  // Rate limit: 10 messages per minute
+  const rateLimitResult = await checkRateLimit(`msg:${user.id}`, 10, 60 * 1000);
+  if (!rateLimitResult.success) {
+    return { success: false, error: 'لقد تجاوزت الحد المسموح لإرسال الرسائل، انتظر دقيقة' };
   }
 
   if (!receiverId || !content.trim()) {

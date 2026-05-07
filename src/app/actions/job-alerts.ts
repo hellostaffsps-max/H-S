@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase-server';
 import { revalidatePath } from 'next/cache';
+import { toArabicError } from '@/lib/error-messages';
 
 export async function getJobAlerts() {
   const supabase = await createClient();
@@ -18,7 +19,7 @@ export async function getJobAlerts() {
     .order('created_at', { ascending: false });
 
   if (error) {
-    return { success: false, error: error.message, data: [] };
+    return { success: false, error: toArabicError(error.message), data: [] };
   }
 
   return { success: true, data: data || [] };
@@ -52,7 +53,7 @@ export async function createJobAlert(formData: FormData) {
     .single();
 
   if (error) {
-    return { success: false, error: error.message };
+    return { success: false, error: toArabicError(error.message) };
   }
 
   revalidatePath('/job-alerts');
@@ -74,7 +75,7 @@ export async function deleteJobAlert(alertId: string) {
     .eq('user_id', user.id);
 
   if (error) {
-    return { success: false, error: error.message };
+    return { success: false, error: toArabicError(error.message) };
   }
 
   revalidatePath('/job-alerts');
@@ -96,7 +97,7 @@ export async function toggleJobAlert(alertId: string, isActive: boolean) {
     .eq('user_id', user.id);
 
   if (error) {
-    return { success: false, error: error.message };
+    return { success: false, error: toArabicError(error.message) };
   }
 
   revalidatePath('/job-alerts');

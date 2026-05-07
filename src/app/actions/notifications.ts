@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase-server';
+import { toArabicError } from '@/lib/error-messages';
 
 export async function getNotifications() {
   const supabase = await createClient();
@@ -18,7 +19,7 @@ export async function getNotifications() {
     .limit(50);
 
   if (error) {
-    return { success: false, error: error.message, data: [] };
+    return { success: false, error: toArabicError(error.message), data: [] };
   }
 
   return { success: true, data: data || [] };
@@ -39,7 +40,7 @@ export async function markNotificationAsRead(id: string) {
     .eq('user_id', user.id);
 
   if (error) {
-    return { success: false, error: error.message };
+    return { success: false, error: toArabicError(error.message) };
   }
 
   return { success: true };
@@ -60,7 +61,7 @@ export async function markAllNotificationsAsRead() {
     .eq('is_read', false);
 
   if (error) {
-    return { success: false, error: error.message };
+    return { success: false, error: toArabicError(error.message) };
   }
 
   return { success: true };

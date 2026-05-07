@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase-server';
 import { revalidatePath } from 'next/cache';
+import { toArabicError } from '@/lib/error-messages';
 
 export async function applyToJob(jobId: string, message?: string) {
   const supabase = await createClient();
@@ -47,7 +48,7 @@ export async function applyToJob(jobId: string, message?: string) {
     if (error.message.includes('unique constraint')) {
       return { success: false, error: 'لقد قدمت لهذه الوظيفة مسبقاً' };
     }
-    return { success: false, error: error.message };
+    return { success: false, error: toArabicError(error.message) };
   }
 
   revalidatePath('/jobs');
@@ -66,7 +67,8 @@ export async function getApplications(jobId?: string) {
   let query = supabase
     .from('applications')
     .select('*, jobs(title, company_name), seekers(experience_years, job_title, bio, skills, cv_url, profiles(full_name, avatar_url, location, phone, email))')
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(200);
 
   // Note: interview_date, interview_location, interview_notes are included via *
 
@@ -80,7 +82,7 @@ export async function getApplications(jobId?: string) {
   const { data, error } = await query;
 
   if (error) {
-    return { success: false, error: error.message, data: [] };
+    return { success: false, error: toArabicError(error.message), data: [] };
   }
 
   return { success: true, data: data || [] };
@@ -120,7 +122,7 @@ export async function getMyApplications() {
     .order('created_at', { ascending: false });
 
   if (error) {
-    return { success: false, error: error.message, data: [] };
+    return { success: false, error: toArabicError(error.message), data: [] };
   }
 
   return { success: true, data: data || [] };
@@ -172,7 +174,7 @@ export async function updateApplicationStatus(
     .eq('id', applicationId);
 
   if (error) {
-    return { success: false, error: error.message };
+    return { success: false, error: toArabicError(error.message) };
   }
 
   // Send notification to seeker

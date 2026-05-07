@@ -1,8 +1,16 @@
 'use server';
 
 import { createClient } from '@/lib/supabase-server';
+import { checkRateLimit } from '@/lib/rate-limit';
+import { toArabicError } from '@/lib/error-messages';
 
 export async function submitContactForm(formData: FormData) {
+  // Rate limit: 3 submissions per 15 minutes per IP
+  const rateLimitResult = await checkRateLimit('contact', 3, 15 * 60 * 1000);
+  if (!rateLimitResult.success) {
+    return { success: false, error: 'لقد تجاوزت الحد المسموح، يرجى المحاولة بعد 15 دقيقة' };
+  }
+
   const supabase = await createClient();
 
   const name = formData.get('name') as string;
@@ -20,6 +28,13 @@ export async function submitContactForm(formData: FormData) {
     return { success: false, error: 'البريد الإلكتروني غير صالح' };
   }
 
+  // Honeypot: if a hidden "website" field is filled, reject (bot detection)
+  const honeypot = formData.get('website') as string;
+  if (honeypot) {
+    // Silently succeed to not alert the bot
+    return { success: true };
+  }
+
   const { error } = await supabase
     .from('messages')
     .insert({
@@ -31,7 +46,7 @@ export async function submitContactForm(formData: FormData) {
 
   if (error) {
     console.error('Contact form error:', error);
-    return { success: false, error: 'حدث خطأ أثناء الإرسال، يرجى المحاولة لاحقاً' };
+    return { success: false, error: toArabicError(error.message) };
   }
 
   return { success: true };

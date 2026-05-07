@@ -2,8 +2,9 @@
 
 import { createClient } from '@/lib/supabase-server';
 import { revalidatePath } from 'next/cache';
+import { toArabicError } from '@/lib/error-messages';
 
-export async function getJobs(filters?: { category?: string; type?: string; location?: string; search?: string; experience_level?: string; has_salary?: boolean }) {
+export async function getJobs(filters?: { category?: string; type?: string; location?: string; search?: string; experience_level?: string; has_salary?: boolean; page?: number; limit?: number }) {
   const supabase = await createClient();
 
   let query = supabase
@@ -31,11 +32,18 @@ export async function getJobs(filters?: { category?: string; type?: string; loca
     query = query.not('salary_min', 'is', null);
   }
 
+  // Pagination
+  const limit = filters?.limit || 100;
+  const page = filters?.page || 1;
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+  query = query.range(from, to);
+
   const { data, error } = await query;
 
   if (error) {
     console.error('Error fetching jobs:', error);
-    return { success: false, error: error.message, data: [] };
+    return { success: false, error: toArabicError(error.message), data: [] };
   }
 
   return { success: true, data: data || [] };
@@ -78,7 +86,7 @@ export async function getJobById(id: string) {
   const { data, error } = await query.single();
 
   if (error) {
-    return { success: false, error: error.message, data: null };
+    return { success: false, error: toArabicError(error.message), data: null };
   }
 
   return { success: true, data };
@@ -137,7 +145,7 @@ export async function createJob(formData: FormData) {
   const { data, error } = await supabase.from('jobs').insert(job).select().single();
 
   if (error) {
-    return { success: false, error: error.message };
+    return { success: false, error: toArabicError(error.message) };
   }
 
   revalidatePath('/jobs');
@@ -160,7 +168,7 @@ export async function getEmployerJobs() {
     .order('created_at', { ascending: false });
 
   if (error) {
-    return { success: false, error: error.message, data: [] };
+    return { success: false, error: toArabicError(error.message), data: [] };
   }
 
   return { success: true, data: data || [] };
@@ -181,7 +189,7 @@ export async function updateJobStatus(jobId: string, status: string) {
     .eq('employer_id', user.id);
 
   if (error) {
-    return { success: false, error: error.message };
+    return { success: false, error: toArabicError(error.message) };
   }
 
   revalidatePath('/dashboard');
