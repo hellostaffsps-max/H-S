@@ -33,6 +33,7 @@ export default function CVBuilder() {
   const [canDownload, setCanDownload] = useState(false);
   const [downloadStatus, setDownloadStatus] = useState<string | null>(null);
   const [showPayment, setShowPayment] = useState(false);
+  const [logoUrl, setLogoUrl] = useState('');
   const [newSkill, setNewSkill] = useState('');
   const [newAchievement, setNewAchievement] = useState('');
   const componentRef = useRef<HTMLDivElement>(null);
@@ -40,9 +41,10 @@ export default function CVBuilder() {
   useEffect(() => {
     async function load() {
       if (!isSupabaseConfigured || !user) { setLoading(false); return; }
-      const [seekerRes, statusRes] = await Promise.all([
+      const [seekerRes, statusRes, settingsRes] = await Promise.all([
         supabase.from('seekers').select('resume_data').eq('profile_id', user.id).single(),
         checkCVDownloadStatus(),
+        supabase.from('platform_settings').select('logo_url').limit(1).single(),
       ]);
       if (seekerRes.data?.resume_data && Object.keys(seekerRes.data.resume_data).length > 0) {
         const d = seekerRes.data.resume_data as any;
@@ -50,6 +52,7 @@ export default function CVBuilder() {
       }
       setCanDownload(statusRes.canDownload);
       setDownloadStatus(statusRes.status);
+      if (settingsRes.data?.logo_url) setLogoUrl(settingsRes.data.logo_url);
       setLoading(false);
     }
     load();
@@ -248,7 +251,7 @@ export default function CVBuilder() {
 
       {/* Preview */}
       <div className="w-full lg:w-1/2 bg-slate-100 p-4 sm:p-6 rounded-3xl border border-slate-200 flex items-start justify-center overflow-x-auto">
-        <CVPreview cvData={cvData} profile={profile} componentRef={componentRef} />
+        <CVPreview cvData={cvData} profile={profile} componentRef={componentRef} logoUrl={logoUrl} />
       </div>
 
       {/* Payment Modal */}

@@ -12,15 +12,14 @@ export interface CVData {
   skills: string[]; languages: string[]; achievements: string[];
 }
 
-const LOGO_URL = "https://lwfmnngfmnnoydpcnuox.supabase.co/storage/v1/object/public/platform_assets/logo_url/0.7407454209415925.png";
-
 interface Props {
   cvData: CVData;
   profile: any;
   componentRef: React.RefObject<HTMLDivElement | null>;
+  logoUrl: string;
 }
 
-export default function CVPreview({ cvData, profile, componentRef }: Props) {
+export default function CVPreview({ cvData, profile, componentRef, logoUrl }: Props) {
   return (
     <div
       ref={componentRef}
@@ -155,7 +154,7 @@ export default function CVPreview({ cvData, profile, componentRef }: Props) {
       {/* Footer - Powered by HELLO STAFF */}
       <div className="absolute bottom-0 left-0 right-0 bg-[#0f4c3a] py-2 px-4 flex items-center justify-center gap-2 print:block">
         <span className="text-[9px] text-white/70">Powered by</span>
-        <img src={LOGO_URL} alt="Hello Staff" className="h-4 w-4 object-contain" />
+        {logoUrl && <img src={logoUrl} alt="Hello Staff" className="h-4 w-4 object-contain" />}
         <span className="text-[10px] text-white font-bold tracking-wide">HELLO STAFF</span>
       </div>
     </div>
