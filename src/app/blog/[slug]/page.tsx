@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, Calendar, User, Share2 } from "lucide-react";
 import { createClient } from "@/lib/supabase-server";
 import ShareButton from "@/components/blog/ShareButton";
-import DOMPurify from "isomorphic-dompurify";
+import SafeHTML from "@/components/blog/SafeHTML";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -72,7 +72,7 @@ export default async function ArticlePage({ params }: Props) {
 
       {/* Content */}
       <article className="prose prose-slate prose-base sm:prose-lg max-w-none text-slate-700 leading-relaxed sm:leading-loose">
-        <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.content) }} />
+        <SafeHTML html={article.content} />
       </article>
 
       {/* Share */}
