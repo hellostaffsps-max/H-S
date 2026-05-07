@@ -5,6 +5,7 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Printer, Save, Plus, Trash2, ArrowRight, Lock, CheckCircle2, Sparkles } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import CVPreview, { type CVData } from './CVPreview';
 import PaymentModal from './PaymentModal';
 import { saveCVData, checkCVDownloadStatus } from '@/app/actions/cv';
@@ -37,6 +38,9 @@ export default function CVBuilder() {
   const [newSkill, setNewSkill] = useState('');
   const [newAchievement, setNewAchievement] = useState('');
   const componentRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
+  const viewId = searchParams.get('view');
+  const [viewProfile, setViewProfile] = useState<any>(null);
 
   useEffect(() => {
     async function load() {
@@ -53,6 +57,20 @@ export default function CVBuilder() {
       setCanDownload(statusRes.canDownload);
       setDownloadStatus(statusRes.status);
       if (settingsRes.data?.logo_url) setLogoUrl(settingsRes.data.logo_url);
+
+      // If viewing another seeker's CV
+      if (viewId) {
+        const [viewSeeker, viewProf] = await Promise.all([
+          supabase.from('seekers').select('resume_data').eq('profile_id', viewId).single(),
+          supabase.from('profiles').select('full_name, avatar_url, phone, email, location').eq('id', viewId).single(),
+        ]);
+        if (viewSeeker.data?.resume_data && Object.keys(viewSeeker.data.resume_data).length > 0) {
+          const d = viewSeeker.data.resume_data as any;
+          setCvData({ ...defaultCVData, ...d, achievements: d.achievements || [] });
+        }
+        if (viewProf.data) setViewProfile(viewProf.data);
+      }
+
       setLoading(false);
     }
     load();
@@ -113,6 +131,21 @@ export default function CVBuilder() {
   };
 
   if (loading) return <div className="p-8 text-center">جاري التحميل...</div>;
+
+  // View-only mode for employers
+  if (viewId && viewProfile) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-xl font-bold text-slate-900">السيرة الذاتية - {viewProfile.full_name}</h1>
+          <button onClick={() => window.close()} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200">إغلاق</button>
+        </div>
+        <div className="flex justify-center">
+          <CVPreview cvData={cvData} profile={viewProfile} componentRef={componentRef} logoUrl={logoUrl} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-8">

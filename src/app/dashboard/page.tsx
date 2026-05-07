@@ -512,18 +512,33 @@ function ApplicantModal({
           )}
 
           {/* Resume */}
-          {seeker?.cv_url && (
+          {(seeker?.cv_url || (seeker?.resume_data && Object.keys(seeker.resume_data).length > 0)) && (
             <div>
               <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">السيرة الذاتية</h4>
-              <a
-                href={seeker.cv_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-slate-900 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-800 transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                تحميل السيرة الذاتية
-              </a>
+              <div className="flex flex-wrap gap-2">
+                {seeker?.resume_data && Object.keys(seeker.resume_data).length > 0 && (
+                  <a
+                    href={`/cv-builder?view=${seekerId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 bg-brand-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-brand-700 transition-colors"
+                  >
+                    <FileText className="w-4 h-4" />
+                    عرض السيرة الذاتية
+                  </a>
+                )}
+                {seeker?.cv_url && (
+                  <a
+                    href={seeker.cv_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 bg-slate-900 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-800 transition-colors"
+                  >
+                    <Download className="w-4 h-4" />
+                    تحميل ملف CV
+                  </a>
+                )}
+              </div>
             </div>
           )}
 
