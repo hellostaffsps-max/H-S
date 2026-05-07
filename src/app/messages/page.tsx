@@ -208,6 +208,7 @@ function MessagesPage() {
     const { data, error } = await supabase
       .from('messages')
       .insert({
+        sender_id: myId,
         receiver_id: selectedPartner,
         content: msgContent,
       })
