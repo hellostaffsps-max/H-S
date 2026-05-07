@@ -302,7 +302,7 @@ export default async function Home() {
       )}
 
       {/* ===== SOFT TRUST BAR ===== */}
-      <section className="max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
+      <section className={`max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 relative z-10 ${user ? 'mt-8' : '-mt-10'}`}>
         <div className="bg-white rounded-2xl border border-slate-100 shadow-lg shadow-slate-200/50 p-6 sm:p-8 text-center">
           <p className="text-sm sm:text-base text-slate-600 font-medium">
             نبدأ حالياً مع مجموعة مختارة من المقاهي والمطاعم في فلسطين
