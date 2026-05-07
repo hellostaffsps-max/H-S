@@ -85,18 +85,31 @@ export default function EmployerProfile({ profile, user, employerData, onEmploye
     try {
       const fd = new FormData(e.currentTarget);
 
+      // Verify auth session is active
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.");
+      }
+
       // 1. Update profiles table
       const profileUpdates: Record<string, any> = {};
       const profileFields = ["full_name", "phone", "location"];
       profileFields.forEach((f) => {
         const v = fd.get(f);
-        if (v !== null) profileUpdates[f] = v;
+        if (v !== null && v !== "") profileUpdates[f] = v;
       });
 
-      const profilePromise =
-        Object.keys(profileUpdates).length > 0 && user
-          ? supabase.from("profiles").update(profileUpdates).eq("id", user.id)
-          : Promise.resolve({ error: null });
+      if (Object.keys(profileUpdates).length > 0 && user) {
+        const { data: profileData, error: profileErr } = await supabase
+          .from("profiles")
+          .update(profileUpdates)
+          .eq("id", user.id)
+          .select();
+        if (profileErr) throw profileErr;
+        if (!profileData || profileData.length === 0) {
+          throw new Error("لم يتم تحديث بيانات الملف الشخصي — تأكد من صلاحياتك");
+        }
+      }
 
       // 2. Update employers table
       const employerUpdates: Record<string, any> = {};
@@ -120,7 +133,8 @@ export default function EmployerProfile({ profile, user, employerData, onEmploye
         const v = fd.get(f);
         if (v !== null) {
           if (f === "number_of_branches") {
-            employerUpdates[f] = parseInt(v as string) || 0;
+            const n = parseInt(v as string);
+            employerUpdates[f] = isNaN(n) ? 0 : n;
           } else if (f === "show_whatsapp_to_candidates") {
             employerUpdates[f] = v === "true";
           } else {
@@ -129,14 +143,16 @@ export default function EmployerProfile({ profile, user, employerData, onEmploye
         }
       });
 
-      const employerPromise = user
-        ? supabase.from("employers").upsert({ profile_id: user.id, ...employerUpdates })
-        : Promise.resolve({ error: null });
-
-      const [profileRes, employerRes] = await Promise.all([profilePromise, employerPromise]);
-
-      if (profileRes.error) throw profileRes.error;
-      if (employerRes.error) throw employerRes.error;
+      if (user) {
+        const { data: empData, error: empErr } = await supabase
+          .from("employers")
+          .upsert({ profile_id: user.id, ...employerUpdates })
+          .select();
+        if (empErr) throw empErr;
+        if (!empData || empData.length === 0) {
+          throw new Error("لم يتم حفظ بيانات المنشأة — تأكد من صلاحياتك");
+        }
+      }
 
       setSuccess(true);
       setTimeout(() => setSuccess(false), 4000);
