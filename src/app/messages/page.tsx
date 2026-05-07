@@ -210,6 +210,7 @@ function MessagesPage() {
       .insert({
         sender_id: myId,
         receiver_id: selectedPartner,
+        title: '',
         content: msgContent,
       })
       .select()
