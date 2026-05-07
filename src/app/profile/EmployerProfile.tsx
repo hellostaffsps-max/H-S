@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   CheckCircle2,
   Save,
@@ -15,11 +15,8 @@ import {
   Mail,
   Smartphone,
   Store,
-  Globe,
-  Upload,
 } from "lucide-react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
-import { updateProfile, updateEmployerProfile } from "@/app/actions/profile";
 import Link from "next/link";
 import ImageUpload from "@/components/ImageUpload";
 import { cn } from "@/lib/utils";
@@ -63,18 +60,19 @@ export default function EmployerProfile({ profile, user, employerData, onEmploye
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const topRef = useRef<HTMLDivElement>(null);
 
   const handleLogoUpload = async (url: string) => {
     setLogoUrl(url);
     if (isSupabaseConfigured && user) {
-      await supabase.from("employers").update({ logo_url: url }).eq("profile_id", user.id);
+      await supabase.from("employers").upsert({ profile_id: user.id, logo_url: url });
     }
   };
 
   const handleCoverUpload = async (url: string) => {
     setCoverUrl(url);
     if (isSupabaseConfigured && user) {
-      await supabase.from("employers").update({ cover_image_url: url }).eq("profile_id", user.id);
+      await supabase.from("employers").upsert({ profile_id: user.id, cover_image_url: url });
     }
   };
 
@@ -85,30 +83,79 @@ export default function EmployerProfile({ profile, user, employerData, onEmploye
     setError(null);
 
     try {
-      const formData = new FormData(e.currentTarget);
+      const fd = new FormData(e.currentTarget);
 
-      const [profileResult, employerResult] = await Promise.all([
-        updateProfile(formData),
-        updateEmployerProfile(formData),
-      ]);
+      // 1. Update profiles table
+      const profileUpdates: Record<string, any> = {};
+      const profileFields = ["full_name", "phone", "location"];
+      profileFields.forEach((f) => {
+        const v = fd.get(f);
+        if (v !== null) profileUpdates[f] = v;
+      });
 
-      if (profileResult.success || employerResult.success) {
-        setSuccess(true);
-        setTimeout(() => setSuccess(false), 3000);
-        if (user) {
-          const { data } = await supabase
-            .from("employers")
-            .select("*")
-            .eq("profile_id", user.id)
-            .single();
-          onEmployerDataUpdate(data);
+      const profilePromise =
+        Object.keys(profileUpdates).length > 0 && user
+          ? supabase.from("profiles").update(profileUpdates).eq("id", user.id)
+          : Promise.resolve({ error: null });
+
+      // 2. Update employers table
+      const employerUpdates: Record<string, any> = {};
+      const employerFields = [
+        "company_name",
+        "description",
+        "logo_url",
+        "business_type",
+        "city",
+        "area",
+        "whatsapp_number",
+        "business_email",
+        "number_of_branches",
+        "number_of_employees",
+        "opening_hours",
+        "cover_image_url",
+        "application_preference",
+        "show_whatsapp_to_candidates",
+      ];
+      employerFields.forEach((f) => {
+        const v = fd.get(f);
+        if (v !== null) {
+          if (f === "number_of_branches") {
+            employerUpdates[f] = parseInt(v as string) || 0;
+          } else if (f === "show_whatsapp_to_candidates") {
+            employerUpdates[f] = v === "true";
+          } else {
+            employerUpdates[f] = v;
+          }
         }
-      } else {
-        setError(profileResult.error || employerResult.error || "حدث خطأ");
+      });
+
+      const employerPromise = user
+        ? supabase.from("employers").upsert({ profile_id: user.id, ...employerUpdates })
+        : Promise.resolve({ error: null });
+
+      const [profileRes, employerRes] = await Promise.all([profilePromise, employerPromise]);
+
+      if (profileRes.error) throw profileRes.error;
+      if (employerRes.error) throw employerRes.error;
+
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 4000);
+
+      // Scroll to top
+      topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+      // Refresh employer data
+      if (user) {
+        const { data } = await supabase
+          .from("employers")
+          .select("*")
+          .eq("profile_id", user.id)
+          .single();
+        if (data) onEmployerDataUpdate(data);
       }
     } catch (err: any) {
       console.error("Submit error:", err);
-      setError(err?.message || "حدث خطأ غير متوقع. جرّب مرة أخرى.");
+      setError(err?.message || err?.error_description || "حدث خطأ غير متوقع. جرّب مرة أخرى.");
     }
 
     setLoading(false);
@@ -118,7 +165,7 @@ export default function EmployerProfile({ profile, user, employerData, onEmploye
   const isPending = employerData?.verification_status === "pending";
 
   return (
-    <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+    <div ref={topRef} className="max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
       {/* Top Profile Card */}
       <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden mb-8 shadow-sm">
         {/* Cover Image */}
@@ -218,12 +265,6 @@ export default function EmployerProfile({ profile, user, employerData, onEmploye
 
       {/* Content Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Hidden inputs for updateProfile */}
-        <input type="hidden" name="full_name" value={employerData?.company_name || profile?.full_name || ""} />
-        <input type="hidden" name="location" value={employerData?.city || profile?.location || ""} />
-        {/* Hidden inputs for logo/cover URLs so they save with the form */}
-        <input type="hidden" name="logo_url" value={logoUrl || ""} />
-        <input type="hidden" name="cover_image_url" value={coverUrl || ""} />
         {/* Images Section */}
         <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
           <h2 className="text-lg font-black text-slate-900 mb-6">صور المنشأة</h2>
