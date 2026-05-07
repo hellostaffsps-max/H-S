@@ -369,62 +369,66 @@ export default async function Home() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 sm:gap-8">
+        <div className={`grid gap-6 sm:gap-8 ${(isEmployer || isSeeker) ? 'md:grid-cols-1 max-w-2xl mx-auto' : 'md:grid-cols-2'}`}>
           {/* Employer side */}
-          <div className="bg-white border border-slate-100 rounded-3xl p-6 sm:p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center">
-                <Building2 className="w-5 h-5 text-brand-600" />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900">لأصحاب العمل</h3>
-            </div>
-            <div className="space-y-5">
-              {employerSteps.map((step, i) => (
-                <div key={i} className="flex gap-4">
-                  <div className="flex flex-col items-center">
-                    <div className="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
-                      {i + 1}
-                    </div>
-                    {i < employerSteps.length - 1 && (
-                      <div className="w-px h-full bg-brand-100 mt-1" />
-                    )}
-                  </div>
-                  <div className="pb-4">
-                    <h4 className="text-sm font-bold text-slate-900 mb-0.5">{step.title}</h4>
-                    <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">{step.desc}</p>
-                  </div>
+          {!isSeeker && (
+            <div className="bg-white border border-slate-100 rounded-3xl p-6 sm:p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center">
+                  <Building2 className="w-5 h-5 text-brand-600" />
                 </div>
-              ))}
+                <h3 className="text-lg font-bold text-slate-900">لأصحاب العمل</h3>
+              </div>
+              <div className="space-y-5">
+                {employerSteps.map((step, i) => (
+                  <div key={i} className="flex gap-4">
+                    <div className="flex flex-col items-center">
+                      <div className="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                        {i + 1}
+                      </div>
+                      {i < employerSteps.length - 1 && (
+                        <div className="w-px h-full bg-brand-100 mt-1" />
+                      )}
+                    </div>
+                    <div className="pb-4">
+                      <h4 className="text-sm font-bold text-slate-900 mb-0.5">{step.title}</h4>
+                      <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">{step.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Candidate side */}
-          <div className="bg-white border border-slate-100 rounded-3xl p-6 sm:p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center">
-                <Briefcase className="w-5 h-5 text-sky-600" />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900">للباحثين عن عمل</h3>
-            </div>
-            <div className="space-y-5">
-              {candidateSteps.map((step, i) => (
-                <div key={i} className="flex gap-4">
-                  <div className="flex flex-col items-center">
-                    <div className="w-8 h-8 rounded-full bg-sky-500 text-white flex items-center justify-center text-xs font-bold shrink-0">
-                      {i + 1}
-                    </div>
-                    {i < candidateSteps.length - 1 && (
-                      <div className="w-px h-full bg-sky-100 mt-1" />
-                    )}
-                  </div>
-                  <div className="pb-4">
-                    <h4 className="text-sm font-bold text-slate-900 mb-0.5">{step.title}</h4>
-                    <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">{step.desc}</p>
-                  </div>
+          {!isEmployer && (
+            <div className="bg-white border border-slate-100 rounded-3xl p-6 sm:p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center">
+                  <Briefcase className="w-5 h-5 text-sky-600" />
                 </div>
-              ))}
+                <h3 className="text-lg font-bold text-slate-900">للباحثين عن عمل</h3>
+              </div>
+              <div className="space-y-5">
+                {candidateSteps.map((step, i) => (
+                  <div key={i} className="flex gap-4">
+                    <div className="flex flex-col items-center">
+                      <div className="w-8 h-8 rounded-full bg-sky-500 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                        {i + 1}
+                      </div>
+                      {i < candidateSteps.length - 1 && (
+                        <div className="w-px h-full bg-sky-100 mt-1" />
+                      )}
+                    </div>
+                    <div className="pb-4">
+                      <h4 className="text-sm font-bold text-slate-900 mb-0.5">{step.title}</h4>
+                      <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">{step.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </section>
 
