@@ -85,7 +85,7 @@ export default async function Home() {
     : Promise.resolve({ data: null });
 
   // Only count and fetch HOSPITALITY jobs
-  const [{ count: jobsCount }, { data: recentJobs }, { data: recentArticles }, { data: profileData }] = await Promise.all([
+  const [{ count: jobsCount }, { data: recentJobs }, { data: recentArticles }, { data: profileData }, { count: employersCount }] = await Promise.all([
     supabase
       .from("jobs")
       .select("*", { count: "exact", head: true })
@@ -105,6 +105,9 @@ export default async function Home() {
       .order("created_at", { ascending: false })
       .limit(3),
     profilePromise,
+    supabase
+      .from("employers")
+      .select("*", { count: "exact", head: true }),
   ]);
 
   const userRole = profileData?.role;
@@ -307,7 +310,12 @@ export default async function Home() {
           <p className="text-xs text-slate-400 mt-2">
             انضم إلينا وكن من أوائل المستفيدين من المنصة
           </p>
-          {jobsCount && jobsCount > 0 ? (
+          {isEmployer && employersCount && employersCount > 0 ? (
+            <div className="mt-4 inline-flex items-center gap-2 bg-brand-50 text-brand-700 px-4 py-2 rounded-xl text-sm font-bold">
+              <Building2 className="h-4 w-4" />
+              {employersCount} منشأة مسجلة في المنصة
+            </div>
+          ) : !isEmployer && jobsCount && jobsCount > 0 ? (
             <div className="mt-4 inline-flex items-center gap-2 bg-brand-50 text-brand-700 px-4 py-2 rounded-xl text-sm font-bold">
               <Briefcase className="h-4 w-4" />
               {jobsCount} وظيفة متاحة حالياً
