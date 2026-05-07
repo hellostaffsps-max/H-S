@@ -59,21 +59,31 @@ export default function Dashboard() {
   const isEmployer = profile?.role === "employer";
 
   useEffect(() => {
-    if (user) {
+    if (user && profile) {
       fetchData();
     }
-  }, [user]);
+  }, [user, profile]);
 
   async function fetchData() {
     setLoading(true);
+    setError(null);
     try {
-      if (isEmployer) {
+      if (profile?.role === "employer") {
         const [jobsResult, appsResult] = await Promise.all([
           getEmployerJobs(),
           getApplications(),
         ]);
-        if (jobsResult.success) setJobs(jobsResult.data);
-        if (appsResult.success) setApplications(appsResult.data);
+        if (jobsResult.success) {
+          setJobs(jobsResult.data);
+        } else {
+          console.error("getEmployerJobs failed:", jobsResult.error);
+          setError(jobsResult.error || "فشل تحميل الوظائف");
+        }
+        if (appsResult.success) {
+          setApplications(appsResult.data);
+        } else {
+          console.error("getApplications failed:", appsResult.error);
+        }
       } else {
         const [appsResult, seekerRes] = await Promise.all([
           getMyApplications(),
@@ -148,6 +158,14 @@ export default function Dashboard() {
           </Link>
         )}
       </div>
+
+      {/* Error Banner */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-6 flex items-center gap-3">
+          <AlertCircle className="h-5 w-5 text-red-500 shrink-0" />
+          <p className="text-sm font-bold text-red-700">{error}</p>
+        </div>
+      )}
 
       {/* Loading */}
       {loading ? (
