@@ -551,10 +551,10 @@ function EmployerDashboard({
                       <td className="px-4 py-3 sm:px-6 sm:py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 text-xs font-bold shrink-0">
-                            {app.profiles?.full_name?.charAt(0) || "م"}
+                            {app.seekers?.profiles?.full_name?.charAt(0) || "م"}
                           </div>
                           <div>
-                            <p className="font-bold text-slate-900 text-sm">{app.profiles?.full_name || "مستخدم"}</p>
+                            <p className="font-bold text-slate-900 text-sm">{app.seekers?.profiles?.full_name || "مستخدم"}</p>
                             <p className="text-[11px] text-slate-500">{app.seekers?.job_title || "—"}</p>
                           </div>
                         </div>
@@ -565,7 +565,7 @@ function EmployerDashboard({
                       <td className="px-4 py-3 sm:px-6 sm:py-4 text-xs text-slate-500">
                         <span className="inline-flex items-center gap-1">
                           <MapPin className="w-3 h-3" />
-                          {app.profiles?.location || "—"}
+                          {app.seekers?.profiles?.location || "—"}
                         </span>
                       </td>
                       <td className="px-4 py-3 sm:px-6 sm:py-4 text-xs text-slate-500">
