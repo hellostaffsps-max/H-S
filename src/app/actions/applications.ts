@@ -65,7 +65,7 @@ export async function getApplications(jobId?: string) {
 
   let query = supabase
     .from('applications')
-    .select('*, jobs(title, company_name), profiles(full_name, avatar_url)')
+    .select('*, jobs(title, company_name), profiles(full_name, avatar_url, location), seekers(experience_years, job_title)')
     .order('created_at', { ascending: false });
 
   if (jobId) {

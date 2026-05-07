@@ -10,6 +10,9 @@ import Link from "next/link";
 export default function LayoutBody({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdminPage = pathname?.startsWith('/admin');
+  const isDashboardPage = pathname?.startsWith('/dashboard');
+  const hideFooter = isAdminPage || isDashboardPage;
+  const hideNavbar = isAdminPage;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -20,11 +23,11 @@ export default function LayoutBody({ children }: { children: React.ReactNode }) 
         </div>
       )}
       <NotificationsProvider>
-        {!isAdminPage && <Navbar />}
-        <main className="flex-grow w-full overflow-x-hidden">
+        {!hideNavbar && <Navbar />}
+        <main className={`flex-grow w-full overflow-x-hidden ${isDashboardPage ? 'bg-slate-50' : ''}`}>
           {children}
         </main>
-        {!isAdminPage && <Footer />}
+        {!hideFooter && <Footer />}
       </NotificationsProvider>
     </div>
   );
