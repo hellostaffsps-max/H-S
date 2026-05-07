@@ -759,6 +759,62 @@ create trigger on_platform_settings_updated
   for each row execute procedure public.update_updated_at_column();
 
 -- ==========================================
+-- STORAGE POLICIES for new buckets
+-- Run this in Supabase SQL Editor if you want dedicated buckets
+-- (Currently using 'avatars' bucket with subfolders as workaround)
+-- ==========================================
+
+-- Policies for company-logos bucket
+-- drop policy if exists "Anyone can view company logos" on storage.objects;
+-- create policy "Anyone can view company logos"
+--   on storage.objects for select
+--   to anon, authenticated
+--   using (bucket_id = 'company-logos');
+
+-- drop policy if exists "Authenticated users can upload company logos" on storage.objects;
+-- create policy "Authenticated users can upload company logos"
+--   on storage.objects for insert
+--   to authenticated
+--   with check (bucket_id = 'company-logos');
+
+-- drop policy if exists "Users can update own company logos" on storage.objects;
+-- create policy "Users can update own company logos"
+--   on storage.objects for update
+--   to authenticated
+--   using (bucket_id = 'company-logos' and auth.uid()::text = (storage.foldername(name))[1]);
+
+-- drop policy if exists "Users can delete own company logos" on storage.objects;
+-- create policy "Users can delete own company logos"
+--   on storage.objects for delete
+--   to authenticated
+--   using (bucket_id = 'company-logos' and auth.uid()::text = (storage.foldername(name))[1]);
+
+-- Policies for company-covers bucket
+-- drop policy if exists "Anyone can view company covers" on storage.objects;
+-- create policy "Anyone can view company covers"
+--   on storage.objects for select
+--   to anon, authenticated
+--   using (bucket_id = 'company-covers');
+
+-- drop policy if exists "Authenticated users can upload company covers" on storage.objects;
+-- create policy "Authenticated users can upload company covers"
+--   on storage.objects for insert
+--   to authenticated
+--   with check (bucket_id = 'company-covers');
+
+-- drop policy if exists "Users can update own company covers" on storage.objects;
+-- create policy "Users can update own company covers"
+--   on storage.objects for update
+--   to authenticated
+--   using (bucket_id = 'company-covers' and auth.uid()::text = (storage.foldername(name))[1]);
+
+-- drop policy if exists "Users can delete own company covers" on storage.objects;
+-- create policy "Users can delete own company covers"
+--   on storage.objects for delete
+--   to authenticated
+--   using (bucket_id = 'company-covers' and auth.uid()::text = (storage.foldername(name))[1]);
+
+-- ==========================================
 -- EMPLOYER PROFILE EXPANSION — Applied 2026-05-07
 -- ==========================================
 
