@@ -68,6 +68,8 @@ export async function getApplications(jobId?: string) {
     .select('*, jobs(title, company_name), seekers(experience_years, job_title, bio, skills, cv_url, profiles(full_name, avatar_url, location, phone, email))')
     .order('created_at', { ascending: false });
 
+  // Note: interview_date, interview_location, interview_notes are included via *
+
   if (jobId) {
     query = query.eq('job_id', jobId);
   } else {
@@ -82,6 +84,25 @@ export async function getApplications(jobId?: string) {
   }
 
   return { success: true, data: data || [] };
+}
+
+async function createNotification(
+  supabase: any,
+  userId: string,
+  title: string,
+  message: string,
+  type: string = 'application'
+) {
+  try {
+    await supabase.from('notifications').insert({
+      user_id: userId,
+      title,
+      message,
+      type,
+    });
+  } catch (e) {
+    console.error('Failed to create notification:', e);
+  }
 }
 
 export async function getMyApplications() {
@@ -105,7 +126,13 @@ export async function getMyApplications() {
   return { success: true, data: data || [] };
 }
 
-export async function updateApplicationStatus(applicationId: string, status: string) {
+export async function updateApplicationStatus(
+  applicationId: string,
+  status: string,
+  interviewDate?: string | null,
+  interviewLocation?: string | null,
+  interviewNotes?: string | null
+) {
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -116,7 +143,7 @@ export async function updateApplicationStatus(applicationId: string, status: str
   // Verify the user is the employer of the job associated with this application
   const { data: application } = await supabase
     .from('applications')
-    .select('job_id')
+    .select('job_id, seeker_id, status')
     .eq('id', applicationId)
     .single();
 
@@ -126,7 +153,7 @@ export async function updateApplicationStatus(applicationId: string, status: str
 
   const { data: job } = await supabase
     .from('jobs')
-    .select('employer_id')
+    .select('employer_id, title')
     .eq('id', application.job_id)
     .single();
 
@@ -134,14 +161,36 @@ export async function updateApplicationStatus(applicationId: string, status: str
     return { success: false, error: 'Forbidden: You can only update applications to your own jobs' };
   }
 
+  const updateData: any = { status };
+  if (interviewDate !== undefined) updateData.interview_date = interviewDate;
+  if (interviewLocation !== undefined) updateData.interview_location = interviewLocation;
+  if (interviewNotes !== undefined) updateData.interview_notes = interviewNotes;
+
   const { error } = await supabase
     .from('applications')
-    .update({ status })
+    .update(updateData)
     .eq('id', applicationId);
 
   if (error) {
     return { success: false, error: error.message };
   }
+
+  // Send notification to seeker
+  let notifTitle = 'تحديث على طلب التقديم';
+  let notifMessage = `تم تحديث حالة طلبك على وظيفة "${job.title}" إلى: ${status}`;
+
+  if (status === 'مقبول') {
+    notifTitle = 'تهانينا! تم قبول طلبك';
+    notifMessage = `تم قبول طلبك على وظيفة "${job.title}". سنتواصل معك قريباً.`;
+  } else if (status === 'مرفوض') {
+    notifTitle = 'تحديث على طلب التقديم';
+    notifMessage = `لم يتم قبول طلبك على وظيفة "${job.title}" هذه المرة. نتمنى لك التوفيق.`;
+  } else if (status === 'مقابلة') {
+    notifTitle = 'تمت دعوتك لمقابلة عمل';
+    notifMessage = `تمت دعوتك لمقابلة عمل على وظيفة "${job.title}". يرجى مراجعة التفاصيل.`;
+  }
+
+  await createNotification(supabase, application.seeker_id, notifTitle, notifMessage, 'application');
 
   revalidatePath('/dashboard');
   return { success: true };

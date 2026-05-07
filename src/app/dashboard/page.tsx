@@ -84,6 +84,7 @@ export default function Dashboard() {
   const [seekerProfile, setSeekerProfile] = useState<any>(null);
   const [recommendedJobs, setRecommendedJobs] = useState<any[]>([]);
   const [selectedApplicant, setSelectedApplicant] = useState<any>(null);
+  const [interviewModalApp, setInterviewModalApp] = useState<any>(null);
 
   const isEmployer = profile?.role === "employer";
   const isAdmin = profile?.role === "admin";
@@ -160,11 +161,27 @@ export default function Dashboard() {
     }
   }
 
-  async function handleApplicationStatusChange(appId: string, newStatus: string) {
-    const result = await updateApplicationStatus(appId, newStatus);
+  async function handleApplicationStatusChange(
+    appId: string,
+    newStatus: string,
+    interviewDate?: string | null,
+    interviewLocation?: string | null,
+    interviewNotes?: string | null
+  ) {
+    const result = await updateApplicationStatus(appId, newStatus, interviewDate, interviewLocation, interviewNotes);
     if (result.success) {
       setApplications((prev) =>
-        prev.map((a) => (a.id === appId ? { ...a, status: newStatus } : a))
+        prev.map((a) =>
+          a.id === appId
+            ? {
+                ...a,
+                status: newStatus,
+                interview_date: interviewDate || a.interview_date,
+                interview_location: interviewLocation || a.interview_location,
+                interview_notes: interviewNotes || a.interview_notes,
+              }
+            : a
+        )
       );
       setSuccess(`تم تحديث حالة المتقدم إلى: ${getAppStatusLabel(newStatus)}`);
       setTimeout(() => setSuccess(null), 3000);
@@ -240,6 +257,7 @@ export default function Dashboard() {
               jobsRef={jobsRef}
               applicantsRef={applicantsRef}
               onSelectApplicant={setSelectedApplicant}
+              onOpenInterviewModal={setInterviewModalApp}
             />
           ) : (
             <SeekerDashboard
@@ -258,8 +276,122 @@ export default function Dashboard() {
           applicant={selectedApplicant}
           onClose={() => setSelectedApplicant(null)}
           onStatusChange={handleApplicationStatusChange}
+          onOpenInterview={() => {
+            setSelectedApplicant(null);
+            setInterviewModalApp(selectedApplicant);
+          }}
         />
       )}
+
+      {/* Interview Schedule Modal */}
+      {interviewModalApp && (
+        <InterviewModal
+          applicant={interviewModalApp}
+          onClose={() => setInterviewModalApp(null)}
+          onSchedule={(date, location, notes) => {
+            handleApplicationStatusChange(interviewModalApp.id, "مقابلة", date, location, notes);
+            setInterviewModalApp(null);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function InterviewModal({
+  applicant,
+  onClose,
+  onSchedule,
+}: {
+  applicant: any;
+  onClose: () => void;
+  onSchedule: (date: string, location: string, notes: string) => void;
+}) {
+  const seeker = applicant.seekers;
+  const profile = seeker?.profiles;
+  const fullName = profile?.full_name || "مستخدم";
+
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+  const [location, setLocation] = useState("");
+  const [notes, setNotes] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!date || !time) return;
+    const isoDate = new Date(`${date}T${time}`).toISOString();
+    onSchedule(isoDate, location, notes);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl sm:rounded-3xl shadow-xl w-full max-w-md">
+        <div className="sticky top-0 bg-white border-b border-slate-100 p-5 sm:p-6 flex items-center justify-between z-10">
+          <h2 className="text-lg font-black text-slate-900">جدولة مقابلة</h2>
+          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4">
+          <p className="text-sm text-slate-500 mb-2">
+            متقدم: <span className="font-bold text-slate-900">{fullName}</span> — وظيفة: <span className="font-bold text-slate-900">{applicant.jobs?.title}</span>
+          </p>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-slate-500 mb-1">التاريخ</label>
+              <input
+                type="date"
+                required
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 mb-1">الوقت</label>
+              <input
+                type="time"
+                required
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-500 mb-1">عنوان المقابلة</label>
+            <input
+              type="text"
+              placeholder="مثال: فرع رام الله - شارع الرشيد"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-500 mb-1">ملاحظات</label>
+            <textarea
+              placeholder="تعليمات أو ملاحظات إضافية..."
+              rows={3}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-3 bg-brand-600 text-white rounded-xl text-sm font-bold hover:bg-brand-700 transition-colors shadow-lg shadow-brand-200"
+          >
+            تأكيد جدولة المقابلة
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
@@ -268,10 +400,12 @@ function ApplicantModal({
   applicant,
   onClose,
   onStatusChange,
+  onOpenInterview,
 }: {
   applicant: any;
   onClose: () => void;
   onStatusChange: (id: string, status: string) => void;
+  onOpenInterview: () => void;
 }) {
   const seeker = applicant.seekers;
   const profile = seeker?.profiles;
@@ -418,7 +552,7 @@ function ApplicantModal({
               <span className="text-xs font-bold">رفض</span>
             </button>
             <button
-              onClick={() => handleStatus("مقابلة")}
+              onClick={onOpenInterview}
               className="flex flex-col items-center gap-1 p-3 rounded-xl bg-purple-50 text-purple-700 hover:bg-purple-100 transition-colors"
             >
               <Calendar className="w-5 h-5" />
@@ -468,6 +602,7 @@ function EmployerDashboard({
   jobsRef,
   applicantsRef,
   onSelectApplicant,
+  onOpenInterviewModal,
 }: {
   jobs: any[];
   applications: any[];
@@ -477,6 +612,7 @@ function EmployerDashboard({
   jobsRef: React.RefObject<HTMLDivElement | null>;
   applicantsRef: React.RefObject<HTMLDivElement | null>;
   onSelectApplicant: (applicant: any) => void;
+  onOpenInterviewModal: (applicant: any) => void;
 }) {
   const businessName = employerData?.company_name || "صاحب العمل";
 
@@ -807,7 +943,7 @@ function EmployerDashboard({
                             <XCircle className="w-3.5 h-3.5" />
                           </button>
                           <button
-                            onClick={() => onApplicationStatusChange(app.id, "مقابلة")}
+                            onClick={() => onOpenInterviewModal(app)}
                             className="inline-flex items-center gap-1 text-xs font-bold text-purple-600 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition-colors"
                             title="جدولة مقابلة"
                           >

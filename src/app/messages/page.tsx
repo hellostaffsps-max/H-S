@@ -60,6 +60,7 @@ function MessagesPage() {
   const [selectedPartner, setSelectedPartner] = useState<string | null>(
     initialPartner
   );
+  const [partnerInfo, setPartnerInfo] = useState<any>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loadingConversations, setLoadingConversations] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
@@ -78,8 +79,36 @@ function MessagesPage() {
     if (selectedPartner) {
       loadMessages(selectedPartner);
       setMobileOpen(true);
+      // If partner is not in conversations list, fetch their info
+      const existing = conversations.find((c) => c.partnerId === selectedPartner);
+      if (!existing) {
+        fetchPartnerInfo(selectedPartner);
+      }
     }
-  }, [selectedPartner]);
+  }, [selectedPartner, conversations]);
+
+  async function fetchPartnerInfo(partnerId: string) {
+    try {
+      const res = await fetch("/api/auth/user");
+      const currentUser = await res.json();
+      // Fetch partner profile from Supabase
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name, avatar_url, role")
+        .eq("id", partnerId)
+        .single();
+      if (data) {
+        setPartnerInfo({
+          partnerId,
+          partnerName: data.full_name || "مستخدم",
+          partnerAvatar: data.avatar_url || null,
+          partnerRole: data.role || null,
+        });
+      }
+    } catch {
+      setPartnerInfo(null);
+    }
+  }
 
   useEffect(() => {
     scrollToBottom();
@@ -194,9 +223,8 @@ function MessagesPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }
 
-  const selectedConversation = conversations.find(
-    (c) => c.partnerId === selectedPartner
-  );
+  const selectedConversation =
+    conversations.find((c) => c.partnerId === selectedPartner) || partnerInfo;
 
   return (
     <div className="max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
