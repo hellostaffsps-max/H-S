@@ -58,6 +58,37 @@ const fallbackPlans = [
   },
 ];
 
+function PricingSkeleton() {
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-10 sm:py-16 sm:px-6 lg:px-8">
+      {/* Header skeleton */}
+      <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-16">
+        <div className="h-10 sm:h-12 lg:h-14 bg-slate-100 rounded-lg w-3/4 mx-auto mb-4 animate-pulse"></div>
+        <div className="h-5 sm:h-6 bg-slate-100 rounded w-2/3 mx-auto animate-pulse"></div>
+      </div>
+
+      {/* Plans skeleton */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8 max-w-5xl mx-auto">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="bg-white rounded-2xl sm:rounded-[2rem] p-5 sm:p-8 border border-slate-100 shadow-sm flex flex-col">
+            <div className="h-6 bg-slate-100 rounded w-32 mb-2 animate-pulse"></div>
+            <div className="h-10 bg-slate-100 rounded w-24 mb-6 animate-pulse"></div>
+            <div className="space-y-4 mb-8 flex-grow">
+              {[1, 2, 3, 4, 5].map((j) => (
+                <div key={j} className="flex items-start gap-3">
+                  <div className="h-5 w-5 bg-slate-100 rounded-full shrink-0 mt-0.5 animate-pulse"></div>
+                  <div className="h-4 bg-slate-100 rounded w-full animate-pulse"></div>
+                </div>
+              ))}
+            </div>
+            <div className="h-12 bg-slate-100 rounded-xl animate-pulse"></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function PricingPage() {
   const { profile } = useAuth();
   const router = useRouter();
@@ -169,11 +200,7 @@ export default function PricingPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <Loader2 className="h-10 w-10 animate-spin text-brand-600" />
-      </div>
-    );
+    return <PricingSkeleton />;
   }
 
   if (success) {
