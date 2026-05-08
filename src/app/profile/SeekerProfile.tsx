@@ -80,9 +80,14 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
             </div>
           </div>
 
-          <div className="w-full sm:w-auto bg-emerald-50 border border-emerald-200 text-emerald-700 px-3 py-1.5 rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 mt-16 sm:mt-0">
+          <div className={`w-full sm:w-auto ${seekerData?.is_available !== false ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-amber-50 border-amber-200 text-amber-700'} border px-3 py-1.5 rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 mt-16 sm:mt-0`}>
             <CheckCircle2 className="w-4 h-4" />
-            {seekerData?.is_available !== false ? "متاح للعمل" : "غير متاح حالياً"}
+            {seekerData?.is_available !== false
+              ? "متاح للعمل"
+              : seekerData?.current_employer
+                ? `يعمل حالياً في ${seekerData.current_employer}`
+                : "غير متاح حالياً"
+            }
           </div>
         </div>
 

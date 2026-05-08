@@ -11,6 +11,7 @@ interface SeekerProfile {
   experience_years: number;
   skills: string[];
   is_available: boolean;
+  current_employer: string | null;
   profiles: {
     full_name: string;
     avatar_url: string | null;
@@ -41,6 +42,7 @@ export default function SearchResumes() {
         experience_years,
         skills,
         is_available,
+        current_employer,
         profiles(full_name, avatar_url, location, phone)
       `)
       .eq("is_available", true)
