@@ -89,7 +89,8 @@ export default function AdminMessages() {
     setSuccessMsg('');
 
     try {
-      const { error } = await supabase
+      // 1. Insert into messages table to keep record for admin history
+      const { error: msgError } = await supabase
         .from('messages')
         .insert({
           sender_id: profile.id,
@@ -98,7 +99,27 @@ export default function AdminMessages() {
           content,
         });
 
-      if (error) throw error;
+      if (msgError) throw msgError;
+
+      // 2. Actually notify the users so it appears in their bell icon
+      if (isBroadcast) {
+        const { error: rpcError } = await supabase.rpc('broadcast_notification', {
+          p_title: title,
+          p_message: content,
+        });
+        if (rpcError) throw rpcError;
+      } else {
+        const { error: notifError } = await supabase
+          .from('notifications')
+          .insert({
+            user_id: selectedUser,
+            title,
+            message: content,
+            type: 'system',
+            link: '/messages'
+          });
+        if (notifError) throw notifError;
+      }
 
       setSuccessMsg('تم إرسال الرسالة بنجاح!');
       setTitle('');
@@ -253,7 +274,7 @@ export default function AdminMessages() {
                 {messages.map((msg) => (
                   <div key={msg.id} className="p-4 border border-slate-100 rounded-2xl hover:bg-slate-50 transition-colors">
                     <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-bold text-slate-900">{msg.title}</h4>
+                      <h4 className="font-bold text-slate-900">{msg.title || 'رسالة نظام'}</h4>
                       <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap mr-4">
                         {new Date(msg.created_at).toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'short' })}
                       </span>
