@@ -36,12 +36,13 @@ export async function submitContactForm(formData: FormData) {
   }
 
   const { error } = await supabase
-    .from('messages')
+    .from('support_tickets')
     .insert({
-      sender_id: null,
-      receiver_id: null,
-      title: `تواصل: ${subject} - من ${name} (${email})`,
-      content: message,
+      name,
+      email,
+      subject,
+      message,
+      status: 'open',
     });
 
   if (error) {
