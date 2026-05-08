@@ -170,20 +170,27 @@ export default function HelpPage() {
         <p className="text-slate-500 mb-8">فريق الدعم جاهز لمساعدتك في أي وقت</p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <a
-            href="mailto:support@hellostaff.ps"
+            href="mailto:support@staffps.com"
             className="flex items-center gap-2 bg-brand-600 text-white px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl font-bold hover:bg-brand-700 transition-colors shadow-lg shadow-brand-200"
           >
             <Mail className="h-5 w-5" />
-            support@hellostaff.ps
+            support@staffps.com
           </a>
           <a
-            href="https://wa.me/970599000000"
+            href="https://wa.me/970569069686"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 bg-green-50 text-green-700 border border-green-200 px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl font-bold hover:bg-green-100 transition-colors"
           >
             <Phone className="h-5 w-5" />
             تواصل عبر واتساب
+          </a>
+          <a
+            href="tel:+970569069686"
+            className="flex items-center gap-2 bg-slate-50 text-slate-700 border border-slate-200 px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl font-bold hover:bg-slate-100 transition-colors"
+          >
+            <Phone className="h-5 w-5" />
+            +970 56 906 9686
           </a>
         </div>
       </section>
