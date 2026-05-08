@@ -159,7 +159,7 @@ export default function Contact() {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">البريد الإلكتروني</label>
-                  <input name="email" type="email" required defaultValue={profile?.email || ""} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm text-left" dir="ltr" placeholder="you@example.com" />
+                  <input name="email" type="email" required defaultValue={user?.email || ""} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm text-left" dir="ltr" placeholder="you@example.com" />
                 </div>
               </div>
               <div>
