@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { Search, MapPin, Briefcase, Star, Filter, Loader2, MessageCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { getSearchFilters } from "@/app/actions/search-filters";
 import Link from "next/link";
 
 interface SeekerProfile {
@@ -27,8 +28,18 @@ export default function SearchResumes() {
   const [category, setCategory] = useState("");
   const [location, setLocation] = useState("");
 
+  // Dynamic filter options from DB
+  const [dbCategories, setDbCategories] = useState<string[]>([]);
+  const [dbSeekerTitles, setDbSeekerTitles] = useState<string[]>([]);
+  const [dbLocations, setDbLocations] = useState<string[]>([]);
+
   useEffect(() => {
     fetchSeekers();
+    getSearchFilters().then((filters) => {
+      setDbCategories(filters.categories);
+      setDbSeekerTitles(filters.seekerTitles);
+      setDbLocations(filters.locations);
+    });
   }, []);
 
   async function fetchSeekers() {
@@ -63,27 +74,29 @@ export default function SearchResumes() {
     setLoading(false);
   }
 
-  const categories = [
-    { value: "طاهي/ة", label: "طاهي/ة" },
-    { value: "نادل/ة", label: "نادل/ة" },
-    { value: "باريستا", label: "باريستا" },
-    { value: "كاشير", label: "كاشير" },
-    { value: "مدير", label: "مدير" },
-    { value: "توصيل", label: "توصيل" },
-    { value: "مضيف/ة", label: "مضيف/ة" },
-    { value: "أخرى", label: "أخرى" },
-  ];
+  // Merge DB categories + seeker titles for richer filtering
+  const allSpecialties = [...new Set([...dbCategories, ...dbSeekerTitles])].sort();
+  const categoryOptions = allSpecialties.length > 0
+    ? allSpecialties.map(c => ({ value: c, label: c }))
+    : [
+        { value: "طاهي/ة", label: "طاهي/ة" },
+        { value: "نادل/ة", label: "نادل/ة" },
+        { value: "باريستا", label: "باريستا" },
+        { value: "كاشير", label: "كاشير" },
+        { value: "مدير", label: "مدير" },
+        { value: "توصيل", label: "توصيل" },
+        { value: "مضيف/ة", label: "مضيف/ة" },
+        { value: "أخرى", label: "أخرى" },
+      ];
 
-  const locations = [
-    { value: "رام الله", label: "رام الله" },
-    { value: "نابلس", label: "نابلس" },
-    { value: "الخليل", label: "الخليل" },
-    { value: "بيت لحم", label: "بيت لحم" },
-    { value: "جنين", label: "جنين" },
-    { value: "طولكرم", label: "طولكرم" },
-    { value: "قلقيلية", label: "قلقيلية" },
-    { value: "بئر السبع", label: "بئر السبع" },
-  ];
+  const locationOptions = dbLocations.length > 0
+    ? dbLocations.map(l => ({ value: l, label: l }))
+    : [
+        { value: "رام الله", label: "رام الله" },
+        { value: "نابلس", label: "نابلس" },
+        { value: "الخليل", label: "الخليل" },
+        { value: "بيت لحم", label: "بيت لحم" },
+      ];
 
   const filtered = seekers.filter((s) => {
     const matchesSearch =
@@ -129,7 +142,7 @@ export default function SearchResumes() {
               className="w-full h-full bg-transparent border-none focus:ring-0 text-slate-700 text-sm py-2.5 px-3 appearance-none outline-none"
             >
               <option value="">كل التخصصات</option>
-              {categories.map((c) => (
+              {categoryOptions.map((c) => (
                 <option key={c.value} value={c.value}>
                   {c.label}
                 </option>
@@ -143,7 +156,7 @@ export default function SearchResumes() {
               className="w-full h-full bg-transparent border-none focus:ring-0 text-slate-700 text-sm py-2.5 px-3 appearance-none outline-none"
             >
               <option value="">كل المدن</option>
-              {locations.map((l) => (
+              {locationOptions.map((l) => (
                 <option key={l.value} value={l.value}>
                   {l.label}
                 </option>

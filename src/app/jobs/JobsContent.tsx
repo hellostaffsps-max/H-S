@@ -16,6 +16,7 @@ import {
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { getJobs } from "@/app/actions/jobs";
+import { getSearchFilters } from "@/app/actions/search-filters";
 
 interface JobsContentProps {
   initialSearch?: string;
@@ -42,8 +43,16 @@ export default function JobsContent({
   const [experienceLevel, setExperienceLevel] = useState("");
   const [hasSalary, setHasSalary] = useState(false);
 
+  // Dynamic filter options from DB
+  const [dbCategories, setDbCategories] = useState<string[]>([]);
+  const [dbLocations, setDbLocations] = useState<string[]>([]);
+
   useEffect(() => {
     fetchJobs();
+    getSearchFilters().then((filters) => {
+      setDbCategories(filters.categories);
+      setDbLocations(filters.locations);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -95,16 +104,19 @@ export default function JobsContent({
     hasSalary,
   ].filter(Boolean).length;
 
-  const categories = [
-    { value: "طاهي/ة", label: "طاهي/ة" },
-    { value: "نادل/ة", label: "نادل/ة" },
-    { value: "باريستا", label: "باريستا" },
-    { value: "كاشير", label: "كاشير" },
-    { value: "مدير", label: "مدير مطعم" },
-    { value: "توصيل", label: "توصيل" },
-    { value: "مضيف/ة", label: "مضيف/ة" },
-    { value: "أخرى", label: "أخرى" },
-  ];
+  // Categories: use DB data if available, fallback to defaults
+  const categoryOptions = dbCategories.length > 0
+    ? dbCategories.map(c => ({ value: c, label: c }))
+    : [
+        { value: "طاهي/ة", label: "طاهي/ة" },
+        { value: "نادل/ة", label: "نادل/ة" },
+        { value: "باريستا", label: "باريستا" },
+        { value: "كاشير", label: "كاشير" },
+        { value: "مدير", label: "مدير مطعم" },
+        { value: "توصيل", label: "توصيل" },
+        { value: "مضيف/ة", label: "مضيف/ة" },
+        { value: "أخرى", label: "أخرى" },
+      ];
 
   const experienceLevels = [
     { value: "بدون خبرة", label: "بدون خبرة" },
@@ -178,7 +190,7 @@ export default function JobsContent({
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 appearance-none"
               >
                 <option value="">الكل</option>
-                {categories.map((c) => (
+                {categoryOptions.map((c) => (
                   <option key={c.value} value={c.value}>{c.label}</option>
                 ))}
               </select>
@@ -210,16 +222,16 @@ export default function JobsContent({
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-500 mb-1.5">الموقع</label>
-              <div className="relative">
-                <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="رام الله، نابلس..."
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pr-9 pl-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-                />
-              </div>
+              <select
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 appearance-none"
+              >
+                <option value="">الكل</option>
+                {dbLocations.map((loc) => (
+                  <option key={loc} value={loc}>{loc}</option>
+                ))}
+              </select>
             </div>
             <div className="sm:col-span-2 lg:col-span-4 flex items-center justify-between">
               <label className="flex items-center gap-2 cursor-pointer">

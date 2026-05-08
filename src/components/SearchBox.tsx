@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Search, MapPin, Briefcase, SlidersHorizontal, Users } from "lucide-react";
+import { Search, MapPin, Briefcase, SlidersHorizontal } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { getSearchFilters } from "@/app/actions/search-filters";
 
 export default function SearchBox() {
   const router = useRouter();
@@ -14,6 +15,24 @@ export default function SearchBox() {
   const [category, setCategory] = useState("");
   const [type, setType] = useState("");
   const [location, setLocation] = useState("");
+
+  // Dynamic filter data from database
+  const [categories, setCategories] = useState<string[]>([]);
+  const [seekerTitles, setSeekerTitles] = useState<string[]>([]);
+  const [locations, setLocations] = useState<string[]>([]);
+
+  useEffect(() => {
+    getSearchFilters().then((filters) => {
+      setCategories(filters.categories);
+      setSeekerTitles(filters.seekerTitles);
+      setLocations(filters.locations);
+    });
+  }, []);
+
+  // Employer sees seeker job titles, seeker/guest sees job categories
+  const specialtyOptions = isEmployer
+    ? [...new Set([...categories, ...seekerTitles])].sort()
+    : categories;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -58,7 +77,7 @@ export default function SearchBox() {
           />
         </div>
 
-        {/* Category Select */}
+        {/* Category Select - Dynamic from DB */}
         <div className="md:w-40 flex items-center gap-2 bg-slate-50 rounded-xl md:rounded-2xl px-3 py-2.5 md:px-4 md:py-3 transition-colors focus-within:bg-white focus-within:ring-2 focus-within:ring-brand-500/20 min-h-[44px]">
           <Briefcase className="h-4 w-4 text-slate-400 shrink-0" />
           <select
@@ -67,14 +86,11 @@ export default function SearchBox() {
             className="w-full bg-transparent border-none outline-none text-slate-700 text-sm md:text-base font-medium appearance-none cursor-pointer"
           >
             <option value="">التخصص</option>
-            <option value="طاهي/ة">طاهي/ة</option>
-            <option value="نادل/ة">نادل/ة</option>
-            <option value="باريستا">باريستا</option>
-            <option value="كاشير">كاشير</option>
-            <option value="مدير">مدير</option>
-            <option value="توصيل">توصيل</option>
-            <option value="مضيف/ة">مضيف/ة</option>
-            <option value="أخرى">أخرى</option>
+            {specialtyOptions.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -94,16 +110,21 @@ export default function SearchBox() {
           </div>
         )}
 
-        {/* Location Input */}
+        {/* Location Select - Dynamic from DB */}
         <div className="md:w-36 flex items-center gap-2 bg-slate-50 rounded-xl md:rounded-2xl px-3 py-2.5 md:px-4 md:py-3 transition-colors focus-within:bg-white focus-within:ring-2 focus-within:ring-brand-500/20 min-h-[44px]">
           <MapPin className="h-4 w-4 text-slate-400 shrink-0" />
-          <input
-            type="text"
-            placeholder="المدينة"
+          <select
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            className="w-full bg-transparent border-none outline-none text-slate-800 placeholder:text-slate-400 text-sm md:text-base font-medium"
-          />
+            className="w-full bg-transparent border-none outline-none text-slate-700 text-sm md:text-base font-medium appearance-none cursor-pointer"
+          >
+            <option value="">المدينة</option>
+            {locations.map((loc) => (
+              <option key={loc} value={loc}>
+                {loc}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Search Button */}
