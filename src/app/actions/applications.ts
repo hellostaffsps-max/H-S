@@ -133,7 +133,8 @@ export async function updateApplicationStatus(
   status: string,
   interviewDate?: string | null,
   interviewLocation?: string | null,
-  interviewNotes?: string | null
+  interviewNotes?: string | null,
+  rejectionReason?: string | null
 ) {
   const supabase = await createClient();
 
@@ -167,6 +168,7 @@ export async function updateApplicationStatus(
   if (interviewDate !== undefined) updateData.interview_date = interviewDate;
   if (interviewLocation !== undefined) updateData.interview_location = interviewLocation;
   if (interviewNotes !== undefined) updateData.interview_notes = interviewNotes;
+  if (rejectionReason !== undefined) updateData.rejection_reason = rejectionReason;
 
   const { error } = await supabase
     .from('applications')
@@ -184,9 +186,9 @@ export async function updateApplicationStatus(
   if (status === 'مقبول') {
     notifTitle = 'تهانينا! تم قبول طلبك';
     notifMessage = `تم قبول طلبك على وظيفة "${job.title}". سنتواصل معك قريباً.`;
-  } else if (status === 'مرفوض') {
+  } else if (status === 'لم يتم التوظيف') {
     notifTitle = 'تحديث على طلب التقديم';
-    notifMessage = `لم يتم قبول طلبك على وظيفة "${job.title}" هذه المرة. نتمنى لك التوفيق.`;
+    notifMessage = `لم يتم التوظيف على وظيفة "${job.title}" هذه المرة. نتمنى لك التوفيق.`;
   } else if (status === 'مقابلة') {
     notifTitle = 'تمت دعوتك لمقابلة عمل';
     notifMessage = `تمت دعوتك لمقابلة عمل على وظيفة "${job.title}". يرجى مراجعة التفاصيل.`;

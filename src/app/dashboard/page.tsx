@@ -1,4 +1,5 @@
 "use client";
+import type { FormEvent } from "react";
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -43,14 +44,24 @@ import { supabase } from "@/lib/supabase";
 
 /* ==================== STATUS CONFIG ==================== */
 
+// Sequential order of statuses — can only move FORWARD
+const STATUS_ORDER = [
+  "قيد المراجعة",
+  "مراجعة",
+  "قائمة مختصرة",
+  "مقابلة",
+  "تجربة عمل",
+  "مقبول",
+];
+
 const APP_STATUS_OPTIONS = [
   { value: "قيد المراجعة", label: "قيد المراجعة", color: "bg-yellow-50 text-yellow-700 border-yellow-200" },
   { value: "مراجعة", label: "تمت المراجعة", color: "bg-blue-50 text-blue-700 border-blue-200" },
   { value: "قائمة مختصرة", label: "قائمة مختصرة", color: "bg-indigo-50 text-indigo-700 border-indigo-200" },
-  { value: "مقابلة", label: "مقابلة", color: "bg-purple-50 text-purple-700 border-purple-200" },
+  { value: "مقابلة", label: "جدولة مقابلة", color: "bg-purple-50 text-purple-700 border-purple-200" },
   { value: "تجربة عمل", label: "تجربة عمل", color: "bg-orange-50 text-orange-700 border-orange-200" },
   { value: "مقبول", label: "مقبول", color: "bg-green-50 text-green-700 border-green-200" },
-  { value: "مرفوض", label: "مرفوض", color: "bg-red-50 text-red-700 border-red-200" },
+  { value: "لم يتم التوظيف", label: "لم يتم التوظيف", color: "bg-red-50 text-red-700 border-red-200" },
 ];
 
 const PIPELINE_STAGES = [
@@ -60,8 +71,29 @@ const PIPELINE_STAGES = [
   { key: "مقابلة", label: "مقابلة", color: "bg-purple-500", ring: "ring-purple-200" },
   { key: "تجربة عمل", label: "تجربة عمل", color: "bg-orange-500", ring: "ring-orange-200" },
   { key: "مقبول", label: "تم التوظيف", color: "bg-green-500", ring: "ring-green-200" },
-  { key: "مرفوض", label: "مرفوض", color: "bg-red-500", ring: "ring-red-200" },
+  { key: "لم يتم التوظيف", label: "لم يتم التوظيف", color: "bg-red-500", ring: "ring-red-200" },
 ];
+
+/** Get valid next statuses for the given current status */
+function getNextStatuses(currentStatus: string): string[] {
+  // Terminal statuses — no further action
+  if (currentStatus === "مقبول" || currentStatus === "لم يتم التوظيف") return [];
+
+  const currentIndex = STATUS_ORDER.indexOf(currentStatus);
+  if (currentIndex === -1) return [];
+
+  const nextStep = STATUS_ORDER[currentIndex + 1];
+  // Always allow "لم يتم التوظيف" as an option (except from first status)
+  const options: string[] = [];
+  if (nextStep) options.push(nextStep);
+  if (currentIndex >= 1) options.push("لم يتم التوظيف"); // Can reject after review
+  return options;
+}
+
+/** Check if rejection reason is required (after تجربة عمل) */
+function requiresRejectionReason(currentStatus: string): boolean {
+  return currentStatus === "تجربة عمل";
+}
 
 function getAppStatusStyle(status: string) {
   return APP_STATUS_OPTIONS.find((s) => s.value === status)?.color || "bg-slate-50 text-slate-600 border-slate-200";
@@ -166,9 +198,10 @@ export default function Dashboard() {
     newStatus: string,
     interviewDate?: string | null,
     interviewLocation?: string | null,
-    interviewNotes?: string | null
+    interviewNotes?: string | null,
+    rejectionReason?: string | null
   ) {
-    const result = await updateApplicationStatus(appId, newStatus, interviewDate, interviewLocation, interviewNotes);
+    const result = await updateApplicationStatus(appId, newStatus, interviewDate, interviewLocation, interviewNotes, rejectionReason);
     if (result.success) {
       setApplications((prev) =>
         prev.map((a) =>
@@ -179,6 +212,7 @@ export default function Dashboard() {
                 interview_date: interviewDate || a.interview_date,
                 interview_location: interviewLocation || a.interview_location,
                 interview_notes: interviewNotes || a.interview_notes,
+                rejection_reason: rejectionReason || a.rejection_reason,
               }
             : a
         )
@@ -404,7 +438,7 @@ function ApplicantModal({
 }: {
   applicant: any;
   onClose: () => void;
-  onStatusChange: (id: string, status: string) => void;
+  onStatusChange: (id: string, status: string, interviewDate?: string | null, interviewLocation?: string | null, interviewNotes?: string | null, rejectionReason?: string | null) => void;
   onOpenInterview: () => void;
 }) {
   const seeker = applicant.seekers;
@@ -412,9 +446,24 @@ function ApplicantModal({
   const fullName = profile?.full_name || "مستخدم";
   const initials = fullName.charAt(0) || "م";
   const seekerId = applicant.seeker_id;
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
+
+  const nextStatuses = getNextStatuses(applicant.status);
+  const isTerminal = applicant.status === "مقبول" || applicant.status === "لم يتم التوظيف";
 
   const handleStatus = (status: string) => {
+    if (status === "لم يتم التوظيف" && requiresRejectionReason(applicant.status)) {
+      setShowRejectModal(true);
+      return;
+    }
     onStatusChange(applicant.id, status);
+    onClose();
+  };
+
+  const handleRejectWithReason = () => {
+    onStatusChange(applicant.id, "لم يتم التوظيف", null, null, null, rejectionReason || null);
+    setShowRejectModal(false);
     onClose();
   };
 
@@ -565,38 +614,94 @@ function ApplicantModal({
             </span>
           </div>
 
-          {/* Action Buttons */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-100">
-            <button
-              onClick={() => handleStatus("مقبول")}
-              className="flex flex-col items-center gap-1 p-3 rounded-xl bg-green-50 text-green-700 hover:bg-green-100 transition-colors"
-            >
-              <CheckCircle2 className="w-5 h-5" />
-              <span className="text-xs font-bold">قبول</span>
-            </button>
-            <button
-              onClick={() => handleStatus("مرفوض")}
-              className="flex flex-col items-center gap-1 p-3 rounded-xl bg-red-50 text-red-700 hover:bg-red-100 transition-colors"
-            >
-              <XCircle className="w-5 h-5" />
-              <span className="text-xs font-bold">رفض</span>
-            </button>
-            <button
-              onClick={onOpenInterview}
-              className="flex flex-col items-center gap-1 p-3 rounded-xl bg-purple-50 text-purple-700 hover:bg-purple-100 transition-colors"
-            >
-              <Calendar className="w-5 h-5" />
-              <span className="text-xs font-bold">مقابلة</span>
-            </button>
-            <Link
-              href={`/messages?with=${seekerId}`}
-              onClick={onClose}
-              className="flex flex-col items-center gap-1 p-3 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
-            >
-              <MessageSquare className="w-5 h-5" />
-              <span className="text-xs font-bold">مراسلة</span>
-            </Link>
-          </div>
+          {/* Sequential Status Progress */}
+          {!isTerminal && (
+            <div className="pt-2 border-t border-slate-100">
+              <p className="text-xs font-bold text-slate-400 mb-2">الخطوة التالية</p>
+              <div className="flex flex-wrap gap-2">
+                {nextStatuses.map((status) => {
+                  const isReject = status === "لم يتم التوظيف";
+                  const isAccept = status === "مقبول";
+                  const isInterview = status === "مقابلة";
+                  return (
+                    <button
+                      key={status}
+                      onClick={() => {
+                        if (isInterview) { onOpenInterview(); return; }
+                        handleStatus(status);
+                      }}
+                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-colors ${
+                        isReject
+                          ? 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200'
+                          : isAccept
+                            ? 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'
+                            : 'bg-brand-50 text-brand-700 hover:bg-brand-100 border border-brand-200'
+                      }`}
+                    >
+                      {isReject ? <XCircle className="w-4 h-4" /> : isAccept ? <CheckCircle2 className="w-4 h-4" /> : isInterview ? <Calendar className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4 rotate-180" />}
+                      {getAppStatusLabel(status)}
+                    </button>
+                  );
+                })}
+                <Link
+                  href={`/messages?with=${seekerId}`}
+                  onClick={onClose}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-xs font-bold transition-colors"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  مراسلة
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* Terminal status message */}
+          {isTerminal && (
+            <div className={`pt-2 border-t border-slate-100 text-center py-3 rounded-xl text-xs font-bold ${
+              applicant.status === "مقبول" ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+            }`}>
+              {applicant.status === "مقبول" ? '✅ تم توظيف هذا المتقدم' : '❌ لم يتم توظيف هذا المتقدم'}
+              {applicant.rejection_reason && (
+                <p className="mt-1 text-slate-500 font-normal">السبب: {applicant.rejection_reason}</p>
+              )}
+            </div>
+          )}
+
+          {/* Rejection Reason Modal */}
+          {showRejectModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setShowRejectModal(false)}>
+              <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                <div className="p-5 border-b border-slate-100">
+                  <h3 className="text-lg font-bold text-slate-900">سبب عدم التوظيف</h3>
+                  <p className="text-xs text-slate-500 mt-1">يرجى كتابة سبب عدم التوظيف لمساعدتنا في تطوير الموظف</p>
+                </div>
+                <div className="p-5">
+                  <textarea
+                    value={rejectionReason}
+                    onChange={(e) => setRejectionReason(e.target.value)}
+                    rows={4}
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 text-right resize-none"
+                    placeholder="مثال: يحتاج تحسين مهارات التواصل، أداء غير كافٍ في فترة التجربة..."
+                    autoFocus
+                  />
+                </div>
+                <div className="p-5 border-t border-slate-100 flex gap-2 justify-end">
+                  <button
+                    onClick={() => setShowRejectModal(false)}
+                    className="px-4 py-2 text-sm font-bold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200"
+                  >
+                    إلغاء
+                  </button>
+                  <button
+                    onClick={handleRejectWithReason}
+                    className="px-4 py-2 text-sm font-bold text-white bg-red-600 rounded-xl hover:bg-red-700"
+                  >
+                    تأكيد عدم التوظيف
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -637,7 +742,7 @@ function EmployerDashboard({
   jobs: any[];
   applications: any[];
   employerData: any;
-  onApplicationStatusChange: (id: string, status: string) => void;
+  onApplicationStatusChange: (id: string, status: string, interviewDate?: string | null, interviewLocation?: string | null, interviewNotes?: string | null, rejectionReason?: string | null) => void;
   onJobAction: (id: string, action: "pause" | "activate" | "close") => void;
   jobsRef: React.RefObject<HTMLDivElement | null>;
   applicantsRef: React.RefObject<HTMLDivElement | null>;
@@ -935,7 +1040,7 @@ function EmployerDashboard({
                       <td className="px-4 py-3 sm:px-6 sm:py-4">
                         <StatusDropdown
                           currentStatus={app.status}
-                          onChange={(status) => onApplicationStatusChange(app.id, status)}
+                          onChange={(status, rejectionReason) => onApplicationStatusChange(app.id, status, undefined, undefined, undefined, rejectionReason)}
                         />
                       </td>
                       <td className="px-4 py-3 sm:px-6 sm:py-4 text-xs text-slate-500 whitespace-nowrap">
@@ -958,27 +1063,6 @@ function EmployerDashboard({
                           >
                             <FileText className="w-3.5 h-3.5" />
                           </Link>
-                          <button
-                            onClick={() => onApplicationStatusChange(app.id, "مقبول")}
-                            className="inline-flex items-center gap-1 text-xs font-bold text-green-600 hover:text-green-700 bg-green-50 hover:bg-green-100 px-3 py-1.5 rounded-lg transition-colors"
-                            title="قبول"
-                          >
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => onApplicationStatusChange(app.id, "مرفوض")}
-                            className="inline-flex items-center gap-1 text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors"
-                            title="رفض"
-                          >
-                            <XCircle className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => onOpenInterviewModal(app)}
-                            className="inline-flex items-center gap-1 text-xs font-bold text-purple-600 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition-colors"
-                            title="جدولة مقابلة"
-                          >
-                            <Calendar className="w-3.5 h-3.5" />
-                          </button>
                           <Link
                             href={`/messages?with=${app.seeker_id}`}
                             className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors"
@@ -1240,40 +1324,83 @@ function StatusDropdown({
   onChange,
 }: {
   currentStatus: string;
-  onChange: (status: string) => void;
+  onChange: (status: string, rejectionReason?: string | null) => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const nextOptions = getNextStatuses(currentStatus);
+  const isTerminal = currentStatus === "مقبول" || currentStatus === "لم يتم التوظيف";
+
+  const handleOptionClick = (status: string) => {
+    if (status === "لم يتم التوظيف" && requiresRejectionReason(currentStatus)) {
+      setShowRejectModal(true);
+      setIsOpen(false);
+      return;
+    }
+    onChange(status);
+    setIsOpen(false);
+  };
 
   return (
     <div className="relative">
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] sm:text-[11px] font-bold border ${getAppStatusStyle(currentStatus)}`}
+        onClick={() => !isTerminal && setIsOpen(!isOpen)}
+        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] sm:text-[11px] font-bold border ${getAppStatusStyle(currentStatus)} ${isTerminal ? 'cursor-default' : ''}`}
       >
         {getAppStatusLabel(currentStatus)}
-        <ChevronDown className="h-3 w-3" />
+        {!isTerminal && <ChevronDown className="h-3 w-3" />}
       </button>
 
-      {isOpen && (
+      {isOpen && nextOptions.length > 0 && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className="absolute z-20 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden min-w-[140px]">
-            {APP_STATUS_OPTIONS.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => {
-                  onChange(option.value);
-                  setIsOpen(false);
-                }}
-                className={`w-full text-right px-3 py-2 text-xs font-bold hover:bg-slate-50 transition-colors ${
-                  option.value === currentStatus ? "bg-brand-50 text-brand-700" : "text-slate-700"
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
+          <div className="absolute z-20 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden min-w-[160px]">
+            <div className="px-3 py-1.5 bg-slate-50 text-[10px] font-bold text-slate-400 border-b border-slate-100">الخطوة التالية</div>
+            {nextOptions.map((status) => {
+              const option = APP_STATUS_OPTIONS.find((o) => o.value === status);
+              const isReject = status === "لم يتم التوظيف";
+              return (
+                <button
+                  key={status}
+                  onClick={() => handleOptionClick(status)}
+                  className={`w-full text-right px-3 py-2.5 text-xs font-bold hover:bg-slate-50 transition-colors flex items-center gap-2 ${
+                    isReject ? 'text-red-600 hover:bg-red-50' : 'text-slate-700'
+                  }`}
+                >
+                  {isReject ? <XCircle className="w-3.5 h-3.5" /> : <ArrowLeft className="w-3.5 h-3.5 rotate-180" />}
+                  {option?.label || status}
+                </button>
+              );
+            })}
           </div>
         </>
+      )}
+
+      {/* Rejection Reason Modal */}
+      {showRejectModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setShowRejectModal(false)}>
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="p-5 border-b border-slate-100">
+              <h3 className="text-lg font-bold text-slate-900">سبب عدم التوظيف</h3>
+              <p className="text-xs text-slate-500 mt-1">يرجى كتابة سبب عدم التوظيف لمساعدتنا في تطوير الموظف</p>
+            </div>
+            <div className="p-5">
+              <textarea
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                rows={4}
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 text-right resize-none"
+                placeholder="مثال: يحتاج تحسين مهارات التواصل..."
+                autoFocus
+              />
+            </div>
+            <div className="p-5 border-t border-slate-100 flex gap-2 justify-end">
+              <button onClick={() => setShowRejectModal(false)} className="px-4 py-2 text-sm font-bold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200">إلغاء</button>
+              <button onClick={() => { onChange("لم يتم التوظيف", rejectionReason || null); setShowRejectModal(false); }} className="px-4 py-2 text-sm font-bold text-white bg-red-600 rounded-xl hover:bg-red-700">تأكيد عدم التوظيف</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
