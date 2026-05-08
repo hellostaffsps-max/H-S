@@ -31,11 +31,21 @@ export default async function JobDetailPage({ params }: Props) {
 
   const job = result.data as any;
 
-  // Check if user is logged in
+  // Check if user is logged in and get their role
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  let userRole: string | null = null;
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    userRole = profile?.role || null;
+  }
 
   // Fetch related jobs (same category, excluding current)
   const { data: relatedJobs } = await supabase
@@ -138,7 +148,9 @@ export default async function JobDetailPage({ params }: Props) {
 
             {/* CTA */}
             <div className="flex flex-col sm:flex-row gap-3">
-              <ApplyButton jobId={job.id} isLoggedIn={!!user} />
+              {userRole !== 'employer' && (
+                <ApplyButton jobId={job.id} isLoggedIn={!!user} />
+              )}
               {job.whatsapp_number && (
                 <a
                   href={`https://wa.me/${job.whatsapp_number.replace(/\D/g, "").replace(/^0/, "970")}`}
