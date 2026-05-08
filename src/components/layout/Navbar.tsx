@@ -7,12 +7,13 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
+import SwipeableNotification from '@/components/SwipeableNotification';
 
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, profile, signOut } = useAuth();
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
   const { unreadCount: unreadMessagesCount } = useUnreadMessages();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -175,44 +176,48 @@ export default function Navbar() {
                         {notifications.length === 0 ? (
                           <div className="p-8 text-center text-slate-500 text-sm">لا توجد إشعارات جديدة</div>
                         ) : (
-                          <div className="divide-y divide-slate-100">
+                          <div>
                             {notifications.map((notification) => (
-                              <div 
-                                key={notification.id} 
-                                onClick={() => {
-                                  if (!notification.is_read) markAsRead(notification.id);
-                                  if (notification.link) {
-                                    setIsNotificationsOpen(false);
-                                    router.push(notification.link);
-                                  }
-                                }}
-                                className={cn(
-                                  "p-4 transition-colors hover:bg-slate-50",
-                                  notification.link ? "cursor-pointer" : "cursor-default",
-                                  !notification.is_read ? "bg-brand-50/30" : ""
-                                )}
+                              <SwipeableNotification
+                                key={notification.id}
+                                onDelete={() => deleteNotification(notification.id)}
                               >
-                                <div className="flex gap-3">
-                                  <div className={cn(
-                                    "w-2 h-2 rounded-full mt-2 shrink-0",
-                                    !notification.is_read ? "bg-brand-500" : "bg-transparent"
-                                  )} />
-                                  <div className="flex-1">
-                                    <h4 className={cn("text-sm mb-1", !notification.is_read ? "font-bold text-slate-900" : "font-medium text-slate-700")}>
-                                      {notification.title}
-                                    </h4>
-                                    <p className="text-xs text-slate-500 leading-relaxed mb-2">{notification.message}</p>
-                                    <div className="flex items-center justify-between">
-                                      <span className="text-[10px] text-slate-400 font-medium">
-                                        {new Date(notification.created_at).toLocaleDateString('ar-EG', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                      </span>
-                                      {notification.link && (
-                                        <span className="text-[10px] text-brand-600 font-medium">عرض التفاصيل ←</span>
-                                      )}
+                                <div 
+                                  onClick={() => {
+                                    if (!notification.is_read) markAsRead(notification.id);
+                                    if (notification.link) {
+                                      setIsNotificationsOpen(false);
+                                      router.push(notification.link);
+                                    }
+                                  }}
+                                  className={cn(
+                                    "p-4 transition-colors hover:bg-slate-50 border-b border-slate-100",
+                                    notification.link ? "cursor-pointer" : "cursor-default",
+                                    !notification.is_read ? "bg-brand-50/30" : ""
+                                  )}
+                                >
+                                  <div className="flex gap-3">
+                                    <div className={cn(
+                                      "w-2 h-2 rounded-full mt-2 shrink-0",
+                                      !notification.is_read ? "bg-brand-500" : "bg-transparent"
+                                    )} />
+                                    <div className="flex-1">
+                                      <h4 className={cn("text-sm mb-1", !notification.is_read ? "font-bold text-slate-900" : "font-medium text-slate-700")}>
+                                        {notification.title}
+                                      </h4>
+                                      <p className="text-xs text-slate-500 leading-relaxed mb-2">{notification.message}</p>
+                                      <div className="flex items-center justify-between">
+                                        <span className="text-[10px] text-slate-400 font-medium">
+                                          {new Date(notification.created_at).toLocaleDateString('ar-EG', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                        </span>
+                                        {notification.link && (
+                                          <span className="text-[10px] text-brand-600 font-medium">عرض التفاصيل ←</span>
+                                        )}
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
+                              </SwipeableNotification>
                             ))}
                           </div>
                         )}

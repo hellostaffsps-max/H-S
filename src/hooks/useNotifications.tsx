@@ -19,6 +19,7 @@ interface NotificationsContextValue {
   loading: boolean;
   markAsRead: (id: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
+  deleteNotification: (id: string) => Promise<void>;
 }
 
 const NotificationsContext = createContext<NotificationsContextValue>({
@@ -27,6 +28,7 @@ const NotificationsContext = createContext<NotificationsContextValue>({
   loading: false,
   markAsRead: async () => {},
   markAllAsRead: async () => {},
+  deleteNotification: async () => {},
 });
 
 export function NotificationsProvider({ children }: { children: ReactNode }) {
@@ -120,8 +122,26 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const deleteNotification = async (id: string) => {
+    if (!user) return;
+
+    const notif = notifications.find((n) => n.id === id);
+    const { error } = await supabase
+      .from('notifications')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', user.id);
+
+    if (!error) {
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+      if (notif && !notif.is_read) {
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+      }
+    }
+  };
+
   return (
-    <NotificationsContext.Provider value={{ notifications, unreadCount, loading, markAsRead, markAllAsRead }}>
+    <NotificationsContext.Provider value={{ notifications, unreadCount, loading, markAsRead, markAllAsRead, deleteNotification }}>
       {children}
     </NotificationsContext.Provider>
   );
