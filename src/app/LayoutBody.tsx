@@ -6,6 +6,9 @@ import Footer from "../components/layout/Footer";
 import { NotificationsProvider } from "../hooks/useNotifications";
 import { isSupabaseConfigured } from "../lib/supabase";
 import Link from "next/link";
+import CookieConsent from "../components/CookieConsent";
+import PWAInstallPrompt from "../components/PWAInstallPrompt";
+import PushNotificationPrompt from "../components/PushNotificationPrompt";
 
 export default function LayoutBody({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -29,6 +32,9 @@ export default function LayoutBody({ children }: { children: React.ReactNode }) 
         </main>
         {!hideFooter && <Footer />}
       </NotificationsProvider>
+      <CookieConsent />
+      <PWAInstallPrompt />
+      <PushNotificationPrompt />
     </div>
   );
 }
