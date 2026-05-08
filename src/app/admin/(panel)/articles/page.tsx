@@ -13,8 +13,11 @@ import {
   Plus,
   X,
   Upload,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Edit,
+  Trash2
 } from 'lucide-react';
+import Link from 'next/link';
 import { motion } from 'motion/react';
 
 type Article = {
@@ -40,6 +43,7 @@ export default function AdminArticles() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newArticle, setNewArticle] = useState({
+    id: '',
     title: '',
     content: '',
     excerpt: '',
@@ -89,9 +93,13 @@ export default function AdminArticles() {
     e.preventDefault();
     setIsSubmitting(true);
 
+    const isEditing = !!newArticle.id;
+    const url = isEditing ? `/api/admin/articles/${newArticle.id}` : '/api/admin/articles';
+    const method = isEditing ? 'PATCH' : 'POST';
+
     try {
-      const res = await fetch('/api/admin/articles', {
-        method: 'POST',
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: newArticle.title,
@@ -101,20 +109,42 @@ export default function AdminArticles() {
           status: newArticle.status,
         }),
       });
-      if (!res.ok) throw new Error('Failed to create article');
+      if (!res.ok) throw new Error(`Failed to ${isEditing ? 'update' : 'create'} article`);
       const json = await res.json();
-      if (!json.success) throw new Error(json.message || 'Failed to create article');
+      if (!json.success) throw new Error(json.message || `Failed to ${isEditing ? 'update' : 'create'} article`);
 
-      setArticles([json.data, ...articles]);
+      if (isEditing) {
+        setArticles(arts => arts.map(art => art.id === newArticle.id ? json.data : art));
+        alert('تم تعديل المقال بنجاح');
+      } else {
+        setArticles([json.data, ...articles]);
+        alert('تم إنشاء المقال بنجاح');
+      }
       setIsModalOpen(false);
-      setNewArticle({ title: '', content: '', excerpt: '', cover_image: '', status: 'published' });
-      alert('تم إنشاء المقال بنجاح');
+      setNewArticle({ id: '', title: '', content: '', excerpt: '', cover_image: '', status: 'published' });
     } catch (error: any) {
-      console.error('Error creating article:', error);
-      alert('حدث خطأ أثناء إنشاء المقال: ' + error.message);
+      console.error('Error saving article:', error);
+      alert('حدث خطأ أثناء الحفظ: ' + error.message);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const openNewModal = () => {
+    setNewArticle({ id: '', title: '', content: '', excerpt: '', cover_image: '', status: 'published' });
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (article: Article) => {
+    setNewArticle({
+      id: article.id,
+      title: article.title,
+      content: article.content,
+      excerpt: article.excerpt || '',
+      cover_image: article.cover_image || '',
+      status: article.status
+    });
+    setIsModalOpen(true);
   };
 
   const handleDeleteArticle = async (id: string) => {
@@ -189,7 +219,7 @@ export default function AdminArticles() {
         </div>
         
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={openNewModal}
           className="flex items-center justify-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-2xl font-bold hover:bg-brand-700 shadow-lg shadow-brand-200 transition-all"
         >
           <Plus className="h-5 w-5" />
@@ -240,15 +270,15 @@ export default function AdminArticles() {
               <p className="text-slate-500 font-medium">لا توجد مقالات لعرضها</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredArticles.map((article) => (
-                <div key={article.id} className="border border-slate-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all group flex flex-col">
+                <div key={article.id} className="border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all group flex flex-col">
                   {article.cover_image ? (
-                    <div className="h-48 overflow-hidden bg-slate-100 relative">
+                    <div className="h-32 overflow-hidden bg-slate-100 relative">
                       <img src={article.cover_image} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     </div>
                   ) : (
-                    <div className="h-40 bg-slate-50 flex items-center justify-center relative">
+                    <div className="h-32 bg-slate-50 flex items-center justify-center relative">
                       <FileText className="h-12 w-12 text-slate-200" />
                     </div>
                   )}
@@ -285,8 +315,22 @@ export default function AdminArticles() {
                       </div>
                       
                       <div className="flex gap-1">
-                        <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="عرض التفاصيل">
+                        <Link href={`/blog/${article.slug}`} target="_blank" rel="noopener noreferrer" className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="عرض التفاصيل">
                           <Eye className="h-4 w-4" />
+                        </Link>
+                        <button 
+                          onClick={() => openEditModal(article)}
+                          className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" 
+                          title="تعديل المقال"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteArticle(article.id)}
+                          className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" 
+                          title="حذف المقال"
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </button>
                         {article.status === 'pending_approval' && (
                           <>
@@ -325,7 +369,7 @@ export default function AdminArticles() {
             className="bg-white rounded-3xl p-8 max-w-2xl w-full shadow-2xl border border-slate-100 my-8"
           >
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-black text-slate-900">إنشاء مقال جديد</h3>
+              <h3 className="text-2xl font-black text-slate-900">{newArticle.id ? 'تعديل المقال' : 'إنشاء مقال جديد'}</h3>
               <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-50 rounded-full transition-colors text-slate-400 hover:text-slate-600">
                 <X className="h-6 w-6" />
               </button>
