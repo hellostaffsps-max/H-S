@@ -6,12 +6,14 @@ import { ChefHat, Bell, Home, Briefcase, PlusCircle, LayoutDashboard, MessageSqu
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, profile, signOut } = useAuth();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const { unreadCount: unreadMessagesCount } = useUnreadMessages();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const notificationsRef = useRef<HTMLDivElement>(null);
@@ -101,17 +103,23 @@ export default function Navbar() {
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.path;
+              const isMessages = item.path === '/messages';
               return (
                 <Link
                   key={item.path}
                   href={item.path}
                   className={cn(
-                    "flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-brand-600",
+                    "relative flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-brand-600",
                     isActive ? "text-brand-600" : "text-slate-600"
                   )}
                 >
                   <Icon className="h-4 w-4" />
                   {item.name}
+                  {isMessages && unreadMessagesCount > 0 && (
+                    <span className="absolute -top-2 -right-3 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white shadow-sm">
+                      {unreadMessagesCount > 99 ? '99+' : unreadMessagesCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -248,18 +256,24 @@ export default function Navbar() {
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.path;
+            const isMessages = item.path === '/messages';
             return (
               <Link
                 key={item.path}
                 href={item.path}
                 onClick={closeMenu}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-3 rounded-xl text-sm sm:text-base font-medium transition-colors min-h-[44px]",
+                  "relative flex items-center gap-2 px-3 py-3 rounded-xl text-sm sm:text-base font-medium transition-colors min-h-[44px]",
                   isActive ? "bg-brand-50 text-brand-700" : "text-slate-600 hover:bg-slate-50"
                 )}
               >
                 <Icon className="h-5 w-5" />
                 {item.name}
+                {isMessages && unreadMessagesCount > 0 && (
+                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white shadow-sm mr-auto">
+                    {unreadMessagesCount > 99 ? '99+' : unreadMessagesCount}
+                  </span>
+                )}
               </Link>
             );
           })}

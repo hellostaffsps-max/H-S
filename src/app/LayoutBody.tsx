@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import Navbar from "../components/layout/Navbar";
 import Footer from "../components/layout/Footer";
 import { NotificationsProvider } from "../hooks/useNotifications";
+import { UnreadMessagesProvider } from "../hooks/useUnreadMessages";
 import { isSupabaseConfigured } from "../lib/supabase";
 import Link from "next/link";
 import CookieConsent from "../components/CookieConsent";
@@ -26,11 +27,13 @@ export default function LayoutBody({ children }: { children: React.ReactNode }) 
         </div>
       )}
       <NotificationsProvider>
+      <UnreadMessagesProvider>
         {!hideNavbar && <Navbar />}
         <main className={`flex-grow w-full overflow-x-hidden ${isDashboardPage ? 'bg-slate-50' : ''}`}>
           {children}
         </main>
         {!hideFooter && <Footer />}
+      </UnreadMessagesProvider>
       </NotificationsProvider>
       <CookieConsent />
       <PWAInstallPrompt />
