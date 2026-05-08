@@ -74,29 +74,16 @@ export default function SearchResumes() {
     setLoading(false);
   }
 
-  // Merge DB categories + seeker titles for richer filtering
-  const allSpecialties = [...new Set([...dbCategories, ...dbSeekerTitles])].sort();
-  const categoryOptions = allSpecialties.length > 0
-    ? allSpecialties.map(c => ({ value: c, label: c }))
-    : [
-        { value: "طاهي/ة", label: "طاهي/ة" },
-        { value: "نادل/ة", label: "نادل/ة" },
-        { value: "باريستا", label: "باريستا" },
-        { value: "كاشير", label: "كاشير" },
-        { value: "مدير", label: "مدير" },
-        { value: "توصيل", label: "توصيل" },
-        { value: "مضيف/ة", label: "مضيف/ة" },
-        { value: "أخرى", label: "أخرى" },
-      ];
+  // Default categories - always shown + any new from DB
+  const defaultCats = ["طاهي/ة", "نادل/ة", "باريستا", "كاشير", "مدير", "توصيل", "مضيف/ة", "أخرى"];
+  const allDbCats = [...new Set([...dbCategories, ...dbSeekerTitles])];
+  const extraCats = allDbCats.filter(c => !defaultCats.includes(c));
+  const categoryOptions = [...defaultCats, ...extraCats].map(c => ({ value: c, label: c }));
 
-  const locationOptions = dbLocations.length > 0
-    ? dbLocations.map(l => ({ value: l, label: l }))
-    : [
-        { value: "رام الله", label: "رام الله" },
-        { value: "نابلس", label: "نابلس" },
-        { value: "الخليل", label: "الخليل" },
-        { value: "بيت لحم", label: "بيت لحم" },
-      ];
+  // Default locations - always shown + any new from DB
+  const defaultLocs = ["رام الله", "نابلس", "الخليل", "بيت لحم", "جنين", "طولكرم", "قلقيلية", "أريحا", "سلفيت", "طوباس", "القدس"];
+  const extraLocs = dbLocations.filter(l => !defaultLocs.includes(l));
+  const locationOptions = [...defaultLocs, ...extraLocs].map(l => ({ value: l, label: l }));
 
   const filtered = seekers.filter((s) => {
     const matchesSearch =

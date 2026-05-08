@@ -104,19 +104,15 @@ export default function JobsContent({
     hasSalary,
   ].filter(Boolean).length;
 
-  // Categories: use DB data if available, fallback to defaults
-  const categoryOptions = dbCategories.length > 0
-    ? dbCategories.map(c => ({ value: c, label: c }))
-    : [
-        { value: "طاهي/ة", label: "طاهي/ة" },
-        { value: "نادل/ة", label: "نادل/ة" },
-        { value: "باريستا", label: "باريستا" },
-        { value: "كاشير", label: "كاشير" },
-        { value: "مدير", label: "مدير مطعم" },
-        { value: "توصيل", label: "توصيل" },
-        { value: "مضيف/ة", label: "مضيف/ة" },
-        { value: "أخرى", label: "أخرى" },
-      ];
+  // Default categories - always shown + any new from DB
+  const defaultCats = ["طاهي/ة", "نادل/ة", "باريستا", "كاشير", "مدير", "توصيل", "مضيف/ة", "أخرى"];
+  const extraCats = dbCategories.filter(c => !defaultCats.includes(c));
+  const categoryOptions = [...defaultCats, ...extraCats].map(c => ({ value: c, label: c }));
+
+  // Default locations - always shown + any new from DB
+  const defaultLocs = ["رام الله", "نابلس", "الخليل", "بيت لحم", "جنين", "طولكرم", "قلقيلية", "أريحا", "سلفيت", "طوباس", "القدس"];
+  const extraLocs = dbLocations.filter(l => !defaultLocs.includes(l));
+  const locationOptions = [...defaultLocs, ...extraLocs].map(l => ({ value: l, label: l }));
 
   const experienceLevels = [
     { value: "بدون خبرة", label: "بدون خبرة" },
@@ -227,9 +223,9 @@ export default function JobsContent({
                 onChange={(e) => setLocation(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 appearance-none"
               >
-                <option value="">الكل</option>
-                {dbLocations.map((loc) => (
-                  <option key={loc} value={loc}>{loc}</option>
+              <option value="">الكل</option>
+                {locationOptions.map((l) => (
+                  <option key={l.value} value={l.value}>{l.label}</option>
                 ))}
               </select>
             </div>
