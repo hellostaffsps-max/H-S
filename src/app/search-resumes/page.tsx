@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Search, MapPin, Briefcase, Star, Filter, Loader2, MessageCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getSearchFilters } from "@/app/actions/search-filters";
@@ -22,11 +23,12 @@ interface SeekerProfile {
 }
 
 export default function SearchResumes() {
+  const searchParams = useSearchParams();
   const [seekers, setSeekers] = useState<SeekerProfile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [category, setCategory] = useState("");
-  const [location, setLocation] = useState("");
+  const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
+  const [category, setCategory] = useState(searchParams.get("cat") || "");
+  const [location, setLocation] = useState(searchParams.get("location") || "");
 
   // Dynamic filter options from DB
   const [dbCategories, setDbCategories] = useState<string[]>([]);
@@ -56,8 +58,7 @@ export default function SearchResumes() {
         current_employer,
         profiles(full_name, avatar_url, location, phone)
       `)
-      .eq("is_available", true)
-      .order("created_at", { ascending: false });
+      .eq("is_available", true);
 
     if (error) {
       console.error("Error fetching seekers:", error);
