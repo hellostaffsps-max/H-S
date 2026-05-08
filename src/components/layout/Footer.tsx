@@ -1,6 +1,7 @@
 "use client";
 import Link from 'next/link';
-import { ChefHat, Facebook, Twitter, Instagram, Linkedin, Mail, Phone } from 'lucide-react';
+import Image from 'next/image';
+import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -11,9 +12,7 @@ export default function Footer() {
           {/* Brand & Description */}
           <div className="sm:col-span-2 md:col-span-3 lg:col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="bg-brand-600 p-1.5 rounded-lg">
-                <ChefHat className="h-6 w-6 text-white" />
-              </div>
+              <Image src="/logo.png" alt="Hello Staff" width={36} height={36} />
               <span className="font-bold text-lg md:text-xl text-white">Hello <span className="text-xs md:text-sm font-normal text-slate-400">Staff</span></span>
             </Link>
             <p className="text-sm text-slate-400 leading-relaxed mb-6 max-w-sm">

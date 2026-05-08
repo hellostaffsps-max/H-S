@@ -1,8 +1,9 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { ChefHat, Bell, Home, Briefcase, PlusCircle, LayoutDashboard, MessageSquare, User, Menu, X, CheckCircle2, LogIn, LogOut, UserPlus, ArrowLeft } from 'lucide-react';
+import { Bell, Home, Briefcase, PlusCircle, LayoutDashboard, MessageSquare, User, Menu, X, CheckCircle2, LogIn, LogOut, UserPlus, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -73,9 +74,7 @@ export default function Navbar() {
                 </button>
               )}
               <Link href="/" className="flex items-center gap-2 min-w-0" onClick={closeMenu}>
-                <div className="bg-brand-600 p-1.5 rounded-lg shrink-0">
-                  <ChefHat className="h-6 w-6 text-white" />
-                </div>
+                <Image src="/logo.png" alt="Hello Staff" width={36} height={36} className="shrink-0" />
                 <span className="font-bold text-lg sm:text-xl text-slate-800 truncate">Hello <span className="text-xs sm:text-sm font-normal text-slate-500">Staff</span></span>
               </Link>
             </div>

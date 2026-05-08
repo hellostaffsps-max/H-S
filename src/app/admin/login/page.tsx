@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { ChefHat, Lock, Mail, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import Image from 'next/image';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -74,8 +75,8 @@ export default function AdminLogin() {
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans" dir="rtl">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center p-3 bg-brand-600 rounded-2xl mb-4 shadow-lg shadow-brand-200">
-            <ChefHat className="h-10 w-10 text-white" />
+          <div className="inline-flex items-center justify-center mb-4">
+            <Image src="/logo.png" alt="Hello Staff" width={64} height={64} />
           </div>
           <h1 className="text-3xl font-extrabold text-slate-900">لوحة الإدارة العليا</h1>
           <p className="text-slate-500 mt-2">مرحباً بك مجدداً، يرجى تسجيل الدخول للمتابعة</p>

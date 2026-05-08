@@ -3,8 +3,9 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
-import { ChefHat, Lock, Mail, User, AlertCircle, Loader2, Building2, Search, CheckCircle } from 'lucide-react';
+import { Lock, Mail, User, AlertCircle, Loader2, Building2, Search, CheckCircle } from 'lucide-react';
 
 function SignupForm() {
   const searchParams = useSearchParams();
@@ -85,8 +86,8 @@ function SignupForm() {
   return (
     <div className="max-w-md w-full">
       <div className="text-center mb-8">
-        <Link href="/" className="inline-flex items-center justify-center p-2.5 sm:p-3 bg-brand-600 rounded-2xl mb-4 shadow-lg shadow-brand-200">
-          <ChefHat className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
+        <Link href="/" className="inline-flex items-center justify-center mb-4">
+          <Image src="/logo.png" alt="Hello Staff" width={56} height={56} />
         </Link>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">إنشاء حساب جديد</h1>
         <p className="text-slate-500 mt-2">انضم إلى أكبر منصة توظيف في قطاع الضيافة</p>

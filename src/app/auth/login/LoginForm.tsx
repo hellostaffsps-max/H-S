@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase";
-import { ChefHat, Lock, Mail, AlertCircle, Loader2 } from "lucide-react";
+import { Lock, Mail, AlertCircle, Loader2 } from "lucide-react";
 
 interface LoginFormProps {
   redirect?: string;
@@ -62,9 +63,9 @@ export default function LoginForm({ redirect = "/dashboard" }: LoginFormProps) {
       <div className="text-center mb-8">
         <Link
           href="/"
-          className="inline-flex items-center justify-center p-2.5 sm:p-3 bg-brand-600 rounded-2xl mb-4 shadow-lg shadow-brand-200"
+          className="inline-flex items-center justify-center mb-4"
         >
-          <ChefHat className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
+          <Image src="/logo.png" alt="Hello Staff" width={56} height={56} />
         </Link>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
           تسجيل الدخول

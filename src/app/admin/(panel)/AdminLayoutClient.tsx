@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import {
   LayoutDashboard,
   Users,
@@ -89,9 +90,7 @@ export default function AdminLayoutClient({
         {/* Sidebar Header */}
         <div className="p-5 border-b border-slate-800 flex items-center justify-between">
           <Link href="/admin" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center">
-              <ShieldCheck className="w-6 h-6 text-white" />
-            </div>
+            <Image src="/logo.png" alt="Hello Staff" width={40} height={40} className="rounded-xl" />
             <div>
               <h1 className="text-base font-black leading-tight">لوحة الإدارة</h1>
               <p className="text-[10px] text-slate-400 font-medium">Hello Staff</p>

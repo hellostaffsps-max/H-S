@@ -1,14 +1,13 @@
 "use client";
-import { ChefHat, Database, ExternalLink } from "lucide-react";
+import Image from "next/image";
+import { Database, ExternalLink } from "lucide-react";
 
 export default function SetupSupabase() {
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8 lg:p-12">
         <div className="flex justify-center mb-8">
-          <div className="bg-brand-600 p-4 rounded-xl">
-            <ChefHat className="h-12 w-12 text-white" />
-          </div>
+          <Image src="/logo.png" alt="Hello Staff" width={64} height={64} />
         </div>
         
         <h1 className="text-3xl font-bold text-center text-slate-900 mb-4">
