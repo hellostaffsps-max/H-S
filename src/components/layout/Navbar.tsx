@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { ChefHat, Bell, Home, Briefcase, PlusCircle, LayoutDashboard, MessageSquare, User, Menu, X, CheckCircle2, LogIn, LogOut, UserPlus, ArrowLeft, Search, Users } from 'lucide-react';
+import { ChefHat, Bell, Home, Briefcase, PlusCircle, LayoutDashboard, MessageSquare, User, Menu, X, CheckCircle2, LogIn, LogOut, UserPlus, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -97,7 +97,7 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-reverse space-x-8 items-center">
+          <nav className="hidden md:flex space-x-reverse space-x-8">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.path;
@@ -115,22 +115,6 @@ export default function Navbar() {
                 </Link>
               );
             })}
-
-            {/* Role-aware Search Bar */}
-            {isLoggedIn && (
-              <Link
-                href={isEmployer ? '/search-resumes' : '/jobs'}
-                className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all border min-w-[180px]",
-                  (pathname === '/search-resumes' || pathname === '/jobs')
-                    ? 'bg-brand-50 border-brand-200 text-brand-700'
-                    : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-brand-300 hover:text-brand-600 hover:bg-brand-50/50'
-                )}
-              >
-                <Search className="h-4 w-4 shrink-0" />
-                {isEmployer ? 'البحث عن موظف' : 'البحث عن وظيفة'}
-              </Link>
-            )}
           </nav>
 
           {/* Desktop User & Actions */}
@@ -261,18 +245,6 @@ export default function Navbar() {
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden border-t border-slate-200 bg-white px-4 py-3 space-y-1 animate-in slide-in-from-top-2 duration-200">
-          {/* Mobile Search Bar */}
-          {isLoggedIn && (
-            <Link
-              href={isEmployer ? '/search-resumes' : '/jobs'}
-              onClick={closeMenu}
-              className="flex items-center gap-3 px-4 py-3 mb-2 rounded-xl bg-gradient-to-l from-brand-50 to-brand-100/50 border border-brand-200 text-brand-700 font-bold text-sm min-h-[44px]"
-            >
-              <Search className="h-5 w-5 shrink-0" />
-              {isEmployer ? 'البحث عن موظف' : 'البحث عن وظيفة'}
-            </Link>
-          )}
-
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.path;
