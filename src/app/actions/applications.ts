@@ -51,6 +51,35 @@ export async function applyToJob(jobId: string, message?: string) {
     return { success: false, error: toArabicError(error.message) };
   }
 
+  // Notify the employer about the new application
+  try {
+    const { data: job } = await supabase
+      .from('jobs')
+      .select('employer_id, title')
+      .eq('id', jobId)
+      .single();
+
+    const { data: seekerProfile } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', user.id)
+      .single();
+
+    if (job?.employer_id) {
+      const seekerName = seekerProfile?.full_name || 'باحث عن عمل';
+      await createNotification(
+        supabase,
+        job.employer_id,
+        'طلب توظيف جديد',
+        `قام ${seekerName} بالتقديم على وظيفة "${job.title}"`,
+        'application',
+        `/dashboard`
+      );
+    }
+  } catch (e) {
+    console.error('Failed to notify employer:', e);
+  }
+
   revalidatePath('/jobs');
   revalidatePath('/dashboard');
   return { success: true, data };
@@ -93,7 +122,8 @@ async function createNotification(
   userId: string,
   title: string,
   message: string,
-  type: string = 'application'
+  type: string = 'application',
+  link?: string
 ) {
   try {
     await supabase.from('notifications').insert({
@@ -101,6 +131,7 @@ async function createNotification(
       title,
       message,
       type,
+      link: link || null,
     });
   } catch (e) {
     console.error('Failed to create notification:', e);
@@ -194,7 +225,13 @@ export async function updateApplicationStatus(
     notifMessage = `تمت دعوتك لمقابلة عمل على وظيفة "${job.title}". يرجى مراجعة التفاصيل.`;
   }
 
-  await createNotification(supabase, application.seeker_id, notifTitle, notifMessage, 'application');
+  // Build link for the notification
+  const seekerLink = `/dashboard/applications`;
+  const notifLink = status === 'مقبول' ? `/dashboard/applications` :
+                    status === 'مقابلة' ? `/dashboard/applications` :
+                    `/dashboard/applications`;
+
+  await createNotification(supabase, application.seeker_id, notifTitle, notifMessage, 'application', notifLink);
 
   revalidatePath('/dashboard');
   return { success: true };

@@ -181,9 +181,14 @@ export default function Navbar() {
                                 key={notification.id} 
                                 onClick={() => {
                                   if (!notification.is_read) markAsRead(notification.id);
+                                  if (notification.link) {
+                                    setIsNotificationsOpen(false);
+                                    router.push(notification.link);
+                                  }
                                 }}
                                 className={cn(
-                                  "p-4 cursor-pointer transition-colors hover:bg-slate-50",
+                                  "p-4 transition-colors hover:bg-slate-50",
+                                  notification.link ? "cursor-pointer" : "cursor-default",
                                   !notification.is_read ? "bg-brand-50/30" : ""
                                 )}
                               >
@@ -192,14 +197,19 @@ export default function Navbar() {
                                     "w-2 h-2 rounded-full mt-2 shrink-0",
                                     !notification.is_read ? "bg-brand-500" : "bg-transparent"
                                   )} />
-                                  <div>
+                                  <div className="flex-1">
                                     <h4 className={cn("text-sm mb-1", !notification.is_read ? "font-bold text-slate-900" : "font-medium text-slate-700")}>
                                       {notification.title}
                                     </h4>
                                     <p className="text-xs text-slate-500 leading-relaxed mb-2">{notification.message}</p>
-                                    <span className="text-[10px] text-slate-400 font-medium">
-                                      {new Date(notification.created_at).toLocaleDateString('ar-EG', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                    </span>
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-[10px] text-slate-400 font-medium">
+                                        {new Date(notification.created_at).toLocaleDateString('ar-EG', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                      </span>
+                                      {notification.link && (
+                                        <span className="text-[10px] text-brand-600 font-medium">عرض التفاصيل ←</span>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
                               </div>

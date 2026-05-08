@@ -10,6 +10,7 @@ export interface Notification {
   type: string;
   is_read: boolean;
   created_at: string;
+  link?: string | null;
 }
 
 interface NotificationsContextValue {

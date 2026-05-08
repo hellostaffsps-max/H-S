@@ -115,6 +115,7 @@ export async function terminateEmployee(applicationId: string, reason?: string) 
       title: 'إنهاء فترة العمل',
       message: `تم إنهاء فترة عملك في وظيفة "${job.title}".${reason ? ` السبب: ${reason}` : ''} نتمنى لك التوفيق.`,
       type: 'application',
+      link: '/dashboard/applications',
     });
   } catch (e) {
     console.error('Failed to create notification:', e);
