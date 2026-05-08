@@ -782,6 +782,7 @@ function EmployerDashboard({
   // Quick actions
   const quickActions = [
     { icon: PlusCircle, title: "نشر وظيفة", desc: "أضف فرصة عمل جديدة", href: "/post-job", color: "bg-brand-50 text-brand-600" },
+    { icon: UserCheck, title: "فريق العمل", desc: "إدارة الموظفين الحاليين", href: "/dashboard/team", color: "bg-green-50 text-green-600" },
     { icon: Briefcase, title: "إدارة الوظائف", desc: "استعرض وعدّل وظائفك", href: "#jobs", color: "bg-sky-50 text-sky-600", scrollTo: jobsRef },
     { icon: Users, title: "عرض المتقدمين", desc: "راجع الطلبات الواردة", href: "#applicants", color: "bg-indigo-50 text-indigo-600", scrollTo: applicantsRef },
     { icon: Settings, title: "إعدادات المنشأة", desc: "حدّث بيانات عملك", href: "/profile", color: "bg-slate-50 text-slate-600" },
@@ -806,12 +807,21 @@ function EmployerDashboard({
             تابع وظائفك، المتقدمين، والمقابلات من مكان واحد
           </p>
         </div>
-        <Link
-          href="/post-job"
-          className="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-colors flex items-center gap-2 shadow-sm shrink-0"
-        >
-          <PlusCircle className="w-5 h-5" /> نشر وظيفة جديدة
-        </Link>
+        <div className="flex items-center gap-2 shrink-0">
+          <Link
+            href="/dashboard/team"
+            className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-bold transition-colors flex items-center gap-2"
+          >
+            <UserCheck className="w-5 h-5 text-green-600" />
+            فريق العمل <span className="bg-green-100 text-green-700 px-1.5 py-0.5 rounded-md text-xs">{hired}</span>
+          </Link>
+          <Link
+            href="/post-job"
+            className="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-colors flex items-center gap-2 shadow-sm"
+          >
+            <PlusCircle className="w-5 h-5" /> نشر وظيفة جديدة
+          </Link>
+        </div>
       </div>
 
       {/* Stats Cards */}
