@@ -19,9 +19,9 @@ export async function PATCH(
     return NextResponse.json({ success: false, error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const { status } = body;
+  const { status, renew } = body;
 
-  if (!status || !['approved', 'rejected', 'pending'].includes(status)) {
+  if (!status || !['approved', 'rejected', 'pending', 'expired'].includes(status)) {
     return NextResponse.json(
       { success: false, error: 'Invalid status' },
       { status: 400 }
@@ -41,9 +41,17 @@ export async function PATCH(
     return NextResponse.json({ success: false, error: 'Job not found' }, { status: 404 });
   }
 
+  // Build update object
+  const updateObj: any = { status };
+  
+  // If renewing, reset expiry to 30 days from now
+  if (renew) {
+    updateObj.expires_at = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+  }
+
   const { data, error } = await supabase
     .from('jobs')
-    .update({ status })
+    .update(updateObj)
     .eq('id', id)
     .select()
     .single();

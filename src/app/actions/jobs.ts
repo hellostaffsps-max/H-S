@@ -11,6 +11,7 @@ export async function getJobs(filters?: { category?: string; type?: string; loca
     .from('jobs')
     .select('*, employers(company_name, logo_url)')
     .eq('status', 'approved')
+    .gte('expires_at', new Date().toISOString())
     .order('created_at', { ascending: false });
 
   if (filters?.category) {
@@ -61,7 +62,7 @@ export async function getJobById(id: string) {
 
   // If no user or not the employer/admin, only show approved jobs
   if (!user) {
-    query = query.eq('status', 'approved');
+    query = query.eq('status', 'approved').gte('expires_at', new Date().toISOString());
   } else {
     const { data: profile } = await supabase
       .from('profiles')
@@ -79,7 +80,7 @@ export async function getJobById(id: string) {
       .then(({ data }) => !!data);
 
     if (!isAdmin && !isOwner) {
-      query = query.eq('status', 'approved');
+      query = query.eq('status', 'approved').gte('expires_at', new Date().toISOString());
     }
   }
 
