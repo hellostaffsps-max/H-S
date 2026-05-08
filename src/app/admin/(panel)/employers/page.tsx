@@ -15,7 +15,6 @@ interface Employer {
   number_of_branches: number | null;
   number_of_employees: string | null;
   logo_url: string | null;
-  created_at: string;
   profiles: {
     full_name: string | null;
     email: string | null;
@@ -38,11 +37,17 @@ export default function EmployersManagement() {
     try {
       const { data, error } = await supabase
         .from("employers")
-        .select("*, profiles(full_name, email, phone, created_at)")
-        .order("created_at", { ascending: false });
+        .select("*, profiles(full_name, email, phone, created_at)");
 
       if (error) throw error;
-      setEmployers(data || []);
+      
+      const sorted = (data || []).sort((a, b) => {
+        const d1 = new Date(a.profiles?.created_at || 0).getTime();
+        const d2 = new Date(b.profiles?.created_at || 0).getTime();
+        return d2 - d1;
+      });
+      
+      setEmployers(sorted);
     } catch (e: any) {
       console.error("Error fetching employers:", e.message);
     } finally {
@@ -161,7 +166,7 @@ export default function EmployersManagement() {
                     <td className="px-6 py-4 text-sm text-slate-500">
                       <div className="flex items-center gap-1">
                         <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                        {new Date(emp.profiles?.created_at || emp.created_at).toLocaleDateString("ar-EG")}
+                        {new Date(emp.profiles?.created_at || 0).toLocaleDateString("ar-EG")}
                       </div>
                     </td>
                   </tr>

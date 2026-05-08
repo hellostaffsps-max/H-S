@@ -12,7 +12,6 @@ interface Seeker {
   availability: string | null;
   bio: string | null;
   cv_url: string | null;
-  created_at: string;
   profiles: {
     full_name: string | null;
     email: string | null;
@@ -37,11 +36,17 @@ export default function CandidatesManagement() {
     try {
       const { data, error } = await supabase
         .from("seekers")
-        .select("*, profiles(full_name, email, phone, location, avatar_url, created_at)")
-        .order("created_at", { ascending: false });
+        .select("*, profiles(full_name, email, phone, location, avatar_url, created_at)");
 
       if (error) throw error;
-      setSeekers(data || []);
+      
+      const sorted = (data || []).sort((a, b) => {
+        const d1 = new Date(a.profiles?.created_at || 0).getTime();
+        const d2 = new Date(b.profiles?.created_at || 0).getTime();
+        return d2 - d1;
+      });
+      
+      setSeekers(sorted);
     } catch (e: any) {
       console.error("Error fetching seekers:", e.message);
     } finally {
@@ -182,7 +187,7 @@ export default function CandidatesManagement() {
                     <td className="px-6 py-4 text-sm text-slate-500">
                       <div className="flex items-center gap-1">
                         <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                        {new Date(s.profiles?.created_at || s.created_at).toLocaleDateString("ar-EG")}
+                        {new Date(s.profiles?.created_at || 0).toLocaleDateString("ar-EG")}
                       </div>
                     </td>
                   </tr>
