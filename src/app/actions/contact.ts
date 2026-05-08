@@ -35,6 +35,13 @@ export async function submitContactForm(formData: FormData) {
     return { success: true };
   }
 
+  // Try to get logged-in user's ID for notifications
+  let userId = null;
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) userId = user.id;
+  } catch {}
+
   const { error } = await supabase
     .from('support_tickets')
     .insert({
@@ -43,6 +50,7 @@ export async function submitContactForm(formData: FormData) {
       subject,
       message,
       status: 'open',
+      user_id: userId,
     });
 
   if (error) {
