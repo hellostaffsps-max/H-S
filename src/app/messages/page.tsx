@@ -88,6 +88,16 @@ function MessagesPage() {
   }, [selectedPartner, conversations]);
 
   async function fetchPartnerInfo(partnerId: string) {
+    if (partnerId === 'system-broadcasts') {
+      setPartnerInfo({
+        partnerId,
+        partnerName: 'إعلانات النظام (تعميم)',
+        partnerAvatar: null,
+        partnerRole: 'system',
+      });
+      return;
+    }
+
     try {
       const res = await fetch("/api/auth/user");
       const currentUser = await res.json();
@@ -412,31 +422,37 @@ function MessagesPage() {
               </div>
 
               {/* Input */}
-              <form
-                onSubmit={handleSend}
-                className="p-4 border-t border-slate-200 bg-white"
-              >
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="اكتب رسالتك..."
-                    className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-                  />
-                  <button
-                    type="submit"
-                    disabled={sending || !newMessage.trim()}
-                    className="p-2.5 bg-brand-600 text-white rounded-xl hover:bg-brand-700 transition-colors disabled:opacity-50"
-                  >
-                    {sending ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Send className="w-4 h-4" />
-                    )}
-                  </button>
+              {selectedConversation.partnerId !== 'system-broadcasts' ? (
+                <form
+                  onSubmit={handleSend}
+                  className="p-4 border-t border-slate-200 bg-white"
+                >
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      placeholder="اكتب رسالتك..."
+                      className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    />
+                    <button
+                      type="submit"
+                      disabled={sending || !newMessage.trim()}
+                      className="p-2.5 bg-brand-600 text-white rounded-xl hover:bg-brand-700 transition-colors disabled:opacity-50"
+                    >
+                      {sending ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Send className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="p-4 border-t border-slate-200 bg-slate-50 text-center text-sm text-slate-500">
+                  هذه المحادثة مخصصة للإعلانات الإدارية فقط ولا يمكن الرد عليها.
                 </div>
-              </form>
+              )}
             </>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
