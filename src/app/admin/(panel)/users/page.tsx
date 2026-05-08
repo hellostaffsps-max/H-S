@@ -172,46 +172,50 @@ export default function UsersManagement() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2 relative">
-                        <button 
-                          onClick={() => handleDeleteUser(user.id)}
-                          className="p-2 hover:bg-red-50 text-red-400 hover:text-red-600 rounded-lg transition-all" 
-                          title="حذف المستخدم"
-                        >
-                          <Trash2 className="h-5 w-5" />
-                        </button>
-                        
-                        <div className="relative">
-                          <button 
-                            onClick={() => setActiveMenu(activeMenu === user.id ? null : user.id)}
-                            className="p-2 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-lg transition-all"
-                          >
-                            <MoreVertical className="h-5 w-5" />
-                          </button>
+                        {user.role !== 'admin' && (
+                          <>
+                            <button 
+                              onClick={() => handleDeleteUser(user.id)}
+                              className="p-2 hover:bg-red-50 text-red-400 hover:text-red-600 rounded-lg transition-all" 
+                              title="حذف المستخدم"
+                            >
+                              <Trash2 className="h-5 w-5" />
+                            </button>
+                            
+                            <div className="relative">
+                              <button 
+                                onClick={() => setActiveMenu(activeMenu === user.id ? null : user.id)}
+                                className="p-2 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-lg transition-all"
+                              >
+                                <MoreVertical className="h-5 w-5" />
+                              </button>
 
-                          {activeMenu === user.id && (
-                            <div className="absolute left-0 bottom-full mb-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden py-1">
-                              <p className="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase">تغيير الدور إلى:</p>
-                              <button 
-                                onClick={() => handleChangeRole(user.id, 'seeker')}
-                                className="w-full text-right px-4 py-2 text-sm hover:bg-slate-50 text-slate-700 transition-colors"
-                              >
-                                باحث عن عمل
-                              </button>
-                              <button 
-                                onClick={() => handleChangeRole(user.id, 'employer')}
-                                className="w-full text-right px-4 py-2 text-sm hover:bg-slate-50 text-slate-700 transition-colors"
-                              >
-                                صاحب عمل
-                              </button>
-                              <button 
-                                onClick={() => handleChangeRole(user.id, 'admin')}
-                                className="w-full text-right px-4 py-2 text-sm hover:bg-slate-50 text-slate-700 transition-colors"
-                              >
-                                مدير (أدمن)
-                              </button>
+                              {activeMenu === user.id && (
+                                <div className="absolute left-0 bottom-full mb-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden py-1">
+                                  <p className="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase">تغيير الدور إلى:</p>
+                                  <button 
+                                    onClick={() => handleChangeRole(user.id, 'seeker')}
+                                    className="w-full text-right px-4 py-2 text-sm hover:bg-slate-50 text-slate-700 transition-colors"
+                                  >
+                                    باحث عن عمل
+                                  </button>
+                                  <button 
+                                    onClick={() => handleChangeRole(user.id, 'employer')}
+                                    className="w-full text-right px-4 py-2 text-sm hover:bg-slate-50 text-slate-700 transition-colors"
+                                  >
+                                    صاحب عمل
+                                  </button>
+                                  <button 
+                                    onClick={() => handleChangeRole(user.id, 'admin')}
+                                    className="w-full text-right px-4 py-2 text-sm hover:bg-slate-50 text-slate-700 transition-colors"
+                                  >
+                                    مدير (أدمن)
+                                  </button>
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
