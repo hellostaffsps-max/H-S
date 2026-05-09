@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/lib/supabase';
 import { Lock, Mail, User, AlertCircle, Loader2, Building2, Search, CheckCircle } from 'lucide-react';
 
 function SignupForm() {
