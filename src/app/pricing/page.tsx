@@ -182,12 +182,14 @@ export default function PricingPage() {
     const isFree = plan.price === 0;
     if (!isFree && !receiptUrl) return;
 
+    console.log("Submitting plan:", plan); // For debugging
+
     setSubmitting(true);
     try {
-      // Prepare subscription data
+      // Prepare subscription data with robust fallbacks
       const subData: any = {
         user_id: profile.id,
-        plan_name: plan.name,
+        plan_name: plan.name || plan.plan_name || "باقة مخصصة",
         payment_receipt_url: isFree ? null : receiptUrl,
         status: isFree ? "active" : "pending",
       };
