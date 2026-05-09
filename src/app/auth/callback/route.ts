@@ -32,11 +32,31 @@ export async function GET(request: Request) {
       }
     );
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
+    const { data: { session }, error } = await supabase.auth.exchangeCodeForSession(code);
+    if (!error && session) {
+      const role = searchParams.get('role');
+      if (role === 'employer') {
+        const userId = session.user.id;
+        
+        // 1. Update profile role
+        await supabase.from('profiles').update({ role: 'employer' }).eq('id', userId);
+        
+        // 2. Insert into employers table
+        const fullName = session.user.user_metadata?.full_name || 
+                         session.user.user_metadata?.name || 
+                         session.user.email?.split('@')[0] || '';
+                         
+        await supabase.from('employers').upsert({
+          profile_id: userId,
+          company_name: fullName
+        });
+        
+        // 3. Delete from seekers table if the trigger created it
+        await supabase.from('seekers').delete().eq('profile_id', userId);
+      }
+      
       return NextResponse.redirect(`${origin}${redirectTo}`);
     }
-  }
 
   return NextResponse.redirect(`${origin}/auth/login?error=oauth_failed`);
 }
