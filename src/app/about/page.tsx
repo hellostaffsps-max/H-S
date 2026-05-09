@@ -13,10 +13,10 @@ import {
 } from "lucide-react";
 
 const stats = [
-  { icon: Briefcase, value: "500+", label: "وظيفة منشورة" },
-  { icon: Users, value: "10,000+", label: "مستخدم نشط" },
-  { icon: Star, value: "1,200+", label: "توظيف ناجح" },
-  { icon: Award, value: "98%", label: "نسبة رضا العملاء" },
+  { icon: Briefcase, value: "Beta", label: "إطلاق تجريبي" },
+  { icon: Users, value: "100%", label: "تغطية قطاع الضيافة" },
+  { icon: Star, value: "مجاني", label: "لأول 50 صاحب عمل" },
+  { icon: Award, value: "دعم", label: "مباشر ومحلي" },
 ];
 
 const values = [

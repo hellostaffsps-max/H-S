@@ -66,13 +66,13 @@ const APP_STATUS_OPTIONS = [
 ];
 
 const PIPELINE_STAGES = [
-  { key: "قيد المراجعة", label: "طلبات جديدة", color: "bg-yellow-500", ring: "ring-yellow-200" },
-  { key: "مراجعة", label: "تمت المراجعة", color: "bg-blue-500", ring: "ring-blue-200" },
-  { key: "قائمة مختصرة", label: "القائمة المختصرة", color: "bg-indigo-500", ring: "ring-indigo-200" },
-  { key: "مقابلة", label: "مقابلة", color: "bg-purple-500", ring: "ring-purple-200" },
-  { key: "تجربة عمل", label: "تجربة عمل", color: "bg-orange-500", ring: "ring-orange-200" },
-  { key: "مقبول", label: "تم التوظيف", color: "bg-green-500", ring: "ring-green-200" },
-  { key: "لم يتم التوظيف", label: "لم يتم التوظيف", color: "bg-red-500", ring: "ring-red-200" },
+  { key: "قيد المراجعة", label: "طلبات جديدة", color: "bg-amber-500", ring: "ring-amber-200", icon: Clock },
+  { key: "مراجعة", label: "مراجعة الملف", color: "bg-blue-500", ring: "ring-blue-200", icon: Eye },
+  { key: "قائمة مختصرة", label: "القائمة المختصرة", color: "bg-indigo-500", ring: "ring-indigo-200", icon: Star },
+  { key: "مقابلة", label: "مقابلة", color: "bg-purple-500", ring: "ring-purple-200", icon: Calendar },
+  { key: "تجربة عمل", label: "تجربة عمل", color: "bg-orange-500", ring: "ring-orange-200", icon: Briefcase },
+  { key: "مقبول", label: "تم التوظيف", color: "bg-emerald-500", ring: "ring-emerald-200", icon: CheckCircle2 },
+  { key: "لم يتم التوظيف", label: "لم يتم التوظيف", color: "bg-rose-500", ring: "ring-rose-200", icon: XCircle },
 ];
 
 /** Get valid next statuses for the given current status */
@@ -697,41 +697,7 @@ function ApplicantModal({
                   </button>
                   <button
                     onClick={handleRejectWithReason}
-                    className="px-4 py-2 text-sm font-bold text-white bg-red-600 rounded-xl hover:bg-red-700"
-                  >
-                    تأكيد عدم التوظيف
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ==================== SKELETON ==================== */
-
-function DashboardSkeleton() {
-  return (
-    <div className="space-y-8 animate-pulse">
-      <div className="h-20 bg-white rounded-2xl border border-slate-200" />
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-28 bg-white rounded-2xl border border-slate-200" />
-        ))}
-      </div>
-      <div className="h-24 bg-white rounded-2xl border border-slate-200" />
-      <div className="h-64 bg-white rounded-2xl border border-slate-200" />
-      <div className="h-64 bg-white rounded-2xl border border-slate-200" />
-    </div>
-  );
-}
-
-/* ==================== EMPLOYER DASHBOARD ==================== */
-
-function EmployerDashboard({
+                    classNamefunction EmployerDashboard({
   jobs,
   applications,
   employerData,
@@ -766,12 +732,12 @@ function EmployerDashboard({
   const hired = applications.filter((a) => a.status === "مقبول").length;
 
   const stats = [
-    { label: "الوظائف النشطة", value: `${activeJobs} / ${subscription.job_limit}`, icon: Briefcase, color: "brand", trend: null },
-    { label: "المتقدمون الجدد", value: newApplicants, icon: Users, color: "yellow", trend: null },
-    { label: "إجمالي المتقدمين", value: totalApplicants, icon: TrendingUp, color: "blue", trend: null },
-    { label: "مقابلات قادمة", value: upcomingInterviews, icon: Clock, color: "purple", trend: null },
-    { label: "بانتظار المراجعة", value: pendingReview, icon: FileText, color: "orange", trend: null },
-    { label: "تم التوظيف", value: hired, icon: CheckCircle2, color: "green", trend: null },
+    { label: "الوظائف النشطة", value: `${activeJobs} / ${subscription.job_limit}`, icon: Briefcase, color: "brand" },
+    { label: "طلبات جديدة", value: newApplicants, icon: Users, color: "amber" },
+    { label: "مقابلات قادمة", value: upcomingInterviews, icon: Clock, color: "purple" },
+    { label: "بانتظار المراجعة", value: pendingReview, icon: FileText, color: "orange" },
+    { label: "إجمالي المتقدمين", value: totalApplicants, icon: TrendingUp, color: "blue" },
+    { label: "تم التوظيف", value: hired, icon: CheckCircle2, color: "emerald" },
   ];
 
   // Pipeline counts
@@ -780,296 +746,299 @@ function EmployerDashboard({
     count: applications.filter((a) => a.status === stage.key).length,
   }));
 
-  // Latest applicants (top 5 by date)
+  // Latest applicants (top 6 by date)
   const latestApplicants = [...applications]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 6);
+    .slice(0, 8);
 
-  // Quick actions
   const quickActions = [
-    { icon: PlusCircle, title: "نشر وظيفة", desc: isLimitReached ? "وصلت للحد الأقصى" : "أضف فرصة عمل جديدة", href: isLimitReached ? "/pricing" : "/post-job", color: isLimitReached ? "bg-red-50 text-red-600" : "bg-brand-50 text-brand-600" },
-    { icon: UserCheck, title: "فريق العمل", desc: "إدارة الموظفين الحاليين", href: "/dashboard/team", color: "bg-green-50 text-green-600" },
-    { icon: Briefcase, title: "إدارة الوظائف", desc: "استعرض وعدّل وظائفك", href: "#jobs", color: "bg-sky-50 text-sky-600", scrollTo: jobsRef },
-    { icon: Users, title: "عرض المتقدمين", desc: "راجع الطلبات الواردة", href: "#applicants", color: "bg-indigo-50 text-indigo-600", scrollTo: applicantsRef },
-    { icon: Settings, title: "إعدادات المنشأة", desc: "حدّث بيانات عملك", href: "/profile", color: "bg-slate-50 text-slate-600" },
-    { icon: MessageSquare, title: "الرسائل", desc: "تواصل مع المرشحين", href: "/messages", color: "bg-emerald-50 text-emerald-600" },
-    { icon: Star, title: "باقتي الحالية", desc: subscription.plan_name, href: "/pricing", color: "bg-amber-50 text-amber-600" },
+    { icon: PlusCircle, title: "نشر وظيفة", desc: isLimitReached ? "وصلت للحد الأقصى" : "أضف فرصة عمل جديدة", href: isLimitReached ? "/pricing" : "/post-job", color: isLimitReached ? "bg-red-50 text-red-600" : "bg-brand-50 text-brand-600 shadow-brand-100/50 shadow-lg" },
+    { icon: UserCheck, title: "فريق العمل", desc: "إدارة الموظفين", href: "/dashboard/team", color: "bg-emerald-50 text-emerald-600 shadow-emerald-100/50 shadow-lg" },
+    { icon: MessageSquare, title: "الرسائل", desc: "تواصل مع المرشحين", href: "/messages", color: "bg-sky-50 text-sky-600 shadow-sky-100/50 shadow-lg" },
+    { icon: Star, title: "باقتي الحالية", desc: subscription.plan_name, href: "/pricing", color: "bg-amber-50 text-amber-600 shadow-amber-100/50 shadow-lg" },
+    { icon: Settings, title: "الإعدادات", desc: "بيانات المنشأة", href: "/profile", color: "bg-slate-50 text-slate-600 shadow-slate-100/50 shadow-lg" },
   ];
 
-  const handleQuickAction = (action: typeof quickActions[0]) => {
-    if (action.scrollTo && action.scrollTo.current) {
-      action.scrollTo.current.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
-
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900">
-            مرحباً، {businessName}
-          </h1>
-          <p className="text-slate-500 text-sm mt-1">
-            تابع وظائفك، المتقدمين، والمقابلات من مكان واحد
-          </p>
-        </div>
-        {subscription.status === 'pending' && (
-          <div className="bg-amber-50 border border-amber-200 px-4 py-2 rounded-xl flex items-center gap-2 text-amber-700 text-xs font-bold">
-            <Clock className="w-4 h-4" />
-            طلب الباقة المدفوعة ({subscription.plan_name}) قيد المراجعة
+    <div className="space-y-8 pb-12">
+      {/* Premium Welcome Header */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-[32px] p-8 sm:p-10 shadow-2xl">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/10 blur-[100px] -mr-32 -mt-32" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/10 blur-[100px] -ml-32 -mb-32" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-brand-500/20 backdrop-blur-xl border border-brand-500/30 flex items-center justify-center">
+                <Users className="w-6 h-6 text-brand-400" />
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                مرحباً بك، {businessName}
+              </h1>
+            </div>
+            <p className="text-slate-400 text-sm sm:text-base font-medium max-w-lg">
+              إليك نظرة شاملة على عمليات التوظيف في منشأتك. يمكنك متابعة المتقدمين وجدولة المقابلات بسهولة.
+            </p>
           </div>
-        )}
-        <div className="flex items-center gap-2 shrink-0">
-          <Link
-            href="/dashboard/team"
-            className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-bold transition-colors flex items-center gap-2"
-          >
-            <UserCheck className="w-5 h-5 text-green-600" />
-            فريق العمل <span className="bg-green-100 text-green-700 px-1.5 py-0.5 rounded-md text-xs">{hired}</span>
-          </Link>
-          <Link
-            href="/post-job"
-            className="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-colors flex items-center gap-2 shadow-sm"
-          >
-            <PlusCircle className="w-5 h-5" /> نشر وظيفة جديدة
-          </Link>
+
+          <div className="flex flex-wrap items-center gap-3">
+            {subscription.status === 'pending' && (
+              <div className="bg-amber-500/10 backdrop-blur-md border border-amber-500/30 px-4 py-2.5 rounded-2xl flex items-center gap-2 text-amber-400 text-xs font-bold">
+                <Clock className="w-4 h-4 animate-pulse" />
+                تتم مراجعة طلب الترقية لـ {subscription.plan_name}
+              </div>
+            )}
+            <Link
+              href="/post-job"
+              className="group bg-brand-600 hover:bg-brand-500 text-white px-6 py-3 rounded-2xl text-sm font-black transition-all flex items-center gap-2 shadow-xl shadow-brand-900/20 hover:scale-[1.02] active:scale-95"
+            >
+              <PlusCircle className="w-5 h-5 transition-transform group-hover:rotate-90" />
+              نشر وظيفة جديدة
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      {/* Modern Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
         {stats.map((stat, i) => (
           <StatCard key={i} {...stat} />
         ))}
       </div>
 
-      {/* Hiring Pipeline */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm">
-        <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">
-          خط سير التوظيف
-        </h2>
-        <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
-          {pipelineCounts.map((step) => (
+      {/* Professional Hiring Pipeline Visualizer */}
+      <div className="bg-white border border-slate-100 rounded-[32px] p-6 sm:p-8 shadow-xl shadow-slate-200/50">
+        <div className="flex items-center justify-between mb-8">
+          <div className="space-y-1">
+            <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-brand-600" />
+              مسار التوظيف الذكي
+            </h2>
+            <p className="text-xs text-slate-500 font-medium">تتبع مراحل تقدم المتقدمين لكل وظيفة</p>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" />
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">تحديث مباشر</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+          {pipelineCounts.map((step, idx) => (
             <div
               key={step.key}
-              className={`${step.color} rounded-xl p-3 text-white text-center relative overflow-hidden`}
+              className="group relative flex flex-col items-center"
             >
-              <div className="text-xl sm:text-2xl font-black relative z-10">{step.count}</div>
-              <div className="text-[10px] sm:text-xs font-bold mt-1 opacity-90 relative z-10 leading-tight">{step.label}</div>
-              {step.count > 0 && (
-                <div className="absolute inset-0 bg-white/10 rounded-xl" />
+              <div className={`w-full aspect-square rounded-[24px] p-4 flex flex-col items-center justify-center transition-all duration-300 border-2 ${
+                step.count > 0 
+                ? `${step.color} border-transparent shadow-lg ${step.ring}` 
+                : 'bg-slate-50 border-slate-100 text-slate-300 grayscale opacity-60'
+              }`}>
+                <step.icon className={`w-6 h-6 mb-2 ${step.count > 0 ? 'text-white' : 'text-slate-300'}`} />
+                <div className={`text-2xl font-black ${step.count > 0 ? 'text-white' : 'text-slate-400'}`}>{step.count}</div>
+              </div>
+              <div className="mt-3 text-center">
+                <div className="text-[11px] font-black text-slate-900 mb-0.5">{step.label}</div>
+              </div>
+              
+              {/* Connector line for desktop */}
+              {idx < pipelineCounts.length - 1 && (
+                <div className="hidden lg:block absolute top-1/2 -translate-y-8 left-[-16px] w-8 h-[2px] bg-slate-100" />
               )}
             </div>
           ))}
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        {quickActions.map((action, i) =>
-          action.scrollTo ? (
-            <button
-              key={i}
-              onClick={() => handleQuickAction(action)}
-              className="flex items-center gap-3 p-4 bg-white border border-slate-100 rounded-2xl hover:border-brand-200 hover:shadow-md transition-all group text-right"
-            >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${action.color}`}>
-                <action.icon className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 group-hover:text-brand-700 transition-colors">{action.title}</h3>
-                <p className="text-[11px] text-slate-500">{action.desc}</p>
-              </div>
-            </button>
-          ) : (
-            <Link
-              key={i}
-              href={action.href}
-              className="flex items-center gap-3 p-4 bg-white border border-slate-100 rounded-2xl hover:border-brand-200 hover:shadow-md transition-all group"
-            >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${action.color}`}>
-                <action.icon className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 group-hover:text-brand-700 transition-colors">{action.title}</h3>
-                <p className="text-[11px] text-slate-500">{action.desc}</p>
-              </div>
-            </Link>
-          )
-        )}
-      </div>
-
-      {/* My Jobs */}
-      <div ref={jobsRef}>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-black text-slate-900">وظائفي المنشورة</h2>
-          <span className="text-xs font-bold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">{jobs.length} وظيفة</span>
-        </div>
-
-        {jobs.length === 0 ? (
-          <EmptyState
-            icon={Briefcase}
-            title="ابدأ بأول وظيفة"
-            desc="انشر وظيفة واضحة لجذب المرشحين المناسبين لمطعمك أو مقهاك."
-            cta="نشر أول وظيفة"
-            href="/post-job"
-          />
-        ) : (
-          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full text-right">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100">
-                    <th className="px-4 py-3 sm:px-6 sm:py-4 text-xs font-bold text-slate-500">الوظيفة</th>
-                    <th className="px-4 py-3 sm:px-6 sm:py-4 text-xs font-bold text-slate-500">الحالة</th>
-                    <th className="px-4 py-3 sm:px-6 sm:py-4 text-xs font-bold text-slate-500">المتقدمين</th>
-                    <th className="px-4 py-3 sm:px-6 sm:py-4 text-xs font-bold text-slate-500">تاريخ النشر</th>
-                    <th className="px-4 py-3 sm:px-6 sm:py-4 text-xs font-bold text-slate-500">الإجراءات</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {jobs.map((job) => {
-                    const appCount = applications.filter((a) => a.job_id === job.id).length;
-                    const isClosed = job.status === "closed";
-                    const isApproved = job.status === "approved";
-                    return (
-                      <tr key={job.id} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="px-4 py-3 sm:px-6 sm:py-4">
-                          <p className="font-bold text-slate-900 text-sm">{job.title}</p>
-                          <p className="text-xs text-slate-500">{job.company_name}</p>
-                        </td>
-                        <td className="px-4 py-3 sm:px-6 sm:py-4">
-                          <JobStatusBadge status={job.status} />
-                        </td>
-                        <td className="px-4 py-3 sm:px-6 sm:py-4">
-                          <span className="inline-flex items-center gap-1 text-sm font-bold text-slate-700">
-                            <Users className="w-3.5 h-3.5 text-slate-400" />
-                            {appCount}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 sm:px-6 sm:py-4 text-xs text-slate-500 whitespace-nowrap">
-                          {new Date(job.created_at).toLocaleDateString("ar-EG")}
-                        </td>
-                        <td className="px-4 py-3 sm:px-6 sm:py-4">
-                          <div className="flex items-center gap-1">
-                            {appCount > 0 && (
-                              <button
-                                onClick={() => applicantsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
-                                className="p-1.5 text-slate-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
-                                title="عرض المتقدمين"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </button>
-                            )}
-                            {isApproved && (
-                              <button
-                                onClick={() => onJobAction(job.id, "pause")}
-                                className="p-1.5 text-slate-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
-                                title="إيقاف مؤقت"
-                              >
-                                <PauseCircle className="w-4 h-4" />
-                              </button>
-                            )}
-                            {isClosed && (
-                              <button
-                                onClick={() => onJobAction(job.id, "activate")}
-                                className="p-1.5 text-slate-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                                title="تفعيل"
-                              >
-                                <PlayCircle className="w-4 h-4" />
-                              </button>
-                            )}
-                            {!isClosed && (
-                              <button
-                                onClick={() => onJobAction(job.id, "close")}
-                                className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                title="إغلاق"
-                              >
-                                <XCircle className="w-4 h-4" />
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+      {/* Quick Access Actions */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        {quickActions.map((action, i) => (
+          <Link
+            key={i}
+            href={action.href}
+            className="flex flex-col items-center gap-3 p-6 bg-white border border-slate-100 rounded-3xl hover:border-brand-200 hover:shadow-xl transition-all group text-center"
+          >
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 ${action.color}`}>
+              <action.icon className="w-6 h-6" />
             </div>
-          </div>
-        )}
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 group-hover:text-brand-700 transition-colors">{action.title}</h3>
+              <p className="text-[10px] text-slate-500 font-medium mt-1 leading-tight">{action.desc}</p>
+            </div>
+          </Link>
+        ))}
       </div>
 
-      {/* Latest Applicants */}
-      <div ref={applicantsRef}>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-black text-slate-900">أحدث المتقدمين</h2>
-          {applications.length > 0 && (
-            <span className="text-xs font-bold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">{applications.length} متقدم</span>
+      {/* Main Content Area */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        {/* Left Column: Latest Applicants */}
+        <div className="lg:col-span-8 space-y-6" ref={applicantsRef}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                <Users className="w-5 h-5 text-blue-600" />
+              </div>
+              <h2 className="text-xl font-black text-slate-900 tracking-tight">أحدث المتقدمين</h2>
+            </div>
+            <Link href="/dashboard/applicants" className="text-xs font-black text-brand-600 hover:text-brand-700 bg-brand-50 px-4 py-2 rounded-xl transition-colors">عرض الكل</Link>
+          </div>
+
+          {applications.length === 0 ? (
+            <div className="bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-[32px] p-12 text-center">
+              <Users className="w-12 h-12 mx-auto mb-4 text-slate-300" />
+              <h3 className="text-lg font-bold text-slate-600 mb-2">لا توجد طلبات توظيف حتى الآن</h3>
+              <p className="text-sm text-slate-400 max-w-xs mx-auto">بمجرد نشر وظائفك، ستظهر طلبات المرشحين هنا للمراجعة والتوظيف.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {latestApplicants.map((app) => (
+                <div 
+                  key={app.id} 
+                  className="bg-white border border-slate-100 rounded-3xl p-5 hover:border-brand-200 hover:shadow-lg transition-all group relative overflow-hidden"
+                >
+                  <div className="absolute top-0 left-0 w-1 h-full bg-slate-100 group-hover:bg-brand-500 transition-colors" />
+                  
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                        <div className="w-12 h-12 rounded-2xl bg-brand-50 flex items-center justify-center text-brand-700 text-lg font-black overflow-hidden border border-brand-100">
+                          {app.seekers?.profiles?.avatar_url ? (
+                            <img src={app.seekers.profiles.avatar_url} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            app.seekers?.profiles?.full_name?.charAt(0) || "م"
+                          )}
+                        </div>
+                        {app.status === 'قيد المراجعة' && (
+                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-brand-500 rounded-full border-2 border-white" />
+                        )}
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-slate-900 group-hover:text-brand-700 transition-colors line-clamp-1">{app.seekers?.profiles?.full_name || "مستخدم"}</h3>
+                        <p className="text-[11px] text-slate-500 font-bold">{app.seekers?.job_title || "باحث عن عمل"}</p>
+                      </div>
+                    </div>
+                    <StatusDropdown
+                      currentStatus={app.status}
+                      onChange={(status, reason) => onApplicationStatusChange(app.id, status, undefined, undefined, undefined, reason)}
+                    />
+                  </div>
+
+                  <div className="space-y-3 mb-5">
+                    <div className="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+                      <Briefcase className="w-3.5 h-3.5 text-slate-400" />
+                      متقدم لوظيفة: <span className="text-slate-900 font-bold">{app.jobs?.title}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-4">
+                      <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
+                        <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                        {app.seekers?.profiles?.location || "نابلس"}
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
+                        <Award className="w-3.5 h-3.5 text-slate-400" />
+                        {app.seekers?.experience_years ? `${app.seekers.experience_years} سنة خبرة` : "بدون خبرة"}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-4 border-t border-slate-50">
+                    <button
+                      onClick={() => onSelectApplicant(app)}
+                      className="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-700 py-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2"
+                    >
+                      <Eye className="w-4 h-4" /> مراجعة الملف
+                    </button>
+                    <Link
+                      href={`/messages?with=${app.seeker_id}`}
+                      className="w-12 h-10 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center transition-all group/msg"
+                    >
+                      <MessageSquare className="w-4 h-4 group-hover/msg:scale-110 transition-transform" />
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
-        {applications.length === 0 ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center text-slate-400">
-            <Users className="w-10 h-10 mx-auto mb-3 opacity-40" />
-            <p className="text-sm font-bold text-slate-600 mb-1">لا يوجد متقدمون بعد</p>
-            <p className="text-xs text-slate-500">بعد نشر وظيفة، ستظهر الطلبات هنا.</p>
-          </div>
-        ) : (
-          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full text-right">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100">
-                    <th className="px-4 py-3 sm:px-6 sm:py-4 text-xs font-bold text-slate-500">المتقدم</th>
-                    <th className="px-4 py-3 sm:px-6 sm:py-4 text-xs font-bold text-slate-500">الوظيفة</th>
-                    <th className="px-4 py-3 sm:px-6 sm:py-4 text-xs font-bold text-slate-500">المدينة</th>
-                    <th className="px-4 py-3 sm:px-6 sm:py-4 text-xs font-bold text-slate-500">الخبرة</th>
-                    <th className="px-4 py-3 sm:px-6 sm:py-4 text-xs font-bold text-slate-500">الحالة</th>
-                    <th className="px-4 py-3 sm:px-6 sm:py-4 text-xs font-bold text-slate-500">التاريخ</th>
-                    <th className="px-4 py-3 sm:px-6 sm:py-4 text-xs font-bold text-slate-500">الإجراء</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {latestApplicants.map((app) => (
-                    <tr key={app.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-4 py-3 sm:px-6 sm:py-4">
+        {/* Right Column: Job Management & Stats */}
+        <div className="lg:col-span-4 space-y-8" ref={jobsRef}>
+          
+          {/* Active Jobs Widget */}
+          <div className="bg-white border border-slate-100 rounded-[32px] p-6 shadow-xl shadow-slate-200/50">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <Briefcase className="w-5 h-5 text-indigo-600" />
+                <h2 className="text-lg font-black text-slate-900">وظائفي</h2>
+              </div>
+              <span className="text-[10px] font-black text-slate-400 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">{jobs.length} إجمالي</span>
+            </div>
+
+            {jobs.length === 0 ? (
+              <div className="py-8 text-center">
+                <p className="text-xs text-slate-400 font-bold mb-4">لم تنشر أي وظيفة بعد</p>
+                <Link href="/post-job" className="text-xs font-black text-brand-600 hover:underline">انشر أول وظيفة الآن</Link>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {jobs.slice(0, 5).map((job) => {
+                  const jobApps = applications.filter(a => a.job_id === job.id).length;
+                  return (
+                    <div key={job.id} className="group p-4 bg-slate-50/50 hover:bg-white border border-transparent hover:border-slate-100 rounded-2xl transition-all">
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="text-sm font-bold text-slate-900 group-hover:text-brand-600 transition-colors line-clamp-1">{job.title}</h3>
+                        <JobStatusBadge status={job.status} />
+                      </div>
+                      <div className="flex items-center justify-between mt-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 text-xs font-bold shrink-0">
-                            {app.seekers?.profiles?.full_name?.charAt(0) || "م"}
+                          <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500">
+                            <Users className="w-3 h-3" /> {jobApps} متقدم
                           </div>
-                          <div>
-                            <p className="font-bold text-slate-900 text-sm">{app.seekers?.profiles?.full_name || "مستخدم"}</p>
-                            <p className="text-[11px] text-slate-500">{app.seekers?.job_title || "—"}</p>
+                          <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400">
+                            <Calendar className="w-3 h-3" /> {new Date(job.created_at).toLocaleDateString("ar-EG")}
                           </div>
                         </div>
-                      </td>
-                      <td className="px-4 py-3 sm:px-6 sm:py-4 text-sm font-bold text-slate-900">
-                        {app.jobs?.title}
-                      </td>
-                      <td className="px-4 py-3 sm:px-6 sm:py-4 text-xs text-slate-500">
-                        <span className="inline-flex items-center gap-1">
-                          <MapPin className="w-3 h-3" />
-                          {app.seekers?.profiles?.location || "—"}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 sm:px-6 sm:py-4 text-xs text-slate-500">
-                        <span className="inline-flex items-center gap-1">
-                          <Award className="w-3 h-3" />
-                          {app.seekers?.experience_years ? `${app.seekers.experience_years} سنة` : "—"}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 sm:px-6 sm:py-4">
-                        <StatusDropdown
-                          currentStatus={app.status}
-                          onChange={(status, rejectionReason) => onApplicationStatusChange(app.id, status, undefined, undefined, undefined, rejectionReason)}
-                        />
-                      </td>
-                      <td className="px-4 py-3 sm:px-6 sm:py-4 text-xs text-slate-500 whitespace-nowrap">
-                        {new Date(app.created_at).toLocaleDateString("ar-EG")}
-                      </td>
-                      <td className="px-4 py-3 sm:px-6 sm:py-4">
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => onJobAction(job.id, job.status === 'approved' ? 'pause' : 'activate')} className="p-1.5 text-slate-400 hover:text-amber-600 transition-colors">
+                            {job.status === 'approved' ? <PauseCircle className="w-4 h-4" /> : <PlayCircle className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            
+            {jobs.length > 5 && (
+              <Link href="/dashboard/jobs" className="block w-full text-center mt-6 py-3 border border-slate-100 rounded-2xl text-xs font-bold text-slate-500 hover:bg-slate-50 transition-colors">
+                عرض كافة الوظائف
+              </Link>
+            )}
+          </div>
+
+          {/* Hiring Success Tip */}
+          <div className="bg-emerald-600 rounded-[32px] p-6 text-white relative overflow-hidden shadow-xl shadow-emerald-900/20">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-3xl -mr-16 -mt-16" />
+            <div className="relative z-10">
+              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center mb-4">
+                <Star className="w-5 h-5 text-white" />
+              </div>
+              <h3 className="text-base font-black mb-2">نصيحة للتوظيف السريع</h3>
+              <p className="text-xs text-emerald-100 font-medium leading-relaxed mb-4">
+                الوظائف التي تظهر نطاق الراتب وموقع العمل الدقيق تحصل على متقدمين مؤهلين بنسبة 45% أكثر.
+              </p>
+              <button className="text-[10px] font-black uppercase tracking-widest text-emerald-900 bg-emerald-200 px-4 py-2 rounded-lg hover:bg-white transition-colors">
+                تحسين إعلاناتي
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
+ sm:py-4">
                         <div className="flex items-center gap-1 flex-wrap">
                           <button
                             onClick={() => onSelectApplicant(app)}
@@ -1120,6 +1089,7 @@ function SeekerDashboard({
   profile: any;
   recommendedJobs: any[];
 }) {
+  const [selectedApp, setSelectedApp] = useState<any>(null);
   const fields = [
     !!profile?.full_name,
     !!profile?.phone,
@@ -1198,25 +1168,32 @@ function SeekerDashboard({
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-100">
                     <th className="px-4 py-3 sm:px-6 sm:py-4 text-xs font-bold text-slate-500">الوظيفة</th>
-                    <th className="px-4 py-3 sm:px-6 sm:py-4 text-xs font-bold text-slate-500">الشركة</th>
                     <th className="px-4 py-3 sm:px-6 sm:py-4 text-xs font-bold text-slate-500">الحالة</th>
-                    <th className="px-4 py-3 sm:px-6 sm:py-4 text-xs font-bold text-slate-500">التاريخ</th>
+                    <th className="px-4 py-3 sm:px-6 sm:py-4 text-xs font-bold text-slate-500">التفاصيل</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
                   {applications.map((app) => (
-                    <tr key={app.id} className="hover:bg-slate-50/50">
-                      <td className="px-4 py-3 sm:px-6 sm:py-4 text-sm font-bold text-slate-900">
-                        <Link href={`/jobs/${app.job_id}`} className="hover:text-brand-600 transition-colors">{app.jobs?.title}</Link>
+                    <tr key={app.id} className="hover:bg-slate-50/50 group">
+                      <td className="px-4 py-3 sm:px-6 sm:py-4">
+                        <div className="flex flex-col">
+                          <Link href={`/jobs/${app.job_id}`} className="text-sm font-bold text-slate-900 hover:text-brand-600 transition-colors">{app.jobs?.title}</Link>
+                          <span className="text-[11px] text-slate-500 font-medium">{app.jobs?.company_name}</span>
+                        </div>
                       </td>
-                      <td className="px-4 py-3 sm:px-6 sm:py-4 text-sm text-slate-600">{app.jobs?.company_name}</td>
                       <td className="px-4 py-3 sm:px-6 sm:py-4">
                         <span className={`inline-flex px-2 py-1 rounded-full text-[10px] sm:text-[11px] font-bold border ${getAppStatusStyle(app.status)}`}>
                           {getAppStatusLabel(app.status)}
                         </span>
                       </td>
-                      <td className="px-4 py-3 sm:px-6 sm:py-4 text-xs text-slate-500">
-                        {new Date(app.created_at).toLocaleDateString("ar-EG")}
+                      <td className="px-4 py-3 sm:px-6 sm:py-4">
+                        <button
+                          onClick={() => setSelectedApp(app)}
+                          className="p-2 hover:bg-brand-50 rounded-lg text-brand-600 transition-colors group-hover:scale-110"
+                          title="عرض التفاصيل"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -1226,6 +1203,109 @@ function SeekerDashboard({
           </div>
         )}
       </div>
+
+      {/* Application Detail Modal */}
+      {selectedApp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => setSelectedApp(null)}>
+          <div className="bg-white rounded-[32px] w-full max-w-lg shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <h3 className="text-lg font-black text-slate-900">تفاصيل الطلب</h3>
+              <button onClick={() => setSelectedApp(null)} className="p-2 hover:bg-slate-200 rounded-full transition-colors">
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+            
+            <div className="p-8 space-y-6 text-right">
+              <div className="flex items-center gap-4 bg-brand-50/50 p-4 rounded-2xl border border-brand-100">
+                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center border border-brand-100 shadow-sm font-black text-brand-600">
+                  {selectedApp.jobs?.company_name?.[0]}
+                </div>
+                <div>
+                  <h4 className="font-black text-slate-900">{selectedApp.jobs?.title}</h4>
+                  <p className="text-xs font-bold text-slate-500">{selectedApp.jobs?.company_name}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-slate-50 rounded-2xl">
+                  <p className="text-[10px] font-black text-slate-400 uppercase mb-1">حالة الطلب</p>
+                  <span className={`inline-flex px-2.5 py-1 rounded-full text-[11px] font-black border ${getAppStatusStyle(selectedApp.status)}`}>
+                    {getAppStatusLabel(selectedApp.status)}
+                  </span>
+                </div>
+                <div className="p-4 bg-slate-50 rounded-2xl">
+                  <p className="text-[10px] font-black text-slate-400 uppercase mb-1">تاريخ التقديم</p>
+                  <p className="text-sm font-bold text-slate-700">{new Date(selectedApp.created_at).toLocaleDateString("ar-EG")}</p>
+                </div>
+              </div>
+
+              {selectedApp.status === "مقابلة" && selectedApp.interview_date && (
+                <div className="p-5 bg-purple-50 border border-purple-100 rounded-2xl">
+                  <div className="flex items-center gap-2 mb-3 text-purple-700">
+                    <Calendar className="w-5 h-5" />
+                    <h5 className="font-black">موعد المقابلة</h5>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="font-bold text-purple-600">التاريخ والوقت:</span>
+                      <span className="font-black text-purple-900" dir="ltr">
+                        {new Date(selectedApp.interview_date).toLocaleString("ar-EG", {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        })}
+                      </span>
+                    </div>
+                    {selectedApp.interview_location && (
+                      <div className="flex flex-col gap-1">
+                        <span className="font-bold text-purple-600 text-sm">المكان:</span>
+                        <div className="bg-white/50 p-3 rounded-xl border border-purple-200 text-xs font-bold text-purple-900">
+                          {selectedApp.interview_location}
+                        </div>
+                      </div>
+                    )}
+                    {selectedApp.interview_notes && (
+                      <div className="flex flex-col gap-1">
+                        <span className="font-bold text-purple-600 text-sm">ملاحظات إضافية:</span>
+                        <p className="text-xs text-purple-800 leading-relaxed italic">"{selectedApp.interview_notes}"</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {selectedApp.status === "لم يتم التوظيف" && selectedApp.rejection_reason && (
+                <div className="p-5 bg-rose-50 border border-rose-100 rounded-2xl">
+                  <div className="flex items-center gap-2 mb-2 text-rose-700">
+                    <AlertCircle className="w-5 h-5" />
+                    <h5 className="font-black">سبب عدم التوظيف</h5>
+                  </div>
+                  <p className="text-sm text-rose-800 leading-relaxed font-medium">
+                    {selectedApp.rejection_reason}
+                  </p>
+                  <p className="text-[10px] text-rose-400 mt-4 italic font-bold">
+                    * ملاحظة: هذا السبب تمت مشاركته معك لمساعدتك في تطوير مهاراتك لمقابلاتك القادمة.
+                  </p>
+                </div>
+              )}
+
+              <div className="pt-4 border-t border-slate-100 flex gap-3">
+                <Link
+                  href={`/jobs/${selectedApp.job_id}`}
+                  className="flex-1 bg-slate-900 text-white py-3 rounded-2xl text-sm font-black text-center hover:bg-slate-800 transition-colors shadow-lg shadow-slate-200"
+                >
+                  عرض الإعلان
+                </Link>
+                <Link
+                  href={`/messages?with=${selectedApp.jobs?.employer_id}`}
+                  className="flex-1 bg-emerald-600 text-white py-3 rounded-2xl text-sm font-black text-center hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-100"
+                >
+                  مراسلة الشركة
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1244,26 +1324,24 @@ function StatCard({
   color: string;
 }) {
   const colorMap: Record<string, string> = {
-    brand: "text-brand-600 bg-brand-50",
-    blue: "text-blue-600 bg-blue-50",
-    indigo: "text-indigo-600 bg-indigo-50",
-    green: "text-green-600 bg-green-50",
-    yellow: "text-yellow-600 bg-yellow-50",
-    purple: "text-purple-600 bg-purple-50",
-    orange: "text-orange-600 bg-orange-50",
-    red: "text-red-600 bg-red-50",
-    slate: "text-slate-600 bg-slate-50",
+    brand: "text-brand-600 bg-brand-50 border-brand-100 shadow-brand-100/50",
+    blue: "text-blue-600 bg-blue-50 border-blue-100 shadow-blue-100/50",
+    indigo: "text-indigo-600 bg-indigo-50 border-indigo-100 shadow-indigo-100/50",
+    emerald: "text-emerald-600 bg-emerald-50 border-emerald-100 shadow-emerald-100/50",
+    amber: "text-amber-600 bg-amber-50 border-amber-100 shadow-amber-100/50",
+    purple: "text-purple-600 bg-purple-50 border-purple-100 shadow-purple-100/50",
+    orange: "text-orange-600 bg-orange-50 border-orange-100 shadow-orange-100/50",
+    rose: "text-rose-600 bg-rose-50 border-rose-100 shadow-rose-100/50",
+    slate: "text-slate-600 bg-slate-50 border-slate-100 shadow-slate-100/50",
   };
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm">
-      <div className="flex items-center gap-3 mb-3">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${colorMap[color] || colorMap.slate}`}>
-          <Icon className="w-5 h-5" />
-        </div>
+    <div className="bg-white border border-slate-100 rounded-[24px] p-5 shadow-lg shadow-slate-200/40 hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 border shadow-sm ${colorMap[color] || colorMap.slate}`}>
+        <Icon className="w-5 h-5" />
       </div>
-      <div className="text-2xl sm:text-3xl font-black text-slate-900 mb-0.5">{value}</div>
-      <div className="text-xs text-slate-500 font-medium">{label}</div>
+      <div className="text-2xl font-black text-slate-900 mb-0.5 tracking-tight">{value}</div>
+      <div className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">{label}</div>
     </div>
   );
 }

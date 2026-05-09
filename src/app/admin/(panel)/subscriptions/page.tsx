@@ -144,181 +144,188 @@ export default function AdminSubscriptions() {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-6 max-w-7xl mx-auto"
+      className="space-y-8 pb-12"
     >
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-brand-50 rounded-2xl text-brand-600">
-            <ShieldCheck className="h-6 w-6" />
+      {/* Header Card */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 rounded-[32px] p-8 sm:p-10 shadow-2xl">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/10 blur-[100px] -mr-32 -mt-32" />
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-brand-500/20 backdrop-blur-xl border border-brand-500/30 flex items-center justify-center">
+                <ShieldCheck className="w-6 h-6 text-brand-400" />
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">إدارة الاشتراكات</h1>
+            </div>
+            <p className="text-slate-400 text-sm font-medium max-w-lg">
+              مراجعة طلبات الترقية، التحقق من الإيصالات، وتفعيل باقات أصحاب العمل.
+            </p>
           </div>
-          <div>
-            <h2 className="text-2xl font-black text-slate-900">إدارة الاشتراكات والدفع</h2>
-            <p className="text-slate-500 text-sm">مراجعة طلبات الترقية وتفعيل خطط أصحاب العمل</p>
+          <div className="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-[24px]">
+            <div className="text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">طلبات معلقة</div>
+            <div className="text-2xl font-black text-white">{subscriptions.filter(s => s.status === 'pending').length}</div>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-100 flex flex-col md:flex-row gap-4 justify-between items-center bg-slate-50/50">
-          <div className="flex gap-2 w-full md:w-auto">
-            {['all', 'pending', 'active'].map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all flex-1 md:flex-none ${
-                  filter === f 
-                    ? 'bg-brand-600 text-white shadow-md' 
-                    : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
-                }`}
-              >
-                {f === 'all' ? 'الكل' : f === 'pending' ? 'بانتظار المراجعة' : 'نشط'}
-              </button>
-            ))}
-          </div>
-
-          <div className="relative w-full md:w-72">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-            <input
-              type="text"
-              placeholder="بحث بالاسم أو البريد أو الخطة..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
-            />
-          </div>
+      {/* Filter & Search Bar */}
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="flex p-1.5 bg-slate-100 rounded-2xl w-full md:w-auto">
+          {['all', 'pending', 'active'].map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={cn(
+                "px-6 py-2.5 rounded-xl text-sm font-black transition-all flex-1 md:flex-none",
+                filter === f 
+                  ? "bg-white text-slate-900 shadow-sm" 
+                  : "text-slate-500 hover:text-slate-700"
+              )}
+            >
+              {f === 'all' ? 'الكل' : f === 'pending' ? 'المعلقة' : 'النشطة'}
+            </button>
+          ))}
         </div>
 
+        <div className="relative w-full md:w-80">
+          <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+          <input
+            type="text"
+            placeholder="بحث بالاسم أو البريد..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pr-12 pl-4 py-3 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all font-medium"
+          />
+        </div>
+      </div>
+
+      {/* Subscriptions Table */}
+      <div className="bg-white border border-slate-100 rounded-[32px] overflow-hidden shadow-xl shadow-slate-200/50">
         <div className="overflow-x-auto">
           {loading ? (
-            <div className="flex justify-center p-12">
-              <Loader2 className="h-8 w-8 animate-spin text-brand-600" />
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+              <Loader2 className="h-10 w-10 animate-spin text-brand-600" />
+              <p className="text-slate-400 font-bold">جاري تحميل البيانات...</p>
             </div>
           ) : filteredSubs.length === 0 ? (
-            <div className="text-center p-12">
-              <div className="inline-flex p-4 bg-slate-50 rounded-full mb-4">
-                <FileText className="h-8 w-8 text-slate-300" />
+            <div className="text-center py-20 bg-slate-50/30">
+              <div className="w-20 h-20 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-4">
+                <FileText className="h-10 w-10 text-slate-300" />
               </div>
-              <p className="text-slate-500 font-medium">لا توجد طلبات تطابق بحثك</p>
+              <h3 className="text-lg font-bold text-slate-900 mb-1">لا توجد اشتراكات</h3>
+              <p className="text-sm text-slate-400">لم يتم العثور على أي طلبات تطابق الفلتر الحالي.</p>
             </div>
           ) : (
             <table className="w-full text-right">
-              <thead className="bg-slate-50/50 text-slate-500 text-xs uppercase font-bold">
-                <tr>
-                  <th className="px-6 py-4">المستخدم</th>
-                  <th className="px-6 py-4">الخطة</th>
-                  <th className="px-6 py-4">تاريخ التسجيل</th>
-                  <th className="px-6 py-4 text-center">المتبقي</th>
-                  <th className="px-6 py-4 text-center">الحالة</th>
-                  <th className="px-6 py-4 text-center">الإجراءات</th>
+              <thead>
+                <tr className="bg-slate-50/50 border-b border-slate-100">
+                  <th className="px-8 py-5 text-xs font-black text-slate-500 uppercase tracking-widest">المستخدم</th>
+                  <th className="px-8 py-5 text-xs font-black text-slate-500 uppercase tracking-widest">الخطة</th>
+                  <th className="px-8 py-5 text-xs font-black text-slate-500 uppercase tracking-widest">التواريخ</th>
+                  <th className="px-8 py-5 text-xs font-black text-slate-500 uppercase tracking-widest text-center">المدة المتبقية</th>
+                  <th className="px-8 py-5 text-xs font-black text-slate-500 uppercase tracking-widest text-center">الحالة</th>
+                  <th className="px-8 py-5 text-xs font-black text-slate-500 uppercase tracking-widest text-center">الإجراءات</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-50">
                 {filteredSubs.map((sub) => (
-                  <tr key={sub.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold">
+                  <tr key={sub.id} className="hover:bg-slate-50/30 transition-colors group">
+                    <td className="px-8 py-6">
+                      <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-600 font-black text-lg border border-slate-200">
                           {sub.profiles?.full_name?.charAt(0) || 'U'}
                         </div>
                         <div>
-                          <p className="font-bold text-slate-900">{sub.profiles?.full_name || 'مستخدم غير معروف'}</p>
-                          <p className="text-xs text-slate-500">{sub.profiles?.email}</p>
+                          <p className="font-bold text-slate-900 group-hover:text-brand-600 transition-colors">{sub.profiles?.full_name || 'مستخدم غير معروف'}</p>
+                          <p className="text-[11px] text-slate-500 font-medium">{sub.profiles?.email}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <p className="font-bold text-slate-900">{sub.subscription_plans?.name || 'خطة غير معروفة'}</p>
-                      <p className="text-xs text-slate-500">
-                        {sub.subscription_plans?.price ? `${sub.subscription_plans.price} ₪` : '-'}
-                      </p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <span className="text-sm text-slate-900 font-bold">
-                          {sub.starts_at ? new Date(sub.starts_at).toLocaleDateString('ar-EG') : '-'}
-                        </span>
-                        <span className="text-[10px] text-slate-400">الطلب: {new Date(sub.created_at).toLocaleDateString('ar-EG')}</span>
+                    <td className="px-8 py-6">
+                      <div className="space-y-1">
+                        <p className="font-black text-slate-900">{sub.subscription_plans?.name || sub.plan_name}</p>
+                        <div className="inline-flex px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 text-[10px] font-black border border-emerald-100">
+                          ₪{sub.subscription_plans?.price || 0}
+                        </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-8 py-6">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
+                          <Clock className="w-3 h-3 text-slate-400" />
+                          <span>بدأ: {sub.starts_at ? new Date(sub.starts_at).toLocaleDateString('ar-EG') : 'غير محدد'}</span>
+                        </div>
+                        <p className="text-[10px] text-slate-400 font-medium pr-5">الطلب: {new Date(sub.created_at).toLocaleDateString('ar-EG')}</p>
+                      </div>
+                    </td>
+                    <td className="px-8 py-6 text-center">
                       {sub.status === 'active' && sub.ends_at ? (
-                        <div className="flex flex-col items-center">
+                        <div className="inline-flex flex-col items-center p-2 bg-slate-50 rounded-2xl border border-slate-100">
                           <span className={cn(
                             "text-sm font-black",
-                            (getRemainingDays(sub.ends_at) || 0) < 5 ? "text-red-600" : "text-brand-600"
+                            (getRemainingDays(sub.ends_at) || 0) < 5 ? "text-rose-600" : "text-brand-600"
                           )}>
                             {getRemainingDays(sub.ends_at)} يوم
                           </span>
-                          <span className="text-[10px] text-slate-400">ينتهي {new Date(sub.ends_at).toLocaleDateString('ar-EG')}</span>
                         </div>
                       ) : (
-                        <span className="text-slate-300">-</span>
+                        <span className="text-slate-300">—</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
-                        sub.status === 'active' ? 'bg-green-100 text-green-700' :
-                        sub.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                        sub.status === 'expired' ? 'bg-slate-100 text-slate-700' :
-                        'bg-amber-100 text-amber-700'
-                      }`}>
-                        {sub.status === 'active' && <CheckCircle className="h-3 w-3" />}
-                        {sub.status === 'pending' && <Clock className="h-3 w-3" />}
-                        {sub.status === 'rejected' && <XCircle className="h-3 w-3" />}
-                        {sub.status === 'active' ? 'فعال' :
+                    <td className="px-8 py-6 text-center">
+                      <span className={cn(
+                        "inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[11px] font-black border",
+                        sub.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                        sub.status === 'rejected' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                        sub.status === 'expired' ? 'bg-slate-50 text-slate-700 border-slate-200' :
+                        'bg-amber-50 text-amber-700 border-amber-200'
+                      )}>
+                        {sub.status === 'active' ? 'نشط' :
                          sub.status === 'rejected' ? 'مرفوض' :
-                         sub.status === 'expired' ? 'منتهي' : 'بانتظار المراجعة'}
+                         sub.status === 'expired' ? 'منتهي' : 'قيد المراجعة'}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-8 py-6">
                       <div className="flex items-center justify-center gap-2">
-                        {sub.status === 'active' && (
-                          <button 
-                            onClick={() => setEditingSub(sub)}
-                            className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
-                            title="ترقية / تغيير الخطة"
-                          >
-                            <Edit2 className="h-5 w-5" />
-                          </button>
-                        )}
-
-                        {sub.status === 'pending' ? (
-                          <>
+                        {sub.status === 'pending' && (
+                          <div className="flex gap-2 p-1 bg-slate-100 rounded-xl">
                             <button 
                               onClick={() => handleUpdateStatus(sub.id, 'active')}
-                              className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                              title="موافقة وتفعيل"
+                              className="p-2 bg-white text-emerald-600 hover:text-emerald-700 rounded-lg shadow-sm transition-all hover:scale-105 active:scale-95"
+                              title="تفعيل"
                             >
                               <CheckCircle className="h-5 w-5" />
                             </button>
                             <button 
                               onClick={() => handleUpdateStatus(sub.id, 'rejected')}
-                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              className="p-2 bg-white text-rose-600 hover:text-rose-700 rounded-lg shadow-sm transition-all hover:scale-105 active:scale-95"
                               title="رفض"
                             >
                               <XCircle className="h-5 w-5" />
                             </button>
-                          </>
-                        ) : sub.status === 'active' ? (
-                          <button 
-                            onClick={() => handleUpdateStatus(sub.id, 'rejected')}
-                            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title="إلغاء الاشتراك"
-                          >
-                            <XCircle className="h-5 w-5" />
-                          </button>
-                        ) : null}
+                          </div>
+                        )}
 
                         {sub.payment_receipt_url && (
                           <a 
                             href={sub.payment_receipt_url} 
                             target="_blank" 
                             rel="noreferrer"
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="عرض وصل الدفع"
+                            className="w-10 h-10 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl flex items-center justify-center transition-all group/receipt"
+                            title="عرض الإيصال"
                           >
-                            <ExternalLink className="h-5 w-5" />
+                            <ExternalLink className="h-5 w-5 group-hover/receipt:scale-110 transition-transform" />
                           </a>
+                        )}
+
+                        {sub.status === 'active' && (
+                          <button 
+                            onClick={() => setEditingSub(sub)}
+                            className="w-10 h-10 bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl flex items-center justify-center transition-all"
+                            title="تعديل الخطة"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </button>
                         )}
                       </div>
                     </td>
@@ -332,49 +339,53 @@ export default function AdminSubscriptions() {
 
       {/* Upgrade Modal */}
       {editingSub && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
           <motion.div 
-            initial={{ scale: 0.95, opacity: 0 }}
+            initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-slate-100"
+            className="bg-white rounded-[40px] p-8 sm:p-10 max-w-md w-full shadow-2xl border border-slate-100 overflow-hidden relative"
           >
-            <h3 className="text-xl font-black text-slate-900 mb-2">ترقية خطة الاشتراك</h3>
-            <p className="text-slate-500 text-sm mb-6">
-              تغيير خطة المستخدم: <span className="font-bold text-slate-900">{editingSub.profiles?.full_name}</span>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-brand-50 rounded-full -mr-16 -mt-16 blur-3xl opacity-50" />
+            
+            <h3 className="text-2xl font-black text-slate-900 mb-2 relative">ترقية الخطة</h3>
+            <p className="text-slate-500 text-sm mb-8 font-medium relative">
+              تغيير خطة المستخدم: <span className="font-bold text-brand-600">{editingSub.profiles?.full_name}</span>
             </p>
 
-            <div className="space-y-3 mb-8">
+            <div className="space-y-3 mb-10 relative">
               {plans.map((plan) => (
                 <button
                   key={plan.id}
                   onClick={() => handleUpgradePlan(editingSub.id, plan.id)}
                   disabled={updatingPlan || plan.id === editingSub.plan_id}
                   className={cn(
-                    "w-full p-4 rounded-2xl border-2 text-right transition-all flex items-center justify-between group",
+                    "w-full p-5 rounded-[24px] border-2 text-right transition-all flex items-center justify-between group",
                     plan.id === editingSub.plan_id 
-                      ? "border-brand-500 bg-brand-50/50" 
+                      ? "border-brand-500 bg-brand-50" 
                       : "border-slate-100 hover:border-brand-200 hover:bg-slate-50"
                   )}
                 >
-                  <div>
-                    <p className="font-bold text-slate-900">{plan.name}</p>
-                    <p className="text-xs text-slate-500">{plan.price} ₪</p>
+                  <div className="flex flex-col items-start">
+                    <p className="font-black text-slate-900">{plan.name}</p>
+                    <p className="text-[10px] font-black text-brand-600 px-2 py-0.5 bg-white rounded-lg border border-brand-100 mt-1">₪{plan.price}</p>
                   </div>
                   {plan.id === editingSub.plan_id ? (
-                    <span className="text-[10px] font-bold text-brand-600 bg-white px-2 py-1 rounded-lg">الحالية</span>
+                    <div className="w-6 h-6 rounded-full bg-brand-500 flex items-center justify-center">
+                      <CheckCircle className="w-4 h-4 text-white" />
+                    </div>
                   ) : (
-                    <div className="w-5 h-5 rounded-full border-2 border-slate-200 group-hover:border-brand-400"></div>
+                    <div className="w-6 h-6 rounded-full border-2 border-slate-200 group-hover:border-brand-400" />
                   )}
                 </button>
               ))}
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-4 relative">
               <button 
                 onClick={() => setEditingSub(null)}
-                className="flex-1 py-3 bg-slate-50 text-slate-600 font-bold rounded-xl hover:bg-slate-100 transition-colors"
+                className="flex-1 py-4 bg-slate-50 text-slate-600 font-black rounded-2xl hover:bg-slate-100 transition-all active:scale-95"
               >
-                إلغاء
+                إغلاق
               </button>
             </div>
           </motion.div>

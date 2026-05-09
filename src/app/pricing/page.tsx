@@ -12,6 +12,7 @@ import {
   Sparkles,
   Briefcase,
   Users,
+  ArrowLeft,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useAuth } from "@/hooks/useAuth";
@@ -20,26 +21,26 @@ import { useRouter } from "next/navigation";
 const fallbackPlans = [
   {
     id: "free",
-    name: "باقة الانطلاق",
+    name: "باقة الانطلاق المجانية",
     price: 0,
     features: [
       "نشر وظيفة واحدة نشطة",
       "استقبال طلبات التقديم",
-      "ملف الشركة الأساسي",
-      "دعم عبر البريد",
+      "ملف المنشأة الأساسي",
+      "دعم فني عبر البريد",
     ],
     recommended: false,
   },
   {
     id: "pro",
-    name: "باقة المحترف",
+    name: "باقة صاحب العمل المحترف",
     price: 99,
     features: [
       "نشر حتى 5 وظائف نشطة",
       "البحث في السير الذاتية",
-      "قائمة المرشحين المختصرة",
+      "إدارة المتقدمين (Pipeline)",
       "أولوية الظهور في النتائج",
-      "دعم مباشر",
+      "دعم فني مباشر",
     ],
     recommended: true,
   },
@@ -48,11 +49,11 @@ const fallbackPlans = [
     name: "باقة الأعمال",
     price: 249,
     features: [
-      "وظائف غير محدودة",
-      "فريق عمل متعدد",
-      "خط سير التوظيف الكامل",
-      "تقارير وإحصائيات",
-      "دعم مخصص",
+      "نشر وظائف غير محدودة",
+      "إدارة فريق عمل متعدد",
+      "أدوات توظيف متقدمة",
+      "إحصائيات وتقارير أداء",
+      "مدير حساب مخصص",
     ],
     recommended: false,
   },
@@ -238,20 +239,28 @@ export default function PricingPage() {
             <CheckCircle2 className="h-10 w-10" />
           </div>
           <h2 className="text-xl sm:text-2xl font-black text-slate-900 mb-2">
-            {selectedPlan?.price === 0 ? "تم تفعيل باقتك بنجاح!" : "تم استلام طلبك بنجاح!"}
+            {selectedPlan?.price === 0 ? "تم تفعيل باقتك بنجاح!" : "تم استلام طلب الترقية!"}
           </h2>
           <p className="text-slate-500 mb-8">
             {selectedPlan?.price === 0 
-              ? `باقة "${selectedPlan?.name}" نشطة الآن. يمكنك البدء باستكشاف ميزات المنصة.`
-              : `سنقوم بمراجعة وصل الدفع وتفعيل باقتك (${selectedPlan?.name}) في أقرب وقت ممكن. ستتلقى إشعاراً عند التفعيل.`
+              ? `باقة "${selectedPlan?.name}" نشطة الآن. يمكنك البدء بنشر وظائفك وإدارة المتقدمين.`
+              : `بانتظار مراجعة الدفع لتفعيل "${selectedPlan?.name}". يمكنك الاستمرار في استخدام ميزات الباقة المجانية حالياً حتى يتم التفعيل.`
             }
           </p>
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="w-full py-3 bg-brand-600 text-white font-bold rounded-xl hover:bg-brand-700 transition-colors"
-          >
-            العودة للوحة التحكم
-          </button>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="w-full py-4 bg-brand-600 text-white font-black rounded-2xl hover:bg-brand-500 shadow-xl shadow-brand-200 transition-all active:scale-95 flex items-center justify-center gap-2"
+            >
+              الذهاب إلى لوحة التحكم
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+            {selectedPlan?.price > 0 && (
+              <p className="text-[10px] text-slate-400 font-medium">
+                * يتم تفعيل الباقات المدفوعة عادةً في أقل من ساعتين عمل.
+              </p>
+            )}
+          </div>
         </motion.div>
       </div>
     );

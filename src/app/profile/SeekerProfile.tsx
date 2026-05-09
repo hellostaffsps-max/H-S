@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Pencil, CheckCircle2, FileText, Save, Loader2, MapPin, Phone } from "lucide-react";
+import { Pencil, CheckCircle2, FileText, Save, Loader2, MapPin, Phone, X } from "lucide-react";
 import AvatarUpload from "@/components/AvatarUpload";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { updateProfile, updateSeekerProfile } from "@/app/actions/profile";
@@ -153,6 +153,19 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">سنوات الخبرة</p>
               <p className="font-semibold text-slate-900">{seekerData?.experience_years ?? 0} سنوات</p>
             </div>
+            <div className="space-y-2 sm:col-span-2">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">المهارات</p>
+              <div className="flex flex-wrap gap-2">
+                {(seekerData?.skills || []).map((skill: string, idx: number) => (
+                  <span key={idx} className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-bold">
+                    {skill}
+                  </span>
+                ))}
+                {(!seekerData?.skills || seekerData.skills.length === 0) && (
+                  <p className="text-sm text-slate-400">لم يتم تحديد مهارات بعد.</p>
+                )}
+              </div>
+            </div>
             <div className="space-y-1 sm:col-span-2">
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">نبذة عنك</p>
               <p className="font-medium text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100">
@@ -241,6 +254,53 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
                 className="w-full sm:w-1/2 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-right"
                 placeholder="0"
               />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-bold text-slate-700 mb-1.5 w-full text-right">
+                المهارات (اضغط Enter للإضافة)
+              </label>
+              <div className="flex flex-wrap gap-2 mb-3 bg-slate-50 p-3 rounded-xl border border-slate-100 min-h-[50px]">
+                {(seekerData?.skills || []).map((skill: string, idx: number) => (
+                  <span key={idx} className="bg-brand-100 text-brand-700 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                    {skill}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newSkills = (seekerData.skills || []).filter((_: any, i: number) => i !== idx);
+                        onSeekerDataUpdate({ ...seekerData, skills: newSkills });
+                      }}
+                      className="hover:text-brand-900"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+                {(!seekerData?.skills || seekerData.skills.length === 0) && (
+                  <span className="text-slate-400 text-xs py-1">لا توجد مهارات مضافة</span>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  id="skill-input"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      const val = e.currentTarget.value.trim();
+                      if (val && !(seekerData?.skills || []).includes(val)) {
+                        onSeekerDataUpdate({
+                          ...seekerData,
+                          skills: [...(seekerData?.skills || []), val]
+                        });
+                        e.currentTarget.value = '';
+                      }
+                    }
+                  }}
+                  className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-right"
+                  placeholder="مثال: خدمة عملاء، طبخ، باريستا..."
+                />
+                <input type="hidden" name="skills" value={(seekerData?.skills || []).join(',')} />
+              </div>
             </div>
             <div className="sm:col-span-2">
               <label className="block text-sm font-bold text-slate-700 mb-1.5 w-full text-right">

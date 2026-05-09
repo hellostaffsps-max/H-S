@@ -1,7 +1,16 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
+  const hostname = request.headers.get('host') || '';
+  const url = request.nextUrl.clone();
+
+  // Domain Redirect: staffps.com -> www.staffps.com
+  if (hostname === 'staffps.com') {
+    url.hostname = 'www.staffps.com';
+    return NextResponse.redirect(url, 301);
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -35,9 +44,9 @@ export async function proxy(request: NextRequest) {
   // Protected admin routes
   if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
     if (!user) {
-      const url = request.nextUrl.clone();
-      url.pathname = '/admin/login';
-      return NextResponse.redirect(url);
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/admin/login';
+      return NextResponse.redirect(redirectUrl);
     }
 
     // Check admin role
@@ -49,29 +58,29 @@ export async function proxy(request: NextRequest) {
 
     if (!profile || profile.role !== 'admin') {
       await supabase.auth.signOut();
-      const url = request.nextUrl.clone();
-      url.pathname = '/admin/login';
-      return NextResponse.redirect(url);
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/admin/login';
+      return NextResponse.redirect(redirectUrl);
     }
   }
 
   // Protected dashboard routes
   if (pathname.startsWith('/dashboard')) {
     if (!user) {
-      const url = request.nextUrl.clone();
-      url.pathname = '/auth/login';
-      url.searchParams.set('redirect', pathname);
-      return NextResponse.redirect(url);
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/auth/login';
+      redirectUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(redirectUrl);
     }
   }
 
   // Protected profile routes
   if (pathname.startsWith('/profile')) {
     if (!user) {
-      const url = request.nextUrl.clone();
-      url.pathname = '/auth/login';
-      url.searchParams.set('redirect', pathname);
-      return NextResponse.redirect(url);
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/auth/login';
+      redirectUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(redirectUrl);
     }
   }
 
@@ -84,9 +93,9 @@ export async function proxy(request: NextRequest) {
       .single();
 
     if (profile?.role === 'admin') {
-      const url = request.nextUrl.clone();
-      url.pathname = '/admin';
-      return NextResponse.redirect(url);
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/admin';
+      return NextResponse.redirect(redirectUrl);
     }
   }
 

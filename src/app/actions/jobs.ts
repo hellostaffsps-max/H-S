@@ -143,6 +143,47 @@ export async function createJob(formData: FormData) {
     return { success: false, error: 'جميع الحقول المطلوبة يجب ملؤها' };
   }
 
+  // --- Subscription Limit Check ---
+  // 1. Get the current active plan or fallback to free
+  const { data: activeSub } = await supabase
+    .from('user_subscriptions')
+    .select('*, subscription_plans(*)')
+    .eq('user_id', user.id)
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  let jobLimit = 1; // Default free limit
+  if (activeSub && activeSub.subscription_plans) {
+    jobLimit = activeSub.subscription_plans.job_limit || 0;
+  } else {
+    // If no active subscription, fetch the default free plan from the database
+    const { data: freePlan } = await supabase
+      .from('subscription_plans')
+      .select('job_limit')
+      .eq('price', 0)
+      .eq('is_active', true)
+      .limit(1)
+      .maybeSingle();
+    if (freePlan) jobLimit = freePlan.job_limit;
+  }
+
+  // 2. Count current approved/pending jobs
+  const { count: currentJobs } = await supabase
+    .from('jobs')
+    .select('*', { count: 'exact', head: true })
+    .eq('employer_id', user.id)
+    .in('status', ['approved', 'pending']);
+
+  if (currentJobs !== null && currentJobs >= jobLimit) {
+    return { 
+      success: false, 
+      error: `لقد وصلت للحد الأقصى من الوظائف المسموح بها في خطتك الحالية (${jobLimit} وظائف). يرجى ترقية الخطة لنشر المزيد.` 
+    };
+  }
+  // --------------------------------
+
   const { data, error } = await supabase.from('jobs').insert(job).select().single();
 
   if (error) {

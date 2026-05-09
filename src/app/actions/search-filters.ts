@@ -6,6 +6,19 @@ import { createClient } from '@/lib/supabase-server';
  * Fetch distinct job categories from the jobs table
  */
 export async function getJobCategories(): Promise<string[]> {
+  const hospitalityCategories = [
+    "مطبخ / شيف",
+    "خدمة طعام / جرسون",
+    "بارستا / مقهى",
+    "استقبال / ريسبشن",
+    "تدبير فندقي / تنظيف",
+    "إدارة فنادق",
+    "محاسبة مطاعم",
+    "أمن وحراسة",
+    "صيانة عامة",
+    "سائق / توصيل",
+  ];
+
   const supabase = await createClient();
   const { data } = await supabase
     .from('jobs')
@@ -13,8 +26,8 @@ export async function getJobCategories(): Promise<string[]> {
     .not('category', 'is', null)
     .order('category');
 
-  if (!data) return [];
-  const unique = [...new Set(data.map((d) => d.category).filter(Boolean))];
+  const dynamic = data ? data.map((d) => d.category).filter(Boolean) : [];
+  const unique = [...new Set([...hospitalityCategories, ...dynamic])];
   return unique as string[];
 }
 
@@ -38,6 +51,20 @@ export async function getSeekerJobTitles(): Promise<string[]> {
  * Fetch distinct locations from jobs
  */
 export async function getJobLocations(): Promise<string[]> {
+  const palestineCities = [
+    "رام الله",
+    "نابلس",
+    "الخليل",
+    "بيت لحم",
+    "جنين",
+    "طولكرم",
+    "قلقيلية",
+    "أريحا",
+    "سلفيت",
+    "طوباس",
+    "القدس",
+  ];
+
   const supabase = await createClient();
   const { data } = await supabase
     .from('jobs')
@@ -45,8 +72,8 @@ export async function getJobLocations(): Promise<string[]> {
     .not('location', 'is', null)
     .order('location');
 
-  if (!data) return [];
-  const unique = [...new Set(data.map((d) => d.location).filter(Boolean))];
+  const dynamic = data ? data.map((d) => d.location).filter(Boolean) : [];
+  const unique = [...new Set([...palestineCities, ...dynamic])];
   return unique as string[];
 }
 

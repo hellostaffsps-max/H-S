@@ -27,13 +27,24 @@ export async function PATCH(
     updates.status = status;
     if (status === 'active') {
       updates.starts_at = new Date().toISOString();
-      // Compute ends_at based on plan duration
       const supabase = await createClient();
-      if (plan_id) {
+      
+      // Determine the plan ID to use
+      let effectivePlanId = plan_id;
+      if (!effectivePlanId) {
+        const { data: currentSub } = await supabase
+          .from('user_subscriptions')
+          .select('plan_id')
+          .eq('id', id)
+          .single();
+        effectivePlanId = currentSub?.plan_id;
+      }
+
+      if (effectivePlanId) {
         const { data: plan } = await supabase
           .from('subscription_plans')
           .select('duration_days')
-          .eq('id', plan_id)
+          .eq('id', effectivePlanId)
           .single();
         if (plan?.duration_days) {
           const endsAt = new Date();
@@ -76,6 +87,27 @@ export async function PATCH(
 
   if (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+
+  // Create notification for user
+  const { data: subWithUser } = await supabase
+    .from('user_subscriptions')
+    .select('user_id, plan_name')
+    .eq('id', id)
+    .single();
+
+  if (subWithUser) {
+    let title = 'تحديث حالة الاشتراك';
+    let message = `تم تحديث حالة اشتراكك في باقة "${subWithUser.plan_name}" إلى: ${status === 'active' ? 'نشط' : status === 'rejected' ? 'مرفوض' : status}`;
+    let type = status === 'active' ? 'success' : status === 'rejected' ? 'error' : 'info';
+
+    await supabase.from('notifications').insert({
+      user_id: subWithUser.user_id,
+      title,
+      message,
+      type,
+      link: '/dashboard',
+    });
   }
 
   return NextResponse.json({ success: true, data });

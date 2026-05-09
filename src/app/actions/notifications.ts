@@ -66,3 +66,23 @@ export async function markAllNotificationsAsRead() {
 
   return { success: true };
 }
+
+export async function createNotification(userId: string, title: string, message: string, type: string = 'info', link?: string) {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from('notifications')
+    .insert({
+      user_id: userId,
+      title,
+      message,
+      type,
+      link,
+    });
+
+  if (error) {
+    return { success: false, error: toArabicError(error.message) };
+  }
+
+  return { success: true };
+}

@@ -31,6 +31,7 @@ interface Stats {
   pendingJobs: number;
   totalApplications: number;
   activeSubscriptions: number;
+  pendingSubscriptions: number;
   pendingArticles: number;
 }
 
@@ -39,6 +40,7 @@ interface RecentData {
   jobs: any[];
   applications: any[];
   subscriptions: any[];
+  articles: any[];
 }
 
 type ActivityTab = "users" | "jobs" | "applications" | "subscriptions" | "articles";
@@ -52,6 +54,7 @@ export default function AdminDashboard() {
     pendingJobs: 0,
     totalApplications: 0,
     activeSubscriptions: 0,
+    pendingSubscriptions: 0,
     pendingArticles: 0,
   });
   const [recent, setRecent] = useState<RecentData>({
@@ -59,6 +62,7 @@ export default function AdminDashboard() {
     jobs: [],
     applications: [],
     subscriptions: [],
+    articles: [],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -76,7 +80,8 @@ export default function AdminDashboard() {
         activeJobsRes,
         pendingJobsRes,
         appsRes,
-        subsRes,
+        activeSubsRes,
+        pendingSubsRes,
         articlesRes,
       ] = await Promise.all([
         supabase.from("profiles").select("*", { count: "exact", head: true }),
@@ -86,6 +91,7 @@ export default function AdminDashboard() {
         supabase.from("jobs").select("*", { count: "exact", head: true }).eq("status", "pending"),
         supabase.from("applications").select("*", { count: "exact", head: true }),
         supabase.from("user_subscriptions").select("*", { count: "exact", head: true }).eq("status", "active"),
+        supabase.from("user_subscriptions").select("*", { count: "exact", head: true }).eq("status", "pending"),
         supabase.from("articles").select("*", { count: "exact", head: true }).eq("status", "pending_approval"),
       ]);
 
@@ -96,7 +102,8 @@ export default function AdminDashboard() {
         activeJobs: activeJobsRes.count || 0,
         pendingJobs: pendingJobsRes.count || 0,
         totalApplications: appsRes.count || 0,
-        activeSubscriptions: subsRes.count || 0,
+        activeSubscriptions: activeSubsRes.count || 0,
+        pendingSubscriptions: pendingSubsRes.count || 0,
         pendingArticles: articlesRes.count || 0,
       });
 
@@ -106,11 +113,13 @@ export default function AdminDashboard() {
         recentJobs,
         recentApps,
         recentSubs,
+        recentArticles,
       ] = await Promise.all([
         supabase.from("profiles").select("id, full_name, role, location, created_at").order("created_at", { ascending: false }).limit(8),
         supabase.from("jobs").select("id, title, company_name, status, created_at").order("created_at", { ascending: false }).limit(8),
         supabase.from("applications").select("id, status, created_at, jobs(title), profiles(full_name)").order("created_at", { ascending: false }).limit(8),
         supabase.from("user_subscriptions").select("id, status, plan_name, created_at, profiles(full_name, email)").order("created_at", { ascending: false }).limit(8),
+        supabase.from("articles").select("id, title, status, created_at, profiles(full_name)").order("created_at", { ascending: false }).limit(8),
       ]);
 
       setRecent({
@@ -118,6 +127,7 @@ export default function AdminDashboard() {
         jobs: recentJobs.data || [],
         applications: recentApps.data || [],
         subscriptions: recentSubs.data || [],
+        articles: recentArticles.data || [],
       });
     } catch (e: any) {
       setError(e.message || "فشل تحميل البيانات");
@@ -136,8 +146,8 @@ export default function AdminDashboard() {
     { name: "أصحاب العمل", value: stats.totalEmployers, icon: Building2, color: "from-emerald-500 to-teal-600", text: "text-emerald-50" },
     { name: "الوظائف النشطة", value: stats.activeJobs, icon: Briefcase, color: "from-brand-500 to-brand-700", text: "text-brand-50" },
     { name: "وظائف بانتظار الموافقة", value: stats.pendingJobs, icon: Clock, color: "from-amber-500 to-orange-600", text: "text-amber-50" },
-    { name: "طلبات التوظيف", value: stats.totalApplications, icon: FileText, color: "from-indigo-500 to-violet-600", text: "text-indigo-50" },
-    { name: "اشتراكات فعالة", value: stats.activeSubscriptions, icon: ShieldCheck, color: "from-rose-500 to-pink-600", text: "text-rose-50" },
+    { name: "اشتراكات فعالة", value: stats.activeSubscriptions, icon: ShieldCheck, color: "from-indigo-500 to-violet-600", text: "text-indigo-50" },
+    { name: "اشتراكات معلقة", value: stats.pendingSubscriptions, icon: TrendingUp, color: "from-rose-500 to-pink-600", text: "text-rose-50" },
     { name: "مرشحون", value: stats.totalSeekers, icon: UserCheck, color: "from-cyan-500 to-sky-600", text: "text-cyan-50" },
     { name: "مقالات للمراجعة", value: stats.pendingArticles, icon: FileText, color: "from-orange-500 to-red-500", text: "text-orange-50" },
   ];
@@ -147,6 +157,7 @@ export default function AdminDashboard() {
     { key: "jobs", label: "الوظائف", count: recent.jobs.length },
     { key: "applications", label: "طلبات التوظيف", count: recent.applications.length },
     { key: "subscriptions", label: "الاشتراكات", count: recent.subscriptions.length },
+    { key: "articles", label: "المقالات", count: recent.articles.length },
   ];
 
   const container = {
@@ -350,6 +361,29 @@ export default function AdminDashboard() {
                 )}
               />
             )}
+            {activeTab === "articles" && (
+              <RecentList
+                items={recent.articles}
+                emptyText="لا توجد مقالات منشورة بعد"
+                renderItem={(art) => (
+                  <div className="flex items-center justify-between py-3 px-5 hover:bg-slate-50/50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-orange-100 flex items-center justify-center text-orange-700">
+                        <FileText className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">{art.title}</p>
+                        <p className="text-[11px] text-slate-500">بواسطة: {art.profiles?.full_name}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <ArticleStatusBadge status={art.status} />
+                      <span className="text-xs text-slate-400">{new Date(art.created_at).toLocaleDateString("ar-EG")}</span>
+                    </div>
+                  </div>
+                )}
+              />
+            )}
           </div>
         </motion.div>
 
@@ -505,6 +539,24 @@ function SubStatusBadge({ status }: { status: string }) {
   };
   return (
     <span className={`inline-flex px-2 py-1 rounded-full text-[10px] font-bold border ${styles[status] || styles.pending}`}>
+      {labels[status] || status}
+    </span>
+  );
+}
+
+function ArticleStatusBadge({ status }: { status: string }) {
+  const styles: Record<string, string> = {
+    published: "bg-green-50 text-green-700 border-green-200",
+    pending_approval: "bg-yellow-50 text-yellow-700 border-yellow-200",
+    draft: "bg-slate-50 text-slate-600 border-slate-200",
+  };
+  const labels: Record<string, string> = {
+    published: "منشور",
+    pending_approval: "بانتظار الموافقة",
+    draft: "مسودة",
+  };
+  return (
+    <span className={`inline-flex px-2 py-1 rounded-full text-[10px] font-bold border ${styles[status] || styles.pending_approval}`}>
       {labels[status] || status}
     </span>
   );
