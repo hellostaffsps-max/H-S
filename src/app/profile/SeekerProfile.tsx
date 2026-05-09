@@ -18,6 +18,7 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleAvatarUpload = async (url: string) => {
     setAvatarUrl(url);
@@ -41,6 +42,7 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
     if (profileResult.success || seekerResult.success) {
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
+      setIsEditing(false);
       if (user) {
         const { data } = await supabase
           .from("seekers")
@@ -107,121 +109,176 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
         </div>
       </div>
 
-      {/* Content Form */}
-      <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-black text-slate-900 w-full text-right">
-            البيانات الشخصية
-          </h2>
-          {success && (
-            <span className="text-green-600 text-sm font-bold flex items-center gap-1 shrink-0">
-              <CheckCircle2 className="w-4 h-4" /> تم الحفظ
-            </span>
+      {/* Content Form / View */}
+      {!isEditing ? (
+        <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3 w-full justify-between">
+              <h2 className="text-lg font-black text-slate-900 text-right">البيانات الشخصية</h2>
+              <div className="flex items-center gap-3">
+                {success && (
+                  <span className="text-green-600 text-sm font-bold flex items-center gap-1 shrink-0">
+                    <CheckCircle2 className="w-4 h-4" /> تم الحفظ
+                  </span>
+                )}
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-100 transition-colors"
+                >
+                  <Pencil className="w-4 h-4" />
+                  تعديل
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-6 text-right">
+            <div className="space-y-1">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">الاسم الكامل</p>
+              <p className="font-semibold text-slate-900">{profile?.full_name || "غير محدد"}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">رقم الهاتف</p>
+              <p className="font-semibold text-slate-900" dir="ltr">{profile?.phone || "غير محدد"}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">الموقع</p>
+              <p className="font-semibold text-slate-900">{profile?.location || "غير محدد"}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">المسمى الوظيفي</p>
+              <p className="font-semibold text-slate-900">{seekerData?.job_title || "غير محدد"}</p>
+            </div>
+            <div className="space-y-1 sm:col-span-2">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">سنوات الخبرة</p>
+              <p className="font-semibold text-slate-900">{seekerData?.experience_years ?? 0} سنوات</p>
+            </div>
+            <div className="space-y-1 sm:col-span-2">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">نبذة عنك</p>
+              <p className="font-medium text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100">
+                {seekerData?.bio || "لا توجد نبذة حالياً."}
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-black text-slate-900 w-full text-right">
+              تعديل البيانات الشخصية
+            </h2>
+          </div>
+
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl text-red-700 text-sm">
+              {error}
+            </div>
           )}
-        </div>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl text-red-700 text-sm">
-            {error}
-          </div>
-        )}
-
-        <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
-          <div>
-            <label className="block text-sm font-bold text-slate-700 mb-1.5 w-full text-right">
-              الاسم الكامل
-            </label>
-            <input
-              name="full_name"
-              type="text"
-              defaultValue={profile?.full_name || ""}
-              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-bold text-slate-700 mb-1.5 w-full text-right">
-              رقم الهاتف
-            </label>
-            <div className="relative">
-              <Phone className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-1.5 w-full text-right">
+                الاسم الكامل
+              </label>
               <input
-                name="phone"
-                type="tel"
-                defaultValue={profile?.phone || ""}
-                className="w-full bg-white border border-slate-200 rounded-xl pr-10 pl-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-right"
-                placeholder="+970 5xx xxx xxx"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-bold text-slate-700 mb-1.5 w-full text-right">
-              الموقع
-            </label>
-            <div className="relative">
-              <MapPin className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <input
-                name="location"
+                name="full_name"
                 type="text"
-                defaultValue={profile?.location || ""}
-                className="w-full bg-white border border-slate-200 rounded-xl pr-10 pl-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-right"
-                placeholder="رام الله، نابلس..."
+                defaultValue={profile?.full_name || ""}
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-right"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-1.5 w-full text-right">
+                رقم الهاتف
+              </label>
+              <div className="relative">
+                <Phone className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <input
+                  name="phone"
+                  type="tel"
+                  defaultValue={profile?.phone || ""}
+                  className="w-full bg-white border border-slate-200 rounded-xl pr-10 pl-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-right"
+                  placeholder="+970 5xx xxx xxx"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-1.5 w-full text-right">
+                الموقع
+              </label>
+              <div className="relative">
+                <MapPin className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <input
+                  name="location"
+                  type="text"
+                  defaultValue={profile?.location || ""}
+                  className="w-full bg-white border border-slate-200 rounded-xl pr-10 pl-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-right"
+                  placeholder="رام الله، نابلس..."
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-1.5 w-full text-right">
+                المسمى الوظيفي
+              </label>
+              <input
+                name="job_title"
+                type="text"
+                defaultValue={seekerData?.job_title || ""}
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-right"
+                placeholder="نادل، طاهي، باريستا..."
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-bold text-slate-700 mb-1.5 w-full text-right">
+                سنوات الخبرة
+              </label>
+              <input
+                name="experience_years"
+                type="number"
+                min={0}
+                defaultValue={seekerData?.experience_years ?? ""}
+                className="w-full sm:w-1/2 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-right"
+                placeholder="0"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-bold text-slate-700 mb-1.5 w-full text-right">
+                نبذة عنك
+              </label>
+              <textarea
+                name="bio"
+                rows={3}
+                defaultValue={seekerData?.bio || ""}
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-right resize-none"
+                placeholder="اكتب نبذة قصيرة عن خبراتك ومهاراتك..."
               />
             </div>
           </div>
-          <div>
-            <label className="block text-sm font-bold text-slate-700 mb-1.5 w-full text-right">
-              المسمى الوظيفي
-            </label>
-            <input
-              name="job_title"
-              type="text"
-              defaultValue={seekerData?.job_title || ""}
-              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-right"
-              placeholder="نادل، طاهي، باريستا..."
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <label className="block text-sm font-bold text-slate-700 mb-1.5 w-full text-right">
-              سنوات الخبرة
-            </label>
-            <input
-              name="experience_years"
-              type="number"
-              min={0}
-              defaultValue={seekerData?.experience_years ?? ""}
-              className="w-full sm:w-1/2 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-right"
-              placeholder="0"
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <label className="block text-sm font-bold text-slate-700 mb-1.5 w-full text-right">
-              نبذة عنك
-            </label>
-            <textarea
-              name="bio"
-              rows={3}
-              defaultValue={seekerData?.bio || ""}
-              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-right resize-none"
-              placeholder="اكتب نبذة قصيرة عن خبراتك ومهاراتك..."
-            />
-          </div>
-        </div>
 
-        <div className="mt-6 flex justify-end">
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex items-center gap-2 px-6 py-2.5 bg-brand-600 text-white rounded-xl text-sm font-bold hover:bg-brand-700 transition-colors disabled:opacity-70"
-          >
-            {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Save className="w-4 h-4" />
-            )}
-            حفظ التغييرات
-          </button>
-        </div>
-      </form>
+          <div className="mt-6 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setIsEditing(false)}
+              className="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50 transition-colors"
+            >
+              إلغاء
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex items-center gap-2 px-6 py-2.5 bg-brand-600 text-white rounded-xl text-sm font-bold hover:bg-brand-700 transition-colors disabled:opacity-70"
+            >
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
+              حفظ التغييرات
+            </button>
+          </div>
+        </form>
+      )}
     </div>
   );
 }

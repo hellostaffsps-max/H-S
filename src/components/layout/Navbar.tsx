@@ -99,7 +99,7 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-reverse space-x-8">
+          <nav className="hidden md:flex items-center gap-6 lg:gap-8">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.path;
