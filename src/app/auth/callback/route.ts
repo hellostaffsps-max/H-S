@@ -55,7 +55,8 @@ export async function GET(request: Request) {
         await supabase.from('seekers').delete().eq('profile_id', userId);
       }
       
-      return NextResponse.redirect(`${origin}${redirectTo}`);
+      const finalRedirect = role === 'employer' ? '/pricing' : redirectTo;
+      return NextResponse.redirect(`${origin}${finalRedirect}`);
     }
   }
 
