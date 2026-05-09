@@ -184,24 +184,37 @@ export default function PricingPage() {
 
     setSubmitting(true);
     try {
-      const { error } = await supabase.from("user_subscriptions").insert({
+      // Prepare subscription data
+      const subData: any = {
         user_id: profile.id,
-        plan_id: plan.id,
         plan_name: plan.name,
         payment_receipt_url: isFree ? null : receiptUrl,
         status: isFree ? "active" : "pending",
-        starts_at: isFree ? new Date().toISOString() : null,
-        ends_at: isFree 
-          ? new Date(Date.now() + (plan.duration_days || 30) * 24 * 60 * 60 * 1000).toISOString() 
-          : null,
-      });
+      };
+
+      // Only include plan_id if it's a valid UUID (not a fallback string like 'pro')
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (plan.id && uuidRegex.test(plan.id)) {
+        subData.plan_id = plan.id;
+      }
+
+      // starts_at is NOT NULL in the database, so we must provide a value or omit it for default
+      // If it's free, we set it now. If pending, we can set it now too as the "request date" 
+      // or let it default to now().
+      subData.starts_at = new Date().toISOString();
+
+      if (isFree) {
+        subData.ends_at = new Date(Date.now() + (plan.duration_days || 30) * 24 * 60 * 60 * 1000).toISOString();
+      }
+
+      const { error } = await supabase.from("user_subscriptions").insert(subData);
 
       if (error) throw error;
 
       setSuccess(true);
     } catch (error: any) {
-      console.error("Submission error:", error.message);
-      alert("حدث خطأ أثناء تقديم الطلب.");
+      console.error("Submission error:", error);
+      alert(`حدث خطأ أثناء تقديم الطلب: ${error.message || 'خطأ غير معروف'}`);
     } finally {
       setSubmitting(false);
     }
