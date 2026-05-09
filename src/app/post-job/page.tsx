@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { createJob } from "@/app/actions/jobs";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
 
 export default function PostJob() {
   const router = useRouter();
@@ -23,11 +24,16 @@ export default function PostJob() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const { subscription, loading: subLoading } = useSubscription();
 
   const isEmployer = profile?.role === "employer";
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (subscription.current_job_count >= subscription.job_limit) {
+      setError(`لقد وصلت إلى الحد الأقصى للوظائف المسموح بها في باقتك الحالية (${subscription.job_limit} وظيفة). يرجى ترقية باقتك لنشر المزيد.`);
+      return;
+    }
     setLoading(true);
     setError(null);
     setSuccess(false);
@@ -46,6 +52,8 @@ export default function PostJob() {
 
     setLoading(false);
   }
+
+  const isLimitReached = subscription.current_job_count >= subscription.job_limit;
 
   // Not logged in — professional employer onboarding
   if (!user) {
@@ -137,6 +145,13 @@ export default function PostJob() {
         <p className="text-sm text-slate-500">
           أضف تفاصيل الوظيفة لتجذب أفضل المرشحين
         </p>
+        
+        {subscription.status === 'pending' && (
+          <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2 justify-center text-amber-700 text-xs font-bold">
+            <Clock className="h-4 w-4" />
+            طلب اشتراكك في ({subscription.plan_name}) قيد المراجعة. أنت تعمل حالياً بميزات الباقة المجانية.
+          </div>
+        )}
       </div>
 
       {success && (
@@ -327,15 +342,23 @@ export default function PostJob() {
 
         <button
           type="submit"
-          disabled={loading}
-          className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold text-base sm:text-sm py-3.5 sm:py-4 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2 mt-2 disabled:opacity-70"
+          disabled={loading || isLimitReached}
+          className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold text-base sm:text-sm py-3.5 sm:py-4 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2 mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {loading ? (
             <Loader2 className="h-5 w-5 animate-spin" />
+          ) : isLimitReached ? (
+            "وصلت للحد الأقصى للوظائف"
           ) : (
             "نشر الوظيفة 🚀"
           )}
         </button>
+        {isLimitReached && (
+          <p className="text-center text-xs text-red-500 font-bold mt-2">
+            لقد استهلكت جميع الوظائف المتاحة في خطتك الحالية ({subscription.job_limit}/{subscription.job_limit}). 
+            <Link href="/pricing" className="text-brand-600 hover:underline mr-1">ترقية الآن</Link>
+          </p>
+        )}
       </form>
     </div>
   );

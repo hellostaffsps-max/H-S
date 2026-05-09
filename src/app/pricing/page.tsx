@@ -171,21 +171,29 @@ export default function PricingPage() {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (planToSubmit?: any) => {
+    const plan = planToSubmit || selectedPlan;
     if (!profile) {
       router.push("/login");
       return;
     }
-    if (!selectedPlan || !receiptUrl) return;
+    if (!plan) return;
+    
+    const isFree = plan.price === 0;
+    if (!isFree && !receiptUrl) return;
 
     setSubmitting(true);
     try {
       const { error } = await supabase.from("user_subscriptions").insert({
         user_id: profile.id,
-        plan_id: selectedPlan.id,
-        plan_name: selectedPlan.name,
-        payment_receipt_url: receiptUrl,
-        status: "pending",
+        plan_id: plan.id,
+        plan_name: plan.name,
+        payment_receipt_url: isFree ? null : receiptUrl,
+        status: isFree ? "active" : "pending",
+        starts_at: isFree ? new Date().toISOString() : null,
+        ends_at: isFree 
+          ? new Date(Date.now() + (plan.duration_days || 30) * 24 * 60 * 60 * 1000).toISOString() 
+          : null,
       });
 
       if (error) throw error;
@@ -215,11 +223,13 @@ export default function PricingPage() {
             <CheckCircle2 className="h-10 w-10" />
           </div>
           <h2 className="text-xl sm:text-2xl font-black text-slate-900 mb-2">
-            تم استلام طلبك بنجاح!
+            {selectedPlan?.price === 0 ? "تم تفعيل باقتك بنجاح!" : "تم استلام طلبك بنجاح!"}
           </h2>
           <p className="text-slate-500 mb-8">
-            سنقوم بمراجعة وصل الدفع وتفعيل باقتك ({selectedPlan?.name}) في
-            أقرب وقت ممكن. ستتلقى إشعاراً عند التفعيل.
+            {selectedPlan?.price === 0 
+              ? `باقة "${selectedPlan?.name}" نشطة الآن. يمكنك البدء باستكشاف ميزات المنصة.`
+              : `سنقوم بمراجعة وصل الدفع وتفعيل باقتك (${selectedPlan?.name}) في أقرب وقت ممكن. ستتلقى إشعاراً عند التفعيل.`
+            }
           </p>
           <button
             onClick={() => router.push("/dashboard")}
@@ -283,14 +293,28 @@ export default function PricingPage() {
               </ul>
 
               <button
-                onClick={() => setSelectedPlan(plan)}
+                onClick={() => {
+                  if (plan.price === 0) {
+                    setSelectedPlan(plan);
+                    handleSubmit(plan);
+                  } else {
+                    setSelectedPlan(plan);
+                  }
+                }}
+                disabled={submitting}
                 className={`w-full py-3.5 rounded-xl font-bold transition-colors ${
                   plan.recommended
                     ? "bg-brand-600 text-white hover:bg-brand-700 shadow-lg shadow-brand-200"
                     : "bg-slate-50 text-slate-900 hover:bg-slate-100"
                 }`}
               >
-                اختر هذه الخطة
+                {submitting && selectedPlan?.id === plan.id ? (
+                  <Loader2 className="h-5 w-5 animate-spin mx-auto" />
+                ) : plan.price === 0 ? (
+                  "تفعيل الباقة المجانية"
+                ) : (
+                  "اختر هذه الخطة"
+                )}
               </button>
             </motion.div>
           ))}

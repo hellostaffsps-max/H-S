@@ -34,6 +34,7 @@ import {
   User,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
 import { getEmployerJobs, updateJobStatus } from "@/app/actions/jobs";
 import {
   getApplications,
@@ -107,6 +108,7 @@ function getAppStatusLabel(status: string) {
 
 export default function Dashboard() {
   const { profile, user } = useAuth();
+  const { subscription, loading: subLoading } = useSubscription();
   const [jobs, setJobs] = useState<any[]>([]);
   const [applications, setApplications] = useState<any[]>([]);
   const [employerData, setEmployerData] = useState<any>(null);
@@ -286,6 +288,7 @@ export default function Dashboard() {
               jobs={jobs}
               applications={applications}
               employerData={employerData}
+              subscription={subscription}
               onApplicationStatusChange={handleApplicationStatusChange}
               onJobAction={handleJobAction}
               jobsRef={jobsRef}
@@ -738,10 +741,12 @@ function EmployerDashboard({
   applicantsRef,
   onSelectApplicant,
   onOpenInterviewModal,
+  subscription,
 }: {
   jobs: any[];
   applications: any[];
   employerData: any;
+  subscription: any;
   onApplicationStatusChange: (id: string, status: string, interviewDate?: string | null, interviewLocation?: string | null, interviewNotes?: string | null, rejectionReason?: string | null) => void;
   onJobAction: (id: string, action: "pause" | "activate" | "close") => void;
   jobsRef: React.RefObject<HTMLDivElement | null>;
@@ -750,6 +755,7 @@ function EmployerDashboard({
   onOpenInterviewModal: (applicant: any) => void;
 }) {
   const businessName = employerData?.company_name || "صاحب العمل";
+  const isLimitReached = subscription.current_job_count >= subscription.job_limit;
 
   // Stats
   const activeJobs = jobs.filter((j) => j.status === "approved").length;
@@ -760,7 +766,7 @@ function EmployerDashboard({
   const hired = applications.filter((a) => a.status === "مقبول").length;
 
   const stats = [
-    { label: "الوظائف النشطة", value: activeJobs, icon: Briefcase, color: "brand", trend: null },
+    { label: "الوظائف النشطة", value: `${activeJobs} / ${subscription.job_limit}`, icon: Briefcase, color: "brand", trend: null },
     { label: "المتقدمون الجدد", value: newApplicants, icon: Users, color: "yellow", trend: null },
     { label: "إجمالي المتقدمين", value: totalApplicants, icon: TrendingUp, color: "blue", trend: null },
     { label: "مقابلات قادمة", value: upcomingInterviews, icon: Clock, color: "purple", trend: null },
@@ -781,12 +787,13 @@ function EmployerDashboard({
 
   // Quick actions
   const quickActions = [
-    { icon: PlusCircle, title: "نشر وظيفة", desc: "أضف فرصة عمل جديدة", href: "/post-job", color: "bg-brand-50 text-brand-600" },
+    { icon: PlusCircle, title: "نشر وظيفة", desc: isLimitReached ? "وصلت للحد الأقصى" : "أضف فرصة عمل جديدة", href: isLimitReached ? "/pricing" : "/post-job", color: isLimitReached ? "bg-red-50 text-red-600" : "bg-brand-50 text-brand-600" },
     { icon: UserCheck, title: "فريق العمل", desc: "إدارة الموظفين الحاليين", href: "/dashboard/team", color: "bg-green-50 text-green-600" },
     { icon: Briefcase, title: "إدارة الوظائف", desc: "استعرض وعدّل وظائفك", href: "#jobs", color: "bg-sky-50 text-sky-600", scrollTo: jobsRef },
     { icon: Users, title: "عرض المتقدمين", desc: "راجع الطلبات الواردة", href: "#applicants", color: "bg-indigo-50 text-indigo-600", scrollTo: applicantsRef },
     { icon: Settings, title: "إعدادات المنشأة", desc: "حدّث بيانات عملك", href: "/profile", color: "bg-slate-50 text-slate-600" },
     { icon: MessageSquare, title: "الرسائل", desc: "تواصل مع المرشحين", href: "/messages", color: "bg-emerald-50 text-emerald-600" },
+    { icon: Star, title: "باقتي الحالية", desc: subscription.plan_name, href: "/pricing", color: "bg-amber-50 text-amber-600" },
   ];
 
   const handleQuickAction = (action: typeof quickActions[0]) => {
@@ -807,6 +814,12 @@ function EmployerDashboard({
             تابع وظائفك، المتقدمين، والمقابلات من مكان واحد
           </p>
         </div>
+        {subscription.status === 'pending' && (
+          <div className="bg-amber-50 border border-amber-200 px-4 py-2 rounded-xl flex items-center gap-2 text-amber-700 text-xs font-bold">
+            <Clock className="w-4 h-4" />
+            طلب الباقة المدفوعة ({subscription.plan_name}) قيد المراجعة
+          </div>
+        )}
         <div className="flex items-center gap-2 shrink-0">
           <Link
             href="/dashboard/team"
@@ -1227,7 +1240,7 @@ function StatCard({
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
-  value: number;
+  value: number | string;
   color: string;
 }) {
   const colorMap: Record<string, string> = {
