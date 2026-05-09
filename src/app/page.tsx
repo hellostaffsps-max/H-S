@@ -502,7 +502,7 @@ export default async function Home() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {(recentJobs || []).map((job: any) => (
               <JobCard key={job.id} job={job} />
             ))}
@@ -551,7 +551,7 @@ export default async function Home() {
 
 function JobCard({ job }: { job: any }) {
   return (
-    <div className="group bg-white border border-slate-100 rounded-2xl p-5 hover:border-brand-200 hover:shadow-lg transition-all flex flex-col h-full">
+    <div className="group bg-white border border-slate-100 rounded-2xl p-4 hover:border-brand-200 hover:shadow-lg transition-all flex flex-col h-full">
       <div className="flex justify-between items-start mb-3">
         <span
           className={cn(
@@ -571,14 +571,14 @@ function JobCard({ job }: { job: any }) {
       </div>
 
       <div className="flex items-start gap-3 mb-4">
-        <div className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 flex items-center justify-center font-bold text-lg shrink-0">
+        <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 flex items-center justify-center font-bold text-base shrink-0">
           {(job.company_name || "؟")[0]}
         </div>
         <div className="min-w-0">
-          <h3 className="text-base font-bold text-slate-900 line-clamp-1">
+          <h3 className="text-sm font-bold text-slate-900 line-clamp-1">
             {job.title}
           </h3>
-          <p className="text-sm text-slate-500 line-clamp-1">{job.company_name}</p>
+          <p className="text-[13px] text-slate-500 line-clamp-1">{job.company_name}</p>
         </div>
       </div>
 

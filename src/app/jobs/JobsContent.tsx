@@ -293,7 +293,7 @@ export default function JobsContent({
       {!error && (
         <>
           {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div key={i} className="bg-white border border-slate-100 rounded-2xl p-5 h-60 animate-pulse">
                   <div className="flex justify-between mb-4">
@@ -310,7 +310,7 @@ export default function JobsContent({
           ) : jobs.length === 0 ? (
             <EmptyState onClear={clearFilters} />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {jobs.map((job) => (
                 <JobCard key={job.id} job={job} />
               ))}
@@ -324,7 +324,7 @@ export default function JobsContent({
 
 function JobCard({ job }: { job: any }) {
   return (
-    <div className="group bg-white border border-slate-100 rounded-2xl p-5 hover:border-brand-200 hover:shadow-lg transition-all flex flex-col h-full">
+    <div className="group bg-white border border-slate-100 rounded-2xl p-4 hover:border-brand-200 hover:shadow-lg transition-all flex flex-col h-full">
       <div className="flex justify-between items-start mb-3">
         <span className={cn(
           "px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide",
@@ -340,14 +340,14 @@ function JobCard({ job }: { job: any }) {
       </div>
 
       <div className="flex items-start gap-3 mb-4">
-        <div className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 flex items-center justify-center font-bold text-lg shrink-0">
+        <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 flex items-center justify-center font-bold text-base shrink-0">
           {(job.company_name || "؟")[0]}
         </div>
         <div className="min-w-0">
-          <h3 className="text-base font-bold text-slate-900 line-clamp-1 group-hover:text-brand-700 transition-colors">
+          <h3 className="text-sm font-bold text-slate-900 line-clamp-1 group-hover:text-brand-700 transition-colors">
             {job.title}
           </h3>
-          <p className="text-sm text-slate-500 line-clamp-1 flex items-center gap-1">
+          <p className="text-[13px] text-slate-500 line-clamp-1 flex items-center gap-1">
             <Building2 className="h-3 w-3" />
             {job.company_name}
           </p>
