@@ -11,7 +11,8 @@ import {
   ExternalLink,
   Loader2,
   FileText,
-  Edit2
+  Edit2,
+  AlertCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'motion/react';
