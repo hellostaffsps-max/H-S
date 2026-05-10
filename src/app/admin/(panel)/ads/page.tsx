@@ -41,8 +41,11 @@ type Ad = {
   created_at: string;
   created_by: string | null;
   profiles?: {
-    company_name: string;
     full_name: string;
+    email: string;
+  };
+  employers?: {
+    company_name: string;
   };
 };
 
@@ -82,8 +85,11 @@ export default function AdminAds() {
         .select(`
           *,
           profiles:created_by (
-            company_name,
-            full_name
+            full_name,
+            email
+          ),
+          employers:created_by (
+            company_name
           )
         `)
         .order('order_index', { ascending: true })
@@ -442,7 +448,7 @@ export default function AdminAds() {
                     <div className="flex-grow min-w-0">
                       <h3 className="font-black text-slate-900 truncate">{ad.title}</h3>
                       {ad.created_by && (
-                        <p className="text-[10px] font-black text-brand-600 uppercase mt-1">بواسطة: {ad.profiles?.company_name || ad.profiles?.full_name}</p>
+                        <p className="text-[10px] font-black text-brand-600 uppercase mt-1">بواسطة: {ad.employers?.company_name || ad.profiles?.full_name}</p>
                       )}
                       {ad.link_url && (
                         <a href={ad.link_url} target="_blank" className="text-xs text-brand-600 hover:underline flex items-center gap-1.5 mt-2 font-bold">
@@ -521,7 +527,7 @@ export default function AdminAds() {
                     <p className="text-xs font-bold text-slate-400 uppercase">العنوان</p>
                     <p className="font-black text-slate-900">{selectedAd.title}</p>
                     <p className="text-xs font-bold text-slate-400 uppercase mt-4">بواسطة</p>
-                    <p className="font-bold text-brand-600">{selectedAd.profiles?.company_name || selectedAd.profiles?.full_name}</p>
+                    <p className="font-bold text-brand-600">{selectedAd.employers?.company_name || selectedAd.profiles?.full_name}</p>
                   </div>
                 </div>
 
