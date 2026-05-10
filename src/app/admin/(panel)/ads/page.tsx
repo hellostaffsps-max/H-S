@@ -412,6 +412,18 @@ export default function AdminAds() {
                       </div>
                     )}
                   </div>
+                  
+                  {/* Recommended dimensions notice */}
+                  <div className="mt-4 p-4 bg-amber-50 border border-amber-100 rounded-2xl flex items-start gap-3">
+                    <AlertCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-bold text-amber-900">المقاسات الموصى بها:</p>
+                      <p className="text-xs text-amber-700 leading-relaxed">
+                        للحصول على أفضل مظهر على جميع الأجهزة، نوصي باستخدام مقاس <span className="font-bold">1920 × 640 بكسل</span> (أو أي مقاس بنسبة <span className="font-bold">3:1</span>). 
+                        يرجى تركيز المحتوى المهم في منتصف التصميم لضمان وضوحه على شاشات الموبايل.
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-4">
