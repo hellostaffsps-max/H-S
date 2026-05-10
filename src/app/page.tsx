@@ -31,6 +31,7 @@ import {
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase-server";
 import SearchBox from "@/components/SearchBox";
+import AdsCarousel from "@/components/AdsCarousel";
 
 const HOSPITALITY_CATEGORIES = [
   "طاهي/ة",
@@ -339,6 +340,9 @@ export default async function Home() {
           ) : null}
         </div>
       </section>
+
+      {/* ===== ADS CAROUSEL ===== */}
+      <AdsCarousel />
 
       {/* ===== CATEGORIES ===== */}
       {!isEmployer && (

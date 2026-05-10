@@ -49,6 +49,7 @@ const navItems: NavItem[] = [
   { label: "الباقات", href: "/admin/plans", icon: Layers },
   { label: "المقالات / المدونة", href: "/admin/articles", icon: FileText },
   { label: "التعميمات", href: "/admin/messages", icon: Megaphone },
+  { label: "إدارة الإعلانات", href: "/admin/ads", icon: Megaphone },
   { label: "البلاغات والدعم", href: "/admin/support", icon: Flag },
   { label: "التقارير", href: "/admin/reports", icon: BarChart3 },
   { label: "إعدادات المنصة", href: "/admin/settings", icon: Settings },
