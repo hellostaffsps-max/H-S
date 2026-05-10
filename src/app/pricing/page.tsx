@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
 import { useRouter } from "next/navigation";
 
 const fallbackPlans = [
@@ -93,6 +94,7 @@ function PricingSkeleton() {
 export default function PricingPage() {
   const { profile } = useAuth();
   const router = useRouter();
+  const { subscription, loading: subLoading } = useSubscription();
 
   const [plans, setPlans] = useState<any[]>([]);
   const [settings, setSettings] = useState<any>(null);
@@ -295,6 +297,11 @@ export default function PricingPage() {
                   الأكثر طلباً
                 </div>
               )}
+              {subscription?.plan_id === plan.id && (
+                <div className="absolute top-3 right-3 bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-full border border-emerald-200">
+                  باقتك الحالية
+                </div>
+              )}
               <h3 className="text-xl font-bold text-slate-900 mb-2">
                 {plan.name}
               </h3>
@@ -325,15 +332,19 @@ export default function PricingPage() {
                     setSelectedPlan(plan);
                   }
                 }}
-                disabled={submitting}
+                disabled={submitting || subscription?.plan_id === plan.id}
                 className={`w-full py-3.5 rounded-xl font-bold transition-colors ${
-                  plan.recommended
+                  subscription?.plan_id === plan.id
+                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-not-allowed"
+                    : plan.recommended
                     ? "bg-brand-600 text-white hover:bg-brand-700 shadow-lg shadow-brand-200"
                     : "bg-slate-50 text-slate-900 hover:bg-slate-100"
                 }`}
               >
                 {submitting && selectedPlan?.id === plan.id ? (
                   <Loader2 className="h-5 w-5 animate-spin mx-auto" />
+                ) : subscription?.plan_id === plan.id ? (
+                  "أنت مشترك في هذه الباقة"
                 ) : plan.price === 0 ? (
                   "تفعيل الباقة المجانية"
                 ) : (

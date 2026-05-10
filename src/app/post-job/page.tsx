@@ -17,6 +17,8 @@ import {
 import { createJob } from "@/app/actions/jobs";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
+import { supabase } from "@/lib/supabase";
+import { useEffect } from "react";
 
 export default function PostJob() {
   const router = useRouter();
@@ -25,8 +27,36 @@ export default function PostJob() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const { subscription, loading: subLoading } = useSubscription();
+  
+  const [employerData, setEmployerData] = useState<any>(null);
+  const [loadingData, setLoadingData] = useState(true);
 
   const isEmployer = profile?.role === "employer";
+
+  useEffect(() => {
+    async function fetchEmployerData() {
+      if (user && isEmployer) {
+        const { data } = await supabase
+          .from("employers")
+          .select("*")
+          .eq("profile_id", user.id)
+          .single();
+        setEmployerData(data || {});
+      }
+      setLoadingData(false);
+    }
+    fetchEmployerData();
+  }, [user, isEmployer]);
+
+  const isProfileIncomplete = () => {
+    if (!profile || !employerData) return true;
+    const hasLogo = !!employerData.logo_url;
+    const hasPhone = !!profile.phone;
+    const hasEmail = !!employerData.business_email;
+    const hasLocation = !!employerData.city || !!profile.location;
+    const hasName = !!employerData.company_name || !!profile.full_name;
+    return !(hasLogo && hasPhone && hasEmail && hasLocation && hasName);
+  };
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -133,6 +163,35 @@ export default function PostJob() {
     );
   }
 
+  if (loadingData || subLoading) {
+    return (
+      <div className="flex justify-center items-center py-32">
+        <Loader2 className="w-10 h-10 text-brand-600 animate-spin" />
+      </div>
+    );
+  }
+
+  if (isProfileIncomplete()) {
+    return (
+      <div className="max-w-2xl mx-auto w-full px-4 py-16 text-center">
+        <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-amber-100">
+          <AlertCircle className="h-8 w-8 text-amber-500" />
+        </div>
+        <h2 className="text-xl font-bold text-slate-900 mb-2">يرجى إكمال ملف المنشأة</h2>
+        <p className="text-slate-500 mb-6 max-w-md mx-auto">
+          يجب عليك إكمال بيانات المنشأة الأساسية (الشعار، الهاتف، البريد الإلكتروني، والمدينة) قبل أن تتمكن من نشر الوظائف. هذا يساعد الباحثين عن عمل على معرفة المزيد عن منشأتك.
+        </p>
+        <Link
+          href="/profile"
+          className="inline-flex items-center justify-center bg-brand-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-brand-700 transition-colors shadow-sm"
+        >
+          <Building2 className="w-5 h-5 ml-2" />
+          إكمال الملف الشخصي
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 md:py-12">
       <div className="text-center mb-8">
@@ -233,6 +292,7 @@ export default function PostJob() {
                 name="company_name"
                 type="text"
                 required
+                defaultValue={employerData?.company_name || profile?.full_name || ""}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 sm:py-2.5 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 placeholder="اسم المنشأة"
               />
@@ -246,6 +306,7 @@ export default function PostJob() {
                 name="location"
                 type="text"
                 required
+                defaultValue={employerData?.city || profile?.location || ""}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 sm:py-2.5 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 placeholder="رام الله، نابلس..."
               />
@@ -334,6 +395,7 @@ export default function PostJob() {
               name="whatsapp_number"
               type="tel"
               dir="ltr"
+              defaultValue={employerData?.whatsapp_number || profile?.phone || ""}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 sm:py-2.5 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-left"
               placeholder="+970599..."
             />

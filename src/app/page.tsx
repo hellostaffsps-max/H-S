@@ -115,13 +115,29 @@ export default async function Home() {
   const isSeeker = userRole === "seeker";
 
   let plans = [];
-  if (isEmployer) {
-    const { data: plansData } = await supabase
-      .from("subscription_plans")
-      .select("*")
-      .eq("is_active", true)
-      .order("price", { ascending: true });
-    plans = plansData || [];
+  let hasActiveSubscription = false;
+
+  if (isEmployer && user) {
+    const { data: activeSub } = await supabase
+      .from("user_subscriptions")
+      .select("status")
+      .eq("user_id", user.id)
+      .in("status", ["active", "pending"])
+      .limit(1)
+      .maybeSingle();
+
+    if (activeSub) {
+      hasActiveSubscription = true;
+    }
+
+    if (!hasActiveSubscription) {
+      const { data: plansData } = await supabase
+        .from("subscription_plans")
+        .select("*")
+        .eq("is_active", true)
+        .order("price", { ascending: true });
+      plans = plansData || [];
+    }
   }
 
   return (

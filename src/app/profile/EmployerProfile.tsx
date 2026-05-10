@@ -18,6 +18,7 @@ import {
   Pencil,
   Globe,
   Eye,
+  CreditCard,
 } from "lucide-react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import Link from "next/link";
@@ -247,6 +248,10 @@ export default function EmployerProfile({ profile, user, employerData, onEmploye
             <Link href="/messages" className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold hover:bg-slate-100 transition-colors">
               <MessageSquare className="w-4 h-4" />
               الرسائل
+            </Link>
+            <Link href="/pricing" className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-bold hover:bg-emerald-100 transition-colors">
+              <CreditCard className="w-4 h-4" />
+              الباقات
             </Link>
             <button
               type="button"
