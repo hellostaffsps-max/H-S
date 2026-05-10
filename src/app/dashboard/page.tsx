@@ -280,7 +280,9 @@ export default function Dashboard() {
       )}
 
       {loading ? (
-        <DashboardSkeleton />
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-brand-600" />
+        </div>
       ) : (
         <>
           {isEmployer ? (
@@ -697,7 +699,21 @@ function ApplicantModal({
                   </button>
                   <button
                     onClick={handleRejectWithReason}
-                    classNamefunction EmployerDashboard({
+                    className="px-4 py-2 text-sm font-bold text-white bg-red-600 rounded-xl hover:bg-red-700"
+                  >
+                    تأكيد عدم التوظيف
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EmployerDashboard({
   jobs,
   applications,
   employerData,
@@ -1034,43 +1050,6 @@ function ApplicantModal({
           </div>
 
         </div>
-      </div>
-    </div>
-  );
-}
- sm:py-4">
-                        <div className="flex items-center gap-1 flex-wrap">
-                          <button
-                            onClick={() => onSelectApplicant(app)}
-                            className="inline-flex items-center gap-1 text-xs font-bold text-brand-600 hover:text-brand-700 bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-lg transition-colors"
-                            title="عرض البطاقة"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                            البطاقة
-                          </button>
-                          <Link
-                            href={`/jobs/${app.job_id}`}
-                            className="inline-flex items-center gap-1 text-xs font-bold text-slate-600 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg transition-colors"
-                            title="عرض الوظيفة"
-                          >
-                            <FileText className="w-3.5 h-3.5" />
-                          </Link>
-                          <Link
-                            href={`/messages?with=${app.seeker_id}`}
-                            className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors"
-                            title="مراسلة"
-                          >
-                            <MessageSquare className="w-3.5 h-3.5" />
-                          </Link>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
