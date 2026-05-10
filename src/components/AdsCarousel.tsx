@@ -60,7 +60,7 @@ export default function AdsCarousel() {
 
   return (
     <section className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 mt-8">
-      <div className="relative aspect-[4/5] md:aspect-[16/9] w-full rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.1)] group border border-white/20 bg-slate-100">
+      <div className="relative aspect-[4/5] sm:aspect-[16/9] md:aspect-[21/9] lg:aspect-[3/1] max-h-[600px] w-full rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.1)] group border border-white/20 bg-slate-100">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentAd.id}
@@ -134,7 +134,7 @@ function AdMedia({ ad }: { ad: Ad }) {
     return (
       <video
         src={ad.media_url}
-        className="w-full h-full object-cover"
+        className="w-full h-full object-contain relative z-10"
         autoPlay
         muted
         loop
@@ -143,18 +143,18 @@ function AdMedia({ ad }: { ad: Ad }) {
     );
   }
   return (
-    <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+    <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-slate-900">
       {/* Blurred background for non-standard ratios */}
       <img
         src={ad.media_url}
         alt=""
-        className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-50 scale-110"
+        className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-40 scale-110"
       />
-      {/* Main image */}
+      {/* Main image - using object-contain to prevent cropping */}
       <img
         src={ad.media_url}
         alt={ad.title}
-        className="relative z-10 w-full h-full object-cover"
+        className="relative z-10 w-full h-full object-contain"
       />
     </div>
   );
