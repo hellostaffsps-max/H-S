@@ -59,8 +59,8 @@ export default function AdsCarousel() {
   const currentAd = ads[currentIndex];
 
   return (
-    <section className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 mt-8">
-      <div className="relative aspect-[4/5] sm:aspect-[16/9] md:aspect-[21/9] lg:aspect-[3/1] max-h-[600px] w-full rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.1)] group border border-white/20 bg-slate-100">
+    <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 mt-8 flex justify-center">
+      <div className="relative aspect-[4/5] sm:aspect-[4/5] md:max-w-md lg:max-w-lg w-full rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.15)] group border border-white/20 bg-slate-900 flex items-center justify-center">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentAd.id}
