@@ -54,7 +54,7 @@ type Ad = {
 };
 
 export default function AdminAds() {
-  const [activeTab, setActiveTab] = useState<'system' | 'requests' | 'cancellations' | 'archived'>('system');
+  const [activeTab, setActiveTab] = useState<'system' | 'requests' | 'active_employers' | 'cancellations' | 'archived'>('system');
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -136,9 +136,9 @@ export default function AdminAds() {
 
   const systemAds = ads.filter(a => !a.created_by && a.status !== 'archived');
   const requests = ads.filter(a => a.created_by && a.status === 'pending');
+  const activeEmployerAds = ads.filter(a => a.created_by && a.status === 'approved' && !a.cancellation_requested);
   const cancellations = ads.filter(a => a.created_by && a.cancellation_requested && a.status === 'approved');
   const archivedAds = ads.filter(a => a.status === 'archived');
-  const otherAds = ads.filter(a => a.created_by && a.status !== 'pending');
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -473,6 +473,14 @@ export default function AdminAds() {
             )}
           </button>
           <button
+            onClick={() => setActiveTab('active_employers')}
+            className={`px-6 py-3 rounded-xl text-sm font-black transition-all flex items-center gap-2 ${
+              activeTab === 'active_employers' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            المنشآت النشطة ({activeEmployerAds.length})
+          </button>
+          <button
             onClick={() => setActiveTab('cancellations')}
             className={`px-6 py-3 rounded-xl text-sm font-black transition-all flex items-center gap-2 ${
               activeTab === 'cancellations' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
@@ -502,18 +510,18 @@ export default function AdminAds() {
             <div className="col-span-full flex justify-center py-20">
               <Loader2 className="h-10 w-10 animate-spin text-brand-600" />
             </div>
-          ) : (activeTab === 'system' ? systemAds : activeTab === 'requests' ? requests : activeTab === 'cancellations' ? cancellations : archivedAds).length === 0 ? (
+          ) : (activeTab === 'system' ? systemAds : activeTab === 'requests' ? requests : activeTab === 'active_employers' ? activeEmployerAds : activeTab === 'cancellations' ? cancellations : archivedAds).length === 0 ? (
             <div className="col-span-full bg-white border-2 border-dashed border-slate-200 rounded-[2.5rem] p-24 text-center">
               <div className="inline-flex p-6 bg-slate-50 rounded-full mb-4">
-                {activeTab === 'archived' ? <History className="h-12 w-12 text-slate-300" /> : activeTab === 'cancellations' ? <Ban className="h-12 w-12 text-slate-300" /> : <Megaphone className="h-12 w-12 text-slate-300" />}
+                {activeTab === 'archived' ? <History className="h-12 w-12 text-slate-300" /> : activeTab === 'cancellations' ? <Ban className="h-12 w-12 text-slate-300" /> : activeTab === 'active_employers' ? <CheckCircle2 className="h-12 w-12 text-slate-300" /> : <Megaphone className="h-12 w-12 text-slate-300" />}
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-1">
-                {activeTab === 'system' ? 'لا توجد إعلانات نظام' : activeTab === 'requests' ? 'لا توجد طلبات نشر معلقة' : activeTab === 'cancellations' ? 'لا توجد طلبات إلغاء' : 'لا توجد إعلانات مؤرشفة'}
+                {activeTab === 'system' ? 'لا توجد إعلانات نظام' : activeTab === 'requests' ? 'لا توجد طلبات نشر معلقة' : activeTab === 'active_employers' ? 'لا توجد إعلانات منشآت نشطة' : activeTab === 'cancellations' ? 'لا توجد طلبات إلغاء' : 'لا توجد إعلانات مؤرشفة'}
               </h3>
               <p className="text-slate-500 font-medium">كل شيء تحت السيطرة!</p>
             </div>
           ) : (
-            (activeTab === 'system' ? systemAds : activeTab === 'requests' ? requests : activeTab === 'cancellations' ? cancellations : archivedAds).map((ad, idx) => (
+            (activeTab === 'system' ? systemAds : activeTab === 'requests' ? requests : activeTab === 'active_employers' ? activeEmployerAds : activeTab === 'cancellations' ? cancellations : archivedAds).map((ad, idx) => (
               <motion.div
                 layout
                 key={ad.id}
