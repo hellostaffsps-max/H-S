@@ -59,8 +59,8 @@ export default function AdsCarousel() {
   const currentAd = ads[currentIndex];
 
   return (
-    <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 mt-8 flex justify-center">
-      <div className="relative aspect-[4/5] sm:aspect-[4/5] md:max-w-md lg:max-w-lg w-full rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.15)] group border border-white/20 bg-slate-900 flex items-center justify-center">
+    <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 mt-8">
+      <div className="relative aspect-[21/9] sm:aspect-[21/7] w-full rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.1)] group border border-white/20 bg-slate-100 flex items-center justify-center">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentAd.id}
@@ -134,7 +134,7 @@ function AdMedia({ ad }: { ad: Ad }) {
     return (
       <video
         src={ad.media_url}
-        className="w-full h-full object-contain relative z-10"
+        className="w-full h-full object-cover"
         autoPlay
         muted
         loop
@@ -150,11 +150,11 @@ function AdMedia({ ad }: { ad: Ad }) {
         alt=""
         className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-40 scale-110"
       />
-      {/* Main image - using object-contain to prevent cropping */}
+      {/* Main image - back to object-cover for full width display */}
       <img
         src={ad.media_url}
         alt={ad.title}
-        className="relative z-10 w-full h-full object-contain"
+        className="relative z-10 w-full h-full object-cover"
       />
     </div>
   );
