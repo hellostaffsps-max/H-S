@@ -60,7 +60,7 @@ export default function AdsCarousel() {
 
   return (
     <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 mt-8">
-      <div className="relative aspect-[21/9] sm:aspect-[21/7] w-full rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.1)] group border border-white/20 bg-slate-100">
+      <div className="relative aspect-[3/1] w-full rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.1)] group border border-white/20 bg-slate-100">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentAd.id}
