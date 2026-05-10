@@ -24,11 +24,11 @@ import {
   X,
   ChevronLeft,
   LogOut,
-  Bell,
   Search,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
+import NotificationsDropdown from "@/components/NotificationsDropdown";
 
 interface NavItem {
   label: string;
@@ -168,10 +168,7 @@ export default function AdminLayoutClient({
           <div className="flex-1" />
 
           <div className="flex items-center gap-2">
-            <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors relative">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 left-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
-            </button>
+            <NotificationsDropdown />
             <Link
               href="/"
               className="hidden sm:flex items-center gap-2 px-3 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
