@@ -142,14 +142,14 @@ export default function AdminDashboard() {
   }, []);
 
   const statCards = [
-    { name: "إجمالي المستخدمين", value: stats.totalUsers, icon: Users, color: "from-blue-500 to-blue-600", text: "text-blue-50" },
-    { name: "أصحاب العمل", value: stats.totalEmployers, icon: Building2, color: "from-emerald-500 to-teal-600", text: "text-emerald-50" },
-    { name: "الوظائف النشطة", value: stats.activeJobs, icon: Briefcase, color: "from-brand-500 to-brand-700", text: "text-brand-50" },
-    { name: "وظائف بانتظار الموافقة", value: stats.pendingJobs, icon: Clock, color: "from-amber-500 to-orange-600", text: "text-amber-50" },
-    { name: "اشتراكات فعالة", value: stats.activeSubscriptions, icon: ShieldCheck, color: "from-indigo-500 to-violet-600", text: "text-indigo-50" },
-    { name: "اشتراكات معلقة", value: stats.pendingSubscriptions, icon: TrendingUp, color: "from-rose-500 to-pink-600", text: "text-rose-50" },
-    { name: "مرشحون", value: stats.totalSeekers, icon: UserCheck, color: "from-cyan-500 to-sky-600", text: "text-cyan-50" },
-    { name: "مقالات للمراجعة", value: stats.pendingArticles, icon: FileText, color: "from-orange-500 to-red-500", text: "text-orange-50" },
+    { name: "إجمالي المستخدمين", value: stats.totalUsers, icon: Users, color: "from-blue-500 to-blue-600", text: "text-blue-50", href: "/admin/users" },
+    { name: "أصحاب العمل", value: stats.totalEmployers, icon: Building2, color: "from-emerald-500 to-teal-600", text: "text-emerald-50", href: "/admin/users" },
+    { name: "الوظائف النشطة", value: stats.activeJobs, icon: Briefcase, color: "from-brand-500 to-brand-700", text: "text-brand-50", href: "/admin/jobs" },
+    { name: "وظائف بانتظار الموافقة", value: stats.pendingJobs, icon: Clock, color: "from-amber-500 to-orange-600", text: "text-amber-50", href: "/admin/jobs" },
+    { name: "اشتراكات فعالة", value: stats.activeSubscriptions, icon: ShieldCheck, color: "from-indigo-500 to-violet-600", text: "text-indigo-50", href: "/admin/subscriptions" },
+    { name: "اشتراكات معلقة", value: stats.pendingSubscriptions, icon: TrendingUp, color: "from-rose-500 to-pink-600", text: "text-rose-50", href: "/admin/subscriptions" },
+    { name: "مرشحون", value: stats.totalSeekers, icon: UserCheck, color: "from-cyan-500 to-sky-600", text: "text-cyan-50", href: "/admin/users" },
+    { name: "مقالات للمراجعة", value: stats.pendingArticles, icon: FileText, color: "from-orange-500 to-red-500", text: "text-orange-50", href: "/admin/articles" },
   ];
 
   const tabs: { key: ActivityTab; label: string; count: number }[] = [
@@ -211,23 +211,25 @@ export default function AdminDashboard() {
       {/* Stats Grid */}
       <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {statCards.map((stat) => (
-          <motion.div
-            key={stat.name}
-            variants={item}
-            className={`relative overflow-hidden bg-gradient-to-br ${stat.color} p-6 rounded-3xl shadow-lg hover:shadow-xl transition-all group cursor-default transform hover:-translate-y-1`}
-          >
-            <div className="absolute -right-4 -top-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
-              <stat.icon className="h-32 w-32" />
-            </div>
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl text-white">
-                  <stat.icon className="h-6 w-6" />
-                </div>
+          <motion.div key={stat.name} variants={item}>
+            <Link
+              href={stat.href}
+              className={`block relative overflow-hidden bg-gradient-to-br ${stat.color} p-6 rounded-3xl shadow-lg hover:shadow-xl transition-all group cursor-pointer transform hover:-translate-y-1 h-full`}
+            >
+              <div className="absolute -right-4 -top-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
+                <stat.icon className="h-32 w-32" />
               </div>
-              <p className={`text-sm font-bold mb-1 ${stat.text}`}>{stat.name}</p>
-              <h3 className="text-4xl font-black text-white tracking-tight">{stat.value}</h3>
-            </div>
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl text-white">
+                    <stat.icon className="h-6 w-6" />
+                  </div>
+                  <ArrowUpRight className="h-5 w-5 text-white/50 group-hover:text-white transition-colors" />
+                </div>
+                <p className={`text-sm font-bold mb-1 ${stat.text}`}>{stat.name}</p>
+                <h3 className="text-4xl font-black text-white tracking-tight">{stat.value}</h3>
+              </div>
+            </Link>
           </motion.div>
         ))}
       </motion.div>
