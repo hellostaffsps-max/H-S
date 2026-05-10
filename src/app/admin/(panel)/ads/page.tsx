@@ -87,16 +87,42 @@ export default function AdminAds() {
           profiles:created_by (
             full_name,
             email
-          ),
-          employers:created_by (
-            company_name
           )
         `)
         .order('order_index', { ascending: true })
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setAds(data || []);
+      
+      // Fetch employer company names for ads with created_by
+      const adsWithCreators = data || [];
+      const creatorIds = adsWithCreators
+        .filter(a => a.created_by)
+        .map(a => a.created_by);
+      
+      let employerMap: Record<string, string> = {};
+      if (creatorIds.length > 0) {
+        const { data: employers } = await supabase
+          .from('employers')
+          .select('profile_id, company_name')
+          .in('profile_id', creatorIds);
+        
+        if (employers) {
+          employers.forEach(e => {
+            employerMap[e.profile_id] = e.company_name;
+          });
+        }
+      }
+      
+      // Merge employer data into ads
+      const enrichedAds = adsWithCreators.map(ad => ({
+        ...ad,
+        employers: ad.created_by && employerMap[ad.created_by] 
+          ? { company_name: employerMap[ad.created_by] } 
+          : undefined
+      }));
+      
+      setAds(enrichedAds);
     } catch (error) {
       console.error('Error fetching ads:', error);
     } finally {
