@@ -58,20 +58,37 @@ export function useSubscription() {
           .limit(1)
           .maybeSingle();
 
-        if (activeSub && activeSub.subscription_plans) {
-          const plan = activeSub.subscription_plans;
-          setSubscription({
-            plan_id: plan.id,
-            plan_name: plan.name,
-            status: 'active',
-            job_limit: plan.job_limit || 0,
-            allow_articles: plan.allow_articles || false,
-            featured_listings: plan.featured_listings || false,
-            max_articles_per_month: plan.max_articles_per_month || 0,
-            allow_ads: plan.allow_ads || false,
-            price: plan.price || 0,
-            current_job_count: jobCount || 0,
-          });
+        if (activeSub) {
+          if (activeSub.subscription_plans) {
+            const plan = activeSub.subscription_plans;
+            setSubscription({
+              plan_id: plan.id,
+              plan_name: plan.name,
+              status: 'active',
+              job_limit: plan.job_limit || 0,
+              allow_articles: plan.allow_articles || false,
+              featured_listings: plan.featured_listings || false,
+              max_articles_per_month: plan.max_articles_per_month || 0,
+              allow_ads: plan.allow_ads || false,
+              price: plan.price || 0,
+              current_job_count: jobCount || 0,
+            });
+          } else {
+            // Subscription is ACTIVE but has no linked plan_id (e.g. manual/legacy)
+            // Use defaults but keep status as active
+            setSubscription({
+              plan_id: 'manual_plan',
+              plan_name: activeSub.plan_name || 'باقة مخصصة',
+              status: 'active',
+              job_limit: 10, // Generous default for manual activations
+              allow_articles: true,
+              featured_listings: true,
+              max_articles_per_month: 5,
+              allow_ads: true,
+              price: 0,
+              current_job_count: jobCount || 0,
+            });
+          }
           setLoading(false);
           return;
         }
@@ -82,6 +99,7 @@ export function useSubscription() {
           .select('*, subscription_plans(*)')
           .eq('user_id', user?.id)
           .eq('status', 'pending')
+          .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
 

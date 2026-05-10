@@ -243,7 +243,17 @@ export default function AdminSubscriptions() {
                     </td>
                     <td className="px-8 py-6">
                       <div className="space-y-1">
-                        <p className="font-black text-slate-900">{sub.subscription_plans?.name || sub.plan_name}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-black text-slate-900">{sub.subscription_plans?.name || sub.plan_name}</p>
+                          {!sub.plan_id && (
+                            <div className="group relative">
+                              <AlertCircle className="w-4 h-4 text-amber-500" />
+                              <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-slate-900 text-white text-[10px] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
+                                تنبيه: معرف الخطة مفقود. يرجى تعديل الخطة يدوياً قبل التفعيل لضمان عمل الصلاحيات.
+                              </div>
+                            </div>
+                          )}
+                        </div>
                         <div className="inline-flex px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 text-[10px] font-black border border-emerald-100">
                           ₪{sub.subscription_plans?.price || 0}
                         </div>
@@ -290,7 +300,14 @@ export default function AdminSubscriptions() {
                         {sub.status === 'pending' && (
                           <div className="flex gap-2 p-1 bg-slate-100 rounded-xl">
                             <button 
-                              onClick={() => handleUpdateStatus(sub.id, 'active')}
+                              onClick={() => {
+                                if (!sub.plan_id) {
+                                  setEditingSub(sub);
+                                  alert('هذا الطلب لا يحتوي على معرف خطة (Plan ID). يرجى اختيار الخطة المناسبة من القائمة.');
+                                } else {
+                                  handleUpdateStatus(sub.id, 'active');
+                                }
+                              }}
                               className="p-2 bg-white text-emerald-600 hover:text-emerald-700 rounded-lg shadow-sm transition-all hover:scale-105 active:scale-95"
                               title="تفعيل"
                             >
