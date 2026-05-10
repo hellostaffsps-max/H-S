@@ -16,9 +16,15 @@ import {
   ToggleRight,
   ChevronUp,
   ChevronDown,
-  AlertCircle
+  AlertCircle,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Calendar
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+
+type AdStatus = 'pending' | 'approved' | 'rejected' | 'archived';
 
 type Ad = {
   id: string;
@@ -27,17 +33,34 @@ type Ad = {
   media_type: 'image' | 'video';
   link_url: string | null;
   is_active: boolean;
+  status: AdStatus;
+  start_date: string | null;
+  end_date: string | null;
+  rejection_reason: string | null;
   order_index: number;
   created_at: string;
+  created_by: string | null;
+  profiles?: {
+    company_name: string;
+    full_name: string;
+  };
 };
 
 export default function AdminAds() {
+  const [activeTab, setActiveTab] = useState<'system' | 'requests'>('system');
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   
+  const [selectedAd, setSelectedAd] = useState<Ad | null>(null);
+  const [approvalModal, setApprovalModal] = useState<{ open: boolean, duration: number, rejectionReason: string }>({ 
+    open: false, 
+    duration: 30, 
+    rejectionReason: '' 
+  });
+
   const [newAd, setNewAd] = useState({
     title: '',
     media_url: '',
@@ -56,8 +79,15 @@ export default function AdminAds() {
     try {
       const { data, error } = await supabase
         .from('advertisements')
-        .select('*')
-        .order('order_index', { ascending: true });
+        .select(`
+          *,
+          profiles:created_by (
+            company_name,
+            full_name
+          )
+        `)
+        .order('order_index', { ascending: true })
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       setAds(data || []);
@@ -68,11 +98,14 @@ export default function AdminAds() {
     }
   }
 
+  const systemAds = ads.filter(a => !a.created_by);
+  const requests = ads.filter(a => a.created_by && a.status === 'pending');
+  const otherAds = ads.filter(a => a.created_by && a.status !== 'pending');
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     const isVideo = file.type.startsWith('video/');
     const isImage = file.type.startsWith('image/');
     
@@ -132,7 +165,8 @@ export default function AdminAds() {
           media_type: newAd.media_type,
           link_url: newAd.link_url || null,
           is_active: newAd.is_active,
-          order_index: ads.length
+          status: 'approved',
+          order_index: systemAds.length
         }])
         .select()
         .single();
@@ -174,7 +208,6 @@ export default function AdminAds() {
     if (!confirm('هل أنت متأكد من حذف هذا الإعلان؟')) return;
 
     try {
-      // 1. Delete from database
       const { error: dbError } = await supabase
         .from('advertisements')
         .delete()
@@ -182,7 +215,6 @@ export default function AdminAds() {
 
       if (dbError) throw dbError;
 
-      // 2. Try to delete from storage if it's a supabase URL
       if (ad.media_url.includes('/storage/v1/object/public/ads/')) {
         const path = ad.media_url.split('/ads/')[1];
         await supabase.storage.from('ads').remove([path]);
@@ -194,24 +226,100 @@ export default function AdminAds() {
     }
   };
 
-  const moveOrder = async (index: number, direction: 'up' | 'down') => {
+  const approveAd = async () => {
+    if (!selectedAd) return;
+    setIsSubmitting(true);
+    
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setDate(startDate.getDate() + approvalModal.duration);
+
+    try {
+      const { error } = await supabase
+        .from('advertisements')
+        .update({ 
+          status: 'approved',
+          is_active: true,
+          start_date: startDate.toISOString(),
+          end_date: endDate.toISOString(),
+          order_index: ads.length
+        })
+        .eq('id', selectedAd.id);
+
+      if (error) throw error;
+      
+      setAds(ads.map(a => a.id === selectedAd.id ? { 
+        ...a, 
+        status: 'approved', 
+        is_active: true,
+        start_date: startDate.toISOString(),
+        end_date: endDate.toISOString()
+      } : a));
+      
+      setApprovalModal({ ...approvalModal, open: false });
+      setSelectedAd(null);
+    } catch (error: any) {
+      alert('فشل الموافقة على الإعلان');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const rejectAd = async () => {
+    if (!selectedAd || !approvalModal.rejectionReason) {
+      alert('يرجى ذكر سبب الرفض');
+      return;
+    }
+    setIsSubmitting(true);
+    
+    try {
+      const { error } = await supabase
+        .from('advertisements')
+        .update({ 
+          status: 'rejected',
+          is_active: false,
+          rejection_reason: approvalModal.rejectionReason
+        })
+        .eq('id', selectedAd.id);
+
+      if (error) throw error;
+      
+      setAds(ads.map(a => a.id === selectedAd.id ? { 
+        ...a, 
+        status: 'rejected', 
+        is_active: false,
+        rejection_reason: approvalModal.rejectionReason
+      } : a));
+      
+      setApprovalModal({ ...approvalModal, open: false });
+      setSelectedAd(null);
+    } catch (error: any) {
+      alert('فشل رفض الإعلان');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const moveOrder = async (index: number, direction: 'up' | 'down', list: Ad[]) => {
     if (direction === 'up' && index === 0) return;
-    if (direction === 'down' && index === ads.length - 1) return;
+    if (direction === 'down' && index === list.length - 1) return;
 
     const newIndex = direction === 'up' ? index - 1 : index + 1;
-    const newAds = [...ads];
-    const temp = newAds[index];
-    newAds[index] = newAds[newIndex];
-    newAds[newIndex] = temp;
+    const currentAd = list[index];
+    const targetAd = list[newIndex];
 
-    // Update local state first for instant UI feedback
-    setAds(newAds);
+    const updatedAds = ads.map(a => {
+      if (a.id === currentAd.id) return { ...a, order_index: targetAd.order_index };
+      if (a.id === targetAd.id) return { ...a, order_index: currentAd.order_index };
+      return a;
+    }).sort((a, b) => a.order_index - b.order_index);
 
-    // Sync with DB
+    setAds(updatedAds);
+
     try {
       await Promise.all([
-        supabase.from('advertisements').update({ order_index: index }).eq('id', newAds[index].id),
-        supabase.from('advertisements').update({ order_index: newIndex }).eq('id', newAds[newIndex].id)
+        supabase.from('advertisements').update({ order_index: targetAd.order_index }).eq('id', currentAd.id),
+        supabase.from('advertisements').update({ order_index: currentAd.order_index }).eq('id', targetAd.id)
       ]);
     } catch (error) {
       console.error('Order sync failed:', error);
@@ -222,26 +330,52 @@ export default function AdminAds() {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-6 max-w-7xl mx-auto"
+      className="space-y-8 max-w-7xl mx-auto"
     >
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-brand-50 rounded-2xl text-brand-600">
-            <Megaphone className="h-6 w-6" />
+      <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+          <div className="flex items-center gap-5">
+            <div className="p-4 bg-brand-50 rounded-2xl text-brand-600">
+              <Megaphone className="h-8 w-8" />
+            </div>
+            <div>
+              <h2 className="text-3xl font-black text-slate-900">إدارة الإعلانات</h2>
+              <p className="text-slate-500 text-sm font-medium">تحكم في الإعلانات المعروضة وراجع طلبات المنشآت</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-2xl font-black text-slate-900">إدارة الإعلانات المتحركة</h2>
-            <p className="text-slate-500 text-sm">أضف صور أو فيديوهات إعلانية تظهر في الصفحة الرئيسية للمنصة</p>
-          </div>
+          
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center justify-center gap-2 px-8 py-4 bg-brand-600 text-white rounded-2xl font-black hover:bg-brand-700 shadow-xl shadow-brand-100 transition-all active:scale-95"
+          >
+            <Plus className="h-5 w-5" />
+            إضافة إعلان نظام
+          </button>
         </div>
-        
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center justify-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-2xl font-bold hover:bg-brand-700 shadow-lg shadow-brand-200 transition-all"
-        >
-          <Plus className="h-5 w-5" />
-          إضافة إعلان جديد
-        </button>
+
+        <div className="flex p-1.5 bg-slate-50 rounded-2xl w-fit">
+          <button
+            onClick={() => setActiveTab('system')}
+            className={`px-8 py-3 rounded-xl text-sm font-black transition-all ${
+              activeTab === 'system' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            إعلانات النظام ({systemAds.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('requests')}
+            className={`px-8 py-3 rounded-xl text-sm font-black transition-all flex items-center gap-2 ${
+              activeTab === 'requests' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            طلبات المنشآت
+            {requests.length > 0 && (
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-600 text-[10px] text-white">
+                {requests.length}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -250,97 +384,105 @@ export default function AdminAds() {
             <div className="col-span-full flex justify-center py-20">
               <Loader2 className="h-10 w-10 animate-spin text-brand-600" />
             </div>
-          ) : ads.length === 0 ? (
-            <div className="col-span-full bg-white border border-dashed border-slate-200 rounded-3xl p-20 text-center">
-              <div className="inline-flex p-5 bg-slate-50 rounded-full mb-4">
-                <Megaphone className="h-10 w-10 text-slate-300" />
+          ) : (activeTab === 'system' ? systemAds : requests).length === 0 ? (
+            <div className="col-span-full bg-white border-2 border-dashed border-slate-200 rounded-[2.5rem] p-24 text-center">
+              <div className="inline-flex p-6 bg-slate-50 rounded-full mb-4">
+                <Megaphone className="h-12 w-12 text-slate-300" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-1">لا توجد إعلانات حالياً</h3>
-              <p className="text-slate-500">ابدأ بإضافة أول إعلان ليظهر للمستخدمين</p>
+              <h3 className="text-xl font-bold text-slate-900 mb-1">
+                {activeTab === 'system' ? 'لا توجد إعلانات نظام' : 'لا توجد طلبات معلقة'}
+              </h3>
+              <p className="text-slate-500 font-medium">كل شيء تحت السيطرة!</p>
             </div>
           ) : (
-            ads.map((ad, index) => (
+            (activeTab === 'system' ? systemAds : requests).map((ad, idx) => (
               <motion.div
                 layout
                 key={ad.id}
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className={`bg-white border rounded-3xl overflow-hidden shadow-sm transition-all flex flex-col ${ad.is_active ? 'border-slate-100' : 'border-slate-200 grayscale'}`}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className={`bg-white border rounded-[2rem] overflow-hidden shadow-sm transition-all flex flex-col group ${ad.is_active ? 'border-slate-100' : 'border-slate-200'}`}
               >
-                <div className="relative h-48 bg-slate-50">
+                <div className="relative h-56 bg-slate-50 overflow-hidden">
                   {ad.media_type === 'video' ? (
-                    <video 
-                      src={ad.media_url} 
-                      className="w-full h-full object-cover" 
-                      muted 
-                      loop 
-                      playsInline 
-                      onMouseOver={(e) => e.currentTarget.play()}
-                      onMouseOut={(e) => e.currentTarget.pause()}
-                    />
+                    <video src={ad.media_url} className="w-full h-full object-cover transition-transform group-hover:scale-105" muted loop playsInline onMouseOver={(e) => e.currentTarget.play()} onMouseOut={(e) => e.currentTarget.pause()} />
                   ) : (
-                    <img src={ad.media_url} alt={ad.title} className="w-full h-full object-cover" />
+                    <img src={ad.media_url} alt={ad.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
                   )}
                   
-                  <div className="absolute top-3 left-3 flex gap-2">
-                    {ad.media_type === 'video' ? (
-                      <div className="bg-black/50 backdrop-blur-md text-white p-1.5 rounded-lg">
-                        <VideoIcon className="h-4 w-4" />
-                      </div>
-                    ) : (
-                      <div className="bg-black/50 backdrop-blur-md text-white p-1.5 rounded-lg">
-                        <ImageIcon className="h-4 w-4" />
-                      </div>
-                    )}
+                  <div className="absolute top-4 left-4 flex gap-2">
+                    <div className="bg-black/50 backdrop-blur-md text-white p-2 rounded-xl">
+                      {ad.media_type === 'video' ? <VideoIcon className="h-4 w-4" /> : <ImageIcon className="h-4 w-4" />}
+                    </div>
                   </div>
 
-                  <div className="absolute top-3 right-3 flex flex-col gap-2">
-                    <button 
-                      onClick={() => moveOrder(index, 'up')}
-                      disabled={index === 0}
-                      className="bg-white/90 backdrop-blur-md p-1.5 rounded-lg text-slate-600 hover:text-brand-600 disabled:opacity-30 shadow-sm"
-                    >
-                      <ChevronUp className="h-4 w-4" />
-                    </button>
-                    <button 
-                      onClick={() => moveOrder(index, 'down')}
-                      disabled={index === ads.length - 1}
-                      className="bg-white/90 backdrop-blur-md p-1.5 rounded-lg text-slate-600 hover:text-brand-600 disabled:opacity-30 shadow-sm"
-                    >
-                      <ChevronDown className="h-4 w-4" />
-                    </button>
-                  </div>
+                  {activeTab === 'system' && (
+                    <div className="absolute top-4 right-4 flex flex-col gap-2">
+                      <button 
+                        onClick={() => moveOrder(idx, 'up', systemAds)}
+                        disabled={idx === 0}
+                        className="bg-white/90 backdrop-blur-md p-2 rounded-xl text-slate-600 hover:text-brand-600 disabled:opacity-30 shadow-sm"
+                      >
+                        <ChevronUp className="h-4 w-4" />
+                      </button>
+                      <button 
+                        onClick={() => moveOrder(idx, 'down', systemAds)}
+                        disabled={idx === systemAds.length - 1}
+                        className="bg-white/90 backdrop-blur-md p-2 rounded-xl text-slate-600 hover:text-brand-600 disabled:opacity-30 shadow-sm"
+                      >
+                        <ChevronDown className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
 
-                <div className="p-5 flex-grow space-y-4">
-                  <div>
-                    <h3 className="font-bold text-slate-900 truncate">{ad.title}</h3>
-                    {ad.link_url && (
-                      <a href={ad.link_url} target="_blank" className="text-xs text-brand-600 hover:underline flex items-center gap-1 mt-1 font-medium">
-                        <ExternalLink className="h-3 w-3" />
-                        رابط التوجيه
-                      </a>
+                <div className="p-6 flex-grow space-y-4">
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="flex-grow min-w-0">
+                      <h3 className="font-black text-slate-900 truncate">{ad.title}</h3>
+                      {ad.created_by && (
+                        <p className="text-[10px] font-black text-brand-600 uppercase mt-1">بواسطة: {ad.profiles?.company_name || ad.profiles?.full_name}</p>
+                      )}
+                      {ad.link_url && (
+                        <a href={ad.link_url} target="_blank" className="text-xs text-brand-600 hover:underline flex items-center gap-1.5 mt-2 font-bold">
+                          <ExternalLink className="h-3.5 w-3.5" />
+                          رابط التوجيه
+                        </a>
+                      )}
+                    </div>
+                    {activeTab === 'system' && (
+                      <button 
+                        onClick={() => toggleStatus(ad)}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-black transition-all border ${
+                          ad.is_active ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-500 border-slate-100'
+                        }`}
+                      >
+                        {ad.is_active ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+                        {ad.is_active ? 'نشط' : 'معطل'}
+                      </button>
                     )}
                   </div>
 
                   <div className="flex items-center justify-between pt-4 border-t border-slate-50">
-                    <button 
-                      onClick={() => toggleStatus(ad)}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                        ad.is_active ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'
-                      }`}
-                    >
-                      {ad.is_active ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
-                      {ad.is_active ? 'نشط' : 'معطل'}
-                    </button>
-
-                    <button 
-                      onClick={() => deleteAd(ad)}
-                      className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    <p className="text-[10px] text-slate-400 font-bold">{new Date(ad.created_at).toLocaleDateString('ar-EG')}</p>
+                    
+                    <div className="flex gap-2">
+                      {activeTab === 'requests' && (
+                        <button 
+                          onClick={() => { setSelectedAd(ad); setApprovalModal({ ...approvalModal, open: true }); }}
+                          className="px-4 py-2 bg-brand-600 text-white rounded-xl text-xs font-black hover:bg-brand-700 transition-all shadow-lg shadow-brand-100"
+                        >
+                          مراجعة الطلب
+                        </button>
+                      )}
+                      <button 
+                        onClick={() => deleteAd(ad)}
+                        className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -349,7 +491,101 @@ export default function AdminAds() {
         </AnimatePresence>
       </div>
 
-      {/* Add Ad Modal */}
+      {/* Approval Modal */}
+      <AnimatePresence>
+        {approvalModal.open && selectedAd && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-[2.5rem] p-10 max-w-2xl w-full shadow-2xl overflow-y-auto max-h-[90vh]"
+            >
+              <div className="flex justify-between items-center mb-8">
+                <h3 className="text-2xl font-black text-slate-900">مراجعة طلب الإعلان</h3>
+                <button onClick={() => setApprovalModal({ ...approvalModal, open: false })} className="p-2 hover:bg-slate-100 rounded-full text-slate-400">
+                  <X className="h-7 w-7" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <div className="aspect-[3/1] bg-slate-50 rounded-2xl overflow-hidden border border-slate-100">
+                    {selectedAd.media_type === 'video' ? (
+                      <video src={selectedAd.media_url} className="w-full h-full object-cover" autoPlay muted loop />
+                    ) : (
+                      <img src={selectedAd.media_url} alt="" className="w-full h-full object-cover" />
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-xs font-bold text-slate-400 uppercase">العنوان</p>
+                    <p className="font-black text-slate-900">{selectedAd.title}</p>
+                    <p className="text-xs font-bold text-slate-400 uppercase mt-4">بواسطة</p>
+                    <p className="font-bold text-brand-600">{selectedAd.profiles?.company_name || selectedAd.profiles?.full_name}</p>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <label className="block text-sm font-black text-slate-700">مدة الإعلان (أيام) *</label>
+                    <div className="grid grid-cols-3 gap-3">
+                      {[7, 30, 90].map(d => (
+                        <button
+                          key={d}
+                          onClick={() => setApprovalModal({ ...approvalModal, duration: d })}
+                          className={`py-3 rounded-xl text-xs font-black border transition-all ${
+                            approvalModal.duration === d ? 'bg-brand-600 text-white border-brand-600 shadow-lg shadow-brand-100' : 'bg-slate-50 text-slate-500 border-slate-100 hover:bg-slate-100'
+                          }`}
+                        >
+                          {d === 7 ? 'أسبوع' : d === 30 ? 'شهر' : '3 أشهر'}
+                        </button>
+                      ))}
+                    </div>
+                    <input 
+                      type="number" 
+                      value={approvalModal.duration}
+                      onChange={(e) => setApprovalModal({ ...approvalModal, duration: parseInt(e.target.value) || 0 })}
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-brand-500/20 font-bold mt-2"
+                      placeholder="أو ادخل عدد الأيام..."
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="block text-sm font-black text-slate-700">سبب الرفض (في حال الرفض)</label>
+                    <textarea 
+                      value={approvalModal.rejectionReason}
+                      onChange={(e) => setApprovalModal({ ...approvalModal, rejectionReason: e.target.value })}
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-brand-500/20 font-bold resize-none h-24 text-sm"
+                      placeholder="لماذا تم رفض الطلب؟ سيتم عرضه للمنشأة..."
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-4 pt-8 mt-8 border-t border-slate-50">
+                <button
+                  onClick={approveAd}
+                  disabled={isSubmitting}
+                  className="flex-1 py-4 bg-brand-600 text-white rounded-2xl font-black shadow-xl shadow-brand-100 hover:bg-brand-700 transition-all flex items-center justify-center gap-3"
+                >
+                  {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <CheckCircle2 className="h-5 w-5" />}
+                  قبول ونشر الإعلان
+                </button>
+                <button
+                  onClick={rejectAd}
+                  disabled={isSubmitting}
+                  className="flex-1 py-4 bg-red-50 text-red-600 rounded-2xl font-black hover:bg-red-100 transition-all flex items-center justify-center gap-3"
+                >
+                  <XCircle className="h-5 w-5" />
+                  رفض الطلب
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Add Ad Modal (for System Ads) */}
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
@@ -357,116 +593,72 @@ export default function AdminAds() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-[2rem] p-8 max-w-xl w-full shadow-2xl overflow-y-auto max-h-[90vh]"
+              className="bg-white rounded-[2.5rem] p-10 max-w-xl w-full shadow-2xl border border-slate-100"
             >
-              <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-brand-50 rounded-xl text-brand-600">
-                    <Megaphone className="h-5 w-5" />
-                  </div>
-                  <h3 className="text-xl font-black text-slate-900">إضافة إعلان جديد</h3>
-                </div>
-                <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400">
-                  <X className="h-6 w-6" />
+              <div className="flex justify-between items-center mb-8">
+                <h3 className="text-2xl font-black text-slate-900">إضافة إعلان نظام</h3>
+                <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-full text-slate-400">
+                  <X className="h-7 w-7" />
                 </button>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <label className="block text-sm font-bold text-slate-700">الملف الإعلاني (صورة أو فيديو)</label>
+                  <label className="block text-sm font-black text-slate-700">الملف الإعلاني *</label>
                   <div className="relative">
                     {newAd.media_url ? (
-                      <div className="relative h-56 w-full rounded-2xl overflow-hidden group">
+                      <div className="relative h-64 w-full rounded-2xl overflow-hidden group">
                         {newAd.media_type === 'video' ? (
                           <video src={newAd.media_url} className="w-full h-full object-cover" muted autoPlay loop />
                         ) : (
                           <img src={newAd.media_url} alt="Preview" className="w-full h-full object-cover" />
                         )}
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <label className="cursor-pointer p-4 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/40 transition-all">
-                            <Upload className="h-6 w-6" />
-                            <input type="file" className="hidden" accept="image/*,video/*" onChange={handleFileUpload} />
-                          </label>
-                        </div>
+                        <label className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                          <Upload className="h-8 w-8 text-white" />
+                          <input type="file" className="hidden" accept="image/*,video/*" onChange={handleFileUpload} />
+                        </label>
                       </div>
                     ) : (
-                      <label className="flex flex-col items-center justify-center h-56 w-full border-2 border-dashed border-slate-200 rounded-2xl cursor-pointer hover:border-brand-400 hover:bg-slate-50 transition-all group">
-                        <div className="flex flex-col items-center gap-2 group-hover:scale-110 transition-transform">
-                          <div className="p-4 bg-slate-50 rounded-2xl text-slate-400 group-hover:text-brand-500 group-hover:bg-brand-50 transition-colors">
-                            <Upload className="h-8 w-8" />
-                          </div>
-                          <span className="text-sm text-slate-500 font-bold">اضغط لرفع ملف الإعلان</span>
-                          <span className="text-[10px] text-slate-400">يدعم الصور ومقاطع الفيديو</span>
-                        </div>
+                      <label className="flex flex-col items-center justify-center h-64 w-full border-2 border-dashed border-slate-200 rounded-2xl cursor-pointer hover:border-brand-400 hover:bg-brand-50 transition-all group">
+                        <Upload className="h-10 w-10 text-slate-300 group-hover:text-brand-500 mb-2" />
+                        <span className="text-sm text-slate-500 font-bold">ارفع صورة أو فيديو</span>
                         <input type="file" className="hidden" accept="image/*,video/*" onChange={handleFileUpload} />
                       </label>
                     )}
-                    
                     {uploadProgress > 0 && (
-                      <div className="absolute bottom-4 left-4 right-4 h-1.5 bg-white/30 backdrop-blur-md rounded-full overflow-hidden">
-                        <motion.div 
-                          className="h-full bg-brand-500"
-                          initial={{ width: 0 }}
-                          animate={{ width: `${uploadProgress}%` }}
-                        />
+                      <div className="absolute bottom-4 left-4 right-4 h-1.5 bg-white/30 rounded-full overflow-hidden">
+                        <div className="h-full bg-brand-500" style={{ width: `${uploadProgress}%` }} />
                       </div>
                     )}
-                  </div>
-                  
-                  {/* Recommended dimensions notice */}
-                  <div className="mt-4 p-4 bg-amber-50 border border-amber-100 rounded-2xl flex items-start gap-3">
-                    <AlertCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
-                    <div className="space-y-1">
-                      <p className="text-sm font-bold text-amber-900">المقاسات الموصى بها:</p>
-                      <p className="text-xs text-amber-700 leading-relaxed">
-                        للحصول على أفضل مظهر على جميع الأجهزة، نوصي باستخدام مقاس <span className="font-bold">1920 × 640 بكسل</span> (أو أي مقاس بنسبة <span className="font-bold">3:1</span>). 
-                        يرجى تركيز المحتوى المهم في منتصف التصميم لضمان وضوحه على شاشات الموبايل.
-                      </p>
-                    </div>
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-1">عنوان الإعلان</label>
-                    <input
-                      required
-                      type="text"
-                      value={newAd.title}
-                      onChange={(e) => setNewAd({ ...newAd, title: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 font-bold"
-                      placeholder="عنوان تعريفي (للإدارة فقط)"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-1">رابط التوجيه (اختياري)</label>
-                    <input
-                      type="url"
-                      value={newAd.link_url}
-                      onChange={(e) => setNewAd({ ...newAd, link_url: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-left"
-                      dir="ltr"
-                      placeholder="https://..."
-                    />
-                    <p className="text-[10px] text-slate-400 mt-1 mr-1">الرابط الذي سينتقل إليه المستخدم عند الضغط على الإعلان</p>
-                  </div>
+                  <input
+                    required
+                    type="text"
+                    value={newAd.title}
+                    onChange={(e) => setNewAd({ ...newAd, title: e.target.value })}
+                    className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 font-black"
+                    placeholder="عنوان الإعلان"
+                  />
+                  <input
+                    type="url"
+                    value={newAd.link_url}
+                    onChange={(e) => setNewAd({ ...newAd, link_url: e.target.value })}
+                    className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-brand-500/20 font-bold"
+                    placeholder="رابط التوجيه (اختياري)"
+                    dir="ltr"
+                  />
                 </div>
 
                 <div className="flex gap-4 pt-4">
                   <button
                     type="submit"
                     disabled={isSubmitting || !newAd.media_url}
-                    className="flex-1 py-4 bg-brand-600 text-white rounded-2xl font-black shadow-lg shadow-brand-100 hover:bg-brand-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="flex-1 py-5 bg-brand-600 text-white rounded-[1.5rem] font-black shadow-xl shadow-brand-100 hover:bg-brand-700 transition-all disabled:opacity-50"
                   >
-                    {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : 'حفظ ونشر الإعلان'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsModalOpen(false)}
-                    className="px-8 py-4 bg-slate-50 text-slate-500 rounded-2xl font-bold hover:bg-slate-100 transition-all"
-                  >
-                    إلغاء
+                    {isSubmitting ? 'جاري الحفظ...' : 'نشر الإعلان'}
                   </button>
                 </div>
               </form>
@@ -477,3 +669,4 @@ export default function AdminAds() {
     </motion.div>
   );
 }
+

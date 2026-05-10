@@ -12,7 +12,8 @@ import {
   ShieldCheck, 
   Save, 
   Trash2,
-  AlertCircle
+  AlertCircle,
+  Megaphone
 } from "lucide-react";
 
 interface Plan {
@@ -25,6 +26,7 @@ interface Plan {
   allow_articles: boolean;
   featured_listings: boolean;
   max_articles_per_month: number;
+  allow_ads: boolean;
   features: string[];
   is_active: boolean;
   created_at?: string;
@@ -116,6 +118,7 @@ export default function PlansManagement() {
       allow_articles: false,
       featured_listings: false,
       max_articles_per_month: 0,
+      allow_ads: false,
       features: [],
       is_active: true
     });
@@ -197,6 +200,11 @@ export default function PlansManagement() {
                 {plan.featured_listings && (
                   <div className="flex items-center gap-2 text-sm text-brand-600 font-bold bg-brand-50 p-2 rounded-lg">
                     <ShieldCheck className="h-4 w-4" /> تمييز الإعلانات والوظائف
+                  </div>
+                )}
+                {plan.allow_ads && (
+                  <div className="flex items-center gap-2 text-sm text-amber-600 font-bold bg-amber-50 p-2 rounded-lg">
+                    <Megaphone className="h-4 w-4" /> متاح إنشاء إعلانات
                   </div>
                 )}
               </div>
@@ -341,6 +349,21 @@ export default function PlansManagement() {
                     <div>
                       <p className="font-bold text-slate-900">تمييز الإعلانات والوظائف</p>
                       <p className="text-xs text-slate-500">جعل الوظائف المنشورة بهذه الباقة مميزة عن غيرها</p>
+                    </div>
+                  </label>
+                </div>
+
+                <div className="space-y-2 md:col-span-2">
+                  <label className="flex items-center gap-2 cursor-pointer bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <input 
+                      type="checkbox" 
+                      checked={editingPlan.allow_ads}
+                      onChange={e => setEditingPlan({...editingPlan, allow_ads: e.target.checked})}
+                      className="w-5 h-5 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                    />
+                    <div>
+                      <p className="font-bold text-slate-900">السماح بإنشاء إعلانات (Ads)</p>
+                      <p className="text-xs text-slate-500">تمكين صاحب المنشأة من إنشاء إعلانات متحركة في الصفحة الرئيسية</p>
                     </div>
                   </label>
                 </div>

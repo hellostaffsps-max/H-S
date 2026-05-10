@@ -21,10 +21,14 @@ export default function AdsCarousel() {
   useEffect(() => {
     async function fetchAds() {
       try {
+        const now = new Date().toISOString();
         const { data, error } = await supabase
           .from('advertisements')
           .select('id, title, media_url, media_type, link_url')
           .eq('is_active', true)
+          .eq('status', 'approved')
+          .or(`start_date.is.null,start_date.lte.${now}`)
+          .or(`end_date.is.null,end_date.gte.${now}`)
           .order('order_index', { ascending: true });
 
         if (error) throw error;

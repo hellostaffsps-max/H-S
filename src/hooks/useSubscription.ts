@@ -10,6 +10,7 @@ export interface SubscriptionFeatures {
   allow_articles: boolean;
   featured_listings: boolean;
   max_articles_per_month: number;
+  allow_ads: boolean;
   price: number;
   current_job_count: number;
 }
@@ -22,6 +23,7 @@ const DEFAULT_FREE_FEATURES: SubscriptionFeatures = {
   allow_articles: false,
   featured_listings: false,
   max_articles_per_month: 0,
+  allow_ads: false,
   price: 0,
   current_job_count: 0,
 };
@@ -66,6 +68,7 @@ export function useSubscription() {
             allow_articles: plan.allow_articles || false,
             featured_listings: plan.featured_listings || false,
             max_articles_per_month: plan.max_articles_per_month || 0,
+            allow_ads: plan.allow_ads || false,
             price: plan.price || 0,
             current_job_count: jobCount || 0,
           });
@@ -100,6 +103,7 @@ export function useSubscription() {
             allow_articles: freePlan.allow_articles || false,
             featured_listings: freePlan.featured_listings || false,
             max_articles_per_month: freePlan.max_articles_per_month || 0,
+            allow_ads: freePlan.allow_ads || false,
             price: 0,
             current_job_count: jobCount || 0,
           });

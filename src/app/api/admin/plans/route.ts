@@ -42,7 +42,8 @@ export async function POST(request: NextRequest) {
     duration_days, 
     allow_articles, 
     featured_listings, 
-    max_articles_per_month 
+    max_articles_per_month,
+    allow_ads
   } = body;
 
   if (!name || price === undefined || !duration_days) {
@@ -65,6 +66,7 @@ export async function POST(request: NextRequest) {
       allow_articles: allow_articles || false,
       featured_listings: featured_listings || false,
       max_articles_per_month: max_articles_per_month || 0,
+      allow_ads: allow_ads || false,
       is_active: true
     }])
     .select()

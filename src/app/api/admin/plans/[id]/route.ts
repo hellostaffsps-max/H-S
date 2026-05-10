@@ -29,6 +29,7 @@ export async function PUT(
     allow_articles, 
     featured_listings, 
     max_articles_per_month,
+    allow_ads,
     is_active
   } = body;
 
@@ -46,6 +47,7 @@ export async function PUT(
       allow_articles,
       featured_listings,
       max_articles_per_month,
+      allow_ads,
       is_active
     })
     .eq('id', id)
