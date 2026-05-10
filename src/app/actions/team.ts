@@ -110,7 +110,10 @@ export async function terminateEmployee(applicationId: string, reason?: string) 
 
   // Send notification to seeker
   try {
-    await supabase.from('notifications').insert({
+    const { createAdminClient } = await import('@/lib/supabase-admin');
+    const adminClient = createAdminClient();
+
+    await adminClient.from('notifications').insert({
       user_id: application.seeker_id,
       title: 'إنهاء فترة العمل',
       message: `تم إنهاء فترة عملك في وظيفة "${job.title}".${reason ? ` السبب: ${reason}` : ''} نتمنى لك التوفيق.`,

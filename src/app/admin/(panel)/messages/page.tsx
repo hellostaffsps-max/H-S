@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useAuth } from '@/hooks/useAuth';
+import { createNotification } from '@/app/actions/notifications';
 
 type Message = {
   id: string;
@@ -109,16 +110,14 @@ export default function AdminMessages() {
         });
         if (rpcError) throw rpcError;
       } else {
-        const { error: notifError } = await supabase
-          .from('notifications')
-          .insert({
-            user_id: selectedUser,
-            title,
-            message: content,
-            type: 'system',
-            link: '/messages'
-          });
-        if (notifError) throw notifError;
+        const notifResult = await createNotification(
+          selectedUser,
+          title,
+          content,
+          'system',
+          '/messages'
+        );
+        if (!notifResult.success) throw new Error(notifResult.error || 'Failed to send notification');
       }
 
       setSuccessMsg('تم إرسال الرسالة بنجاح!');

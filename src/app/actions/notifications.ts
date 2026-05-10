@@ -68,9 +68,11 @@ export async function markAllNotificationsAsRead() {
 }
 
 export async function createNotification(userId: string, title: string, message: string, type: string = 'info', link?: string) {
-  const supabase = await createClient();
+  // Use admin client to bypass RLS when inserting notifications for other users
+  const { createAdminClient } = await import('@/lib/supabase-admin');
+  const adminClient = createAdminClient();
 
-  const { error } = await supabase
+  const { error } = await adminClient
     .from('notifications')
     .insert({
       user_id: userId,

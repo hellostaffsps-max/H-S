@@ -101,13 +101,19 @@ export async function PATCH(
     let message = `تم تحديث حالة اشتراكك في باقة "${subWithUser.plan_name}" إلى: ${status === 'active' ? 'نشط' : status === 'rejected' ? 'مرفوض' : status}`;
     let type = status === 'active' ? 'success' : status === 'rejected' ? 'error' : 'info';
 
-    await supabase.from('notifications').insert({
-      user_id: subWithUser.user_id,
-      title,
-      message,
-      type,
-      link: '/dashboard',
-    });
+    try {
+      const { createAdminClient } = await import('@/lib/supabase-admin');
+      const adminClient = createAdminClient();
+      await adminClient.from('notifications').insert({
+        user_id: subWithUser.user_id,
+        title,
+        message,
+        type,
+        link: '/dashboard',
+      });
+    } catch (err) {
+      console.error('Failed to create notification', err);
+    }
   }
 
   return NextResponse.json({ success: true, data });

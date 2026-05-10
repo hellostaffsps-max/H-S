@@ -118,7 +118,7 @@ export async function getApplications(jobId?: string) {
 }
 
 async function createNotification(
-  supabase: any,
+  _supabase: any, // Kept for backwards compatibility but ignored
   userId: string,
   title: string,
   message: string,
@@ -126,7 +126,10 @@ async function createNotification(
   link?: string
 ) {
   try {
-    await supabase.from('notifications').insert({
+    const { createAdminClient } = await import('@/lib/supabase-admin');
+    const adminClient = createAdminClient();
+
+    await adminClient.from('notifications').insert({
       user_id: userId,
       title,
       message,
