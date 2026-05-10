@@ -54,7 +54,7 @@ export default function AdsCarousel() {
 
   useEffect(() => {
     if (ads.length <= 1) return;
-    const timer = setInterval(nextSlide, 3000);
+    const timer = setInterval(nextSlide, 7000);
     return () => clearInterval(timer);
   }, [ads.length, nextSlide]);
 
@@ -120,7 +120,7 @@ export default function AdsCarousel() {
                   <motion.div 
                     initial={{ x: '-100%' }}
                     animate={{ x: '0%' }}
-                    transition={{ duration: 3, ease: "linear" }}
+                    transition={{ duration: 7, ease: "linear" }}
                     className="absolute inset-0 bg-white"
                   />
                 )}

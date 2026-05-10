@@ -20,7 +20,10 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
-  Calendar
+  Calendar,
+  Ban,
+  RotateCcw,
+  History
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -37,6 +40,7 @@ type Ad = {
   start_date: string | null;
   end_date: string | null;
   rejection_reason: string | null;
+  cancellation_requested: boolean;
   order_index: number;
   created_at: string;
   created_by: string | null;
@@ -50,7 +54,7 @@ type Ad = {
 };
 
 export default function AdminAds() {
-  const [activeTab, setActiveTab] = useState<'system' | 'requests'>('system');
+  const [activeTab, setActiveTab] = useState<'system' | 'requests' | 'cancellations' | 'archived'>('system');
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -130,8 +134,10 @@ export default function AdminAds() {
     }
   }
 
-  const systemAds = ads.filter(a => !a.created_by);
+  const systemAds = ads.filter(a => !a.created_by && a.status !== 'archived');
   const requests = ads.filter(a => a.created_by && a.status === 'pending');
+  const cancellations = ads.filter(a => a.created_by && a.cancellation_requested && a.status === 'approved');
+  const archivedAds = ads.filter(a => a.status === 'archived');
   const otherAds = ads.filter(a => a.created_by && a.status !== 'pending');
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -332,6 +338,65 @@ export default function AdminAds() {
     }
   };
 
+  const approveCancellation = async (ad: Ad) => {
+    if (!confirm('هل أنت متأكد من الموافقة على طلب إلغاء هذا الإعلان؟ سيتم أرشفته.')) return;
+    try {
+      const { error } = await supabase
+        .from('advertisements')
+        .update({ status: 'archived', is_active: false, cancellation_requested: false })
+        .eq('id', ad.id);
+      if (error) throw error;
+      setAds(ads.map(a => a.id === ad.id ? { ...a, status: 'archived' as AdStatus, is_active: false, cancellation_requested: false } : a));
+    } catch (error) {
+      alert('فشل أرشفة الإعلان');
+    }
+  };
+
+  const rejectCancellation = async (ad: Ad) => {
+    if (!confirm('هل أنت متأكد من رفض طلب إلغاء هذا الإعلان؟ سيبقى نشطاً.')) return;
+    try {
+      const { error } = await supabase
+        .from('advertisements')
+        .update({ cancellation_requested: false })
+        .eq('id', ad.id);
+      if (error) throw error;
+      setAds(ads.map(a => a.id === ad.id ? { ...a, cancellation_requested: false } : a));
+    } catch (error) {
+      alert('فشل رفض طلب الإلغاء');
+    }
+  };
+
+  const republishAd = async (ad: Ad) => {
+    const duration = prompt('أدخل عدد أيام النشر:', '30');
+    if (!duration) return;
+    const days = parseInt(duration);
+    if (isNaN(days) || days <= 0) { alert('يرجى إدخال رقم صحيح'); return; }
+
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setDate(startDate.getDate() + days);
+
+    try {
+      const { error } = await supabase
+        .from('advertisements')
+        .update({ 
+          status: 'approved', 
+          is_active: true, 
+          cancellation_requested: false,
+          start_date: startDate.toISOString(),
+          end_date: endDate.toISOString()
+        })
+        .eq('id', ad.id);
+      if (error) throw error;
+      setAds(ads.map(a => a.id === ad.id ? { 
+        ...a, status: 'approved' as AdStatus, is_active: true, cancellation_requested: false,
+        start_date: startDate.toISOString(), end_date: endDate.toISOString()
+      } : a));
+    } catch (error) {
+      alert('فشل إعادة نشر الإعلان');
+    }
+  };
+
   const moveOrder = async (index: number, direction: 'up' | 'down', list: Ad[]) => {
     if (direction === 'up' && index === 0) return;
     if (direction === 'down' && index === list.length - 1) return;
@@ -385,10 +450,10 @@ export default function AdminAds() {
           </button>
         </div>
 
-        <div className="flex p-1.5 bg-slate-50 rounded-2xl w-fit">
+        <div className="flex flex-wrap p-1.5 bg-slate-50 rounded-2xl w-fit gap-1">
           <button
             onClick={() => setActiveTab('system')}
-            className={`px-8 py-3 rounded-xl text-sm font-black transition-all ${
+            className={`px-6 py-3 rounded-xl text-sm font-black transition-all ${
               activeTab === 'system' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
             }`}
           >
@@ -396,16 +461,37 @@ export default function AdminAds() {
           </button>
           <button
             onClick={() => setActiveTab('requests')}
-            className={`px-8 py-3 rounded-xl text-sm font-black transition-all flex items-center gap-2 ${
+            className={`px-6 py-3 rounded-xl text-sm font-black transition-all flex items-center gap-2 ${
               activeTab === 'requests' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
             }`}
           >
-            طلبات المنشآت
+            طلبات النشر
             {requests.length > 0 && (
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-600 text-[10px] text-white">
                 {requests.length}
               </span>
             )}
+          </button>
+          <button
+            onClick={() => setActiveTab('cancellations')}
+            className={`px-6 py-3 rounded-xl text-sm font-black transition-all flex items-center gap-2 ${
+              activeTab === 'cancellations' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            طلبات الإلغاء
+            {cancellations.length > 0 && (
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-orange-500 text-[10px] text-white">
+                {cancellations.length}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('archived')}
+            className={`px-6 py-3 rounded-xl text-sm font-black transition-all flex items-center gap-2 ${
+              activeTab === 'archived' ? 'bg-white text-slate-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            الأرشيف ({archivedAds.length})
           </button>
         </div>
       </div>
@@ -416,25 +502,29 @@ export default function AdminAds() {
             <div className="col-span-full flex justify-center py-20">
               <Loader2 className="h-10 w-10 animate-spin text-brand-600" />
             </div>
-          ) : (activeTab === 'system' ? systemAds : requests).length === 0 ? (
+          ) : (activeTab === 'system' ? systemAds : activeTab === 'requests' ? requests : activeTab === 'cancellations' ? cancellations : archivedAds).length === 0 ? (
             <div className="col-span-full bg-white border-2 border-dashed border-slate-200 rounded-[2.5rem] p-24 text-center">
               <div className="inline-flex p-6 bg-slate-50 rounded-full mb-4">
-                <Megaphone className="h-12 w-12 text-slate-300" />
+                {activeTab === 'archived' ? <History className="h-12 w-12 text-slate-300" /> : activeTab === 'cancellations' ? <Ban className="h-12 w-12 text-slate-300" /> : <Megaphone className="h-12 w-12 text-slate-300" />}
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-1">
-                {activeTab === 'system' ? 'لا توجد إعلانات نظام' : 'لا توجد طلبات معلقة'}
+                {activeTab === 'system' ? 'لا توجد إعلانات نظام' : activeTab === 'requests' ? 'لا توجد طلبات نشر معلقة' : activeTab === 'cancellations' ? 'لا توجد طلبات إلغاء' : 'لا توجد إعلانات مؤرشفة'}
               </h3>
               <p className="text-slate-500 font-medium">كل شيء تحت السيطرة!</p>
             </div>
           ) : (
-            (activeTab === 'system' ? systemAds : requests).map((ad, idx) => (
+            (activeTab === 'system' ? systemAds : activeTab === 'requests' ? requests : activeTab === 'cancellations' ? cancellations : archivedAds).map((ad, idx) => (
               <motion.div
                 layout
                 key={ad.id}
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className={`bg-white border rounded-[2rem] overflow-hidden shadow-sm transition-all flex flex-col group ${ad.is_active ? 'border-slate-100' : 'border-slate-200'}`}
+                className={`bg-white border rounded-[2rem] overflow-hidden shadow-sm transition-all flex flex-col group ${
+                  ad.cancellation_requested ? 'border-orange-200 ring-2 ring-orange-100' : 
+                  ad.status === 'archived' ? 'border-slate-200 opacity-80' :
+                  ad.is_active ? 'border-slate-100' : 'border-slate-200'
+                }`}
               >
                 <div className="relative h-56 bg-slate-50 overflow-hidden">
                   {ad.media_type === 'video' ? (
@@ -448,6 +538,24 @@ export default function AdminAds() {
                       {ad.media_type === 'video' ? <VideoIcon className="h-4 w-4" /> : <ImageIcon className="h-4 w-4" />}
                     </div>
                   </div>
+
+                  {ad.cancellation_requested && (
+                    <div className="absolute top-4 right-4">
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 text-white rounded-xl text-[10px] font-black shadow-lg">
+                        <Ban className="h-3.5 w-3.5" />
+                        طلب إلغاء
+                      </div>
+                    </div>
+                  )}
+
+                  {ad.status === 'archived' && (
+                    <div className="absolute top-4 right-4">
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-500 text-white rounded-xl text-[10px] font-black shadow-lg">
+                        <History className="h-3.5 w-3.5" />
+                        مؤرشف
+                      </div>
+                    </div>
+                  )}
 
                   {activeTab === 'system' && (
                     <div className="absolute top-4 right-4 flex flex-col gap-2">
@@ -496,6 +604,13 @@ export default function AdminAds() {
                     )}
                   </div>
 
+                  {ad.end_date && ad.status === 'approved' && (
+                    <div className="flex items-center gap-2 text-xs text-slate-500 font-bold bg-slate-50 p-3 rounded-xl">
+                      <Clock className="h-3.5 w-3.5 text-brand-500" />
+                      ينتهي في: {new Date(ad.end_date).toLocaleDateString('ar-EG')}
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between pt-4 border-t border-slate-50">
                     <p className="text-[10px] text-slate-400 font-bold">{new Date(ad.created_at).toLocaleDateString('ar-EG')}</p>
                     
@@ -506,6 +621,31 @@ export default function AdminAds() {
                           className="px-4 py-2 bg-brand-600 text-white rounded-xl text-xs font-black hover:bg-brand-700 transition-all shadow-lg shadow-brand-100"
                         >
                           مراجعة الطلب
+                        </button>
+                      )}
+                      {activeTab === 'cancellations' && (
+                        <>
+                          <button 
+                            onClick={() => approveCancellation(ad)}
+                            className="px-4 py-2 bg-orange-500 text-white rounded-xl text-xs font-black hover:bg-orange-600 transition-all"
+                          >
+                            قبول الإلغاء
+                          </button>
+                          <button 
+                            onClick={() => rejectCancellation(ad)}
+                            className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-black hover:bg-slate-200 transition-all"
+                          >
+                            رفض
+                          </button>
+                        </>
+                      )}
+                      {activeTab === 'archived' && (
+                        <button 
+                          onClick={() => republishAd(ad)}
+                          className="flex items-center gap-1.5 px-4 py-2 bg-brand-600 text-white rounded-xl text-xs font-black hover:bg-brand-700 transition-all shadow-lg shadow-brand-100"
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" />
+                          إعادة نشر
                         </button>
                       )}
                       <button 

@@ -17,7 +17,8 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
-  History
+  History,
+  Ban
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Link from 'next/link';
@@ -34,6 +35,7 @@ type Ad = {
   start_date: string | null;
   end_date: string | null;
   rejection_reason: string | null;
+  cancellation_requested: boolean;
   created_at: string;
 };
 
@@ -165,7 +167,7 @@ export default function EstablishmentAds() {
 
   const deleteAd = async (ad: Ad) => {
     if (ad.status === 'approved') {
-      alert('لا يمكن حذف إعلان تمت الموافقة عليه ونشره. يرجى التواصل مع الإدارة.');
+      alert('لا يمكن حذف إعلان تمت الموافقة عليه ونشره. يمكنك طلب إلغاء الإعلان.');
       return;
     }
     if (!confirm('هل أنت متأكد من سحب هذا الإعلان؟')) return;
@@ -186,6 +188,22 @@ export default function EstablishmentAds() {
       setAds(ads.filter(a => a.id !== ad.id));
     } catch (error: any) {
       alert('فشل حذف الإعلان');
+    }
+  };
+
+  const requestCancellation = async (ad: Ad) => {
+    if (!confirm('هل أنت متأكد من طلب إلغاء هذا الإعلان؟ سيتم مراجعة الطلب من قبل الإدارة.')) return;
+
+    try {
+      const { error } = await supabase
+        .from('advertisements')
+        .update({ cancellation_requested: true })
+        .eq('id', ad.id);
+
+      if (error) throw error;
+      setAds(ads.map(a => a.id === ad.id ? { ...a, cancellation_requested: true } : a));
+    } catch (error: any) {
+      alert('فشل إرسال طلب الإلغاء');
     }
   };
 
@@ -329,17 +347,36 @@ export default function EstablishmentAds() {
                     </div>
                   )}
 
+                  {ad.status === 'approved' && ad.cancellation_requested && (
+                    <div className="p-3 bg-orange-50 border border-orange-100 rounded-2xl flex items-center gap-2">
+                      <Ban className="h-4 w-4 text-orange-500 shrink-0" />
+                      <p className="text-xs text-orange-700 font-bold">تم إرسال طلب إلغاء — بانتظار موافقة الإدارة</p>
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between pt-5 border-t border-slate-50">
                     <p className="text-[10px] text-slate-400 font-bold">تاريخ الطلب: {new Date(ad.created_at).toLocaleDateString('ar-EG')}</p>
-                    {ad.status !== 'approved' && (
-                      <button 
-                        onClick={() => deleteAd(ad)}
-                        className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all active:scale-90"
-                        title="سحب الطلب"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </button>
-                    )}
+                    <div className="flex gap-2">
+                      {ad.status === 'approved' && !ad.cancellation_requested && (
+                        <button 
+                          onClick={() => requestCancellation(ad)}
+                          className="flex items-center gap-1.5 px-3 py-2 text-xs font-black text-orange-600 bg-orange-50 hover:bg-orange-100 border border-orange-100 rounded-xl transition-all active:scale-90"
+                          title="طلب إلغاء الإعلان"
+                        >
+                          <Ban className="h-3.5 w-3.5" />
+                          طلب إلغاء
+                        </button>
+                      )}
+                      {ad.status !== 'approved' && (
+                        <button 
+                          onClick={() => deleteAd(ad)}
+                          className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all active:scale-90"
+                          title="سحب الطلب"
+                        >
+                          <Trash2 className="h-5 w-5" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </motion.div>
