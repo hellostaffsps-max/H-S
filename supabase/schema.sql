@@ -475,6 +475,10 @@ create policy "Admins can manage plans."
 -- ==========================================
 create table if not exists public.platform_settings (
   id uuid default uuid_generate_v4() primary key,
+  site_name text default 'Hello Staff',
+  logo_url text,
+  primary_color text default '#0f766e',
+  maintenance_mode boolean default false,
   wallet_qr_url text,
   bank_details text,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null

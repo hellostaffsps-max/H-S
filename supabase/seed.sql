@@ -8,7 +8,7 @@
 -- ==========================================
 insert into public.platform_settings (id, site_name, logo_url, primary_color, maintenance_mode)
 values (
-  1,
+  uuid_generate_v4(),
   'Hello Staff',
   null,
   '#0f766e',
