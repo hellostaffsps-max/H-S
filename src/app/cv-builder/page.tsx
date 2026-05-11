@@ -140,8 +140,14 @@ export default function CVBuilder() {
           <h1 className="text-xl font-bold text-slate-900">السيرة الذاتية - {viewProfile.full_name}</h1>
           <button onClick={() => window.close()} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200">إغلاق</button>
         </div>
-        <div className="flex justify-center">
-          <CVPreview cvData={cvData} profile={viewProfile} componentRef={componentRef} logoUrl={logoUrl} />
+        <div className="w-full flex justify-center bg-slate-50 p-4 sm:p-8 rounded-3xl border border-slate-200">
+          <div className="w-full max-w-[794px]" style={{ containerType: 'inline-size' as any }}>
+            <div className="relative w-full shadow-2xl overflow-hidden rounded-sm bg-white" style={{ aspectRatio: '794/1123' }}>
+              <div className="absolute top-0 right-0 w-[794px] h-[1123px] origin-top-right" style={{ transform: 'scale(calc(100cqw / 794))' }}>
+                <CVPreview cvData={cvData} profile={viewProfile} componentRef={componentRef} logoUrl={logoUrl} />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -283,8 +289,14 @@ export default function CVBuilder() {
       </div>
 
       {/* Preview */}
-      <div className="w-full lg:w-1/2 bg-slate-100 p-4 sm:p-6 rounded-3xl border border-slate-200 flex items-start justify-center overflow-x-auto">
-        <CVPreview cvData={cvData} profile={profile} componentRef={componentRef} logoUrl={logoUrl} />
+      <div className="w-full lg:w-1/2 bg-slate-50 p-4 sm:p-8 rounded-3xl border border-slate-200 flex flex-col justify-start items-center">
+        <div className="w-full max-w-[794px]" style={{ containerType: 'inline-size' as any }}>
+          <div className="relative w-full shadow-2xl overflow-hidden rounded-sm bg-white" style={{ aspectRatio: '794/1123' }}>
+            <div className="absolute top-0 right-0 w-[794px] h-[1123px] origin-top-right" style={{ transform: 'scale(calc(100cqw / 794))' }}>
+              <CVPreview cvData={cvData} profile={profile} componentRef={componentRef} logoUrl={logoUrl} />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Payment Modal */}
