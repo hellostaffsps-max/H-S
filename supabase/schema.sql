@@ -4,6 +4,27 @@
 -- Enable UUID extension
 create extension if not exists "uuid-ossp";
 
+-- 0. Create Admin RBAC Tables (must exist before profiles for admin_role_id FK)
+create table if not exists public.admin_permissions (
+  id text primary key,
+  name_ar text not null,
+  category text not null,
+  created_at timestamptz default now()
+);
+
+create table if not exists public.admin_roles (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  description text,
+  created_at timestamptz default now()
+);
+
+create table if not exists public.admin_role_permissions (
+  role_id uuid references public.admin_roles(id) on delete cascade,
+  permission_id text references public.admin_permissions(id) on delete cascade,
+  primary key (role_id, permission_id)
+);
+
 -- 1. Create Users (Profiles) Table
 create table if not exists public.profiles (
   id uuid references auth.users on delete cascade primary key,
@@ -63,6 +84,7 @@ create table if not exists public.applications (
   seeker_id uuid references public.seekers on delete cascade not null,
   status text check (status in ('Ù‚ÙŠØ¯ Ø§Ù„Ù…Ø±Ø§Ø¬Ø¹Ø©', 'Ù…Ù‚Ø§Ø¨Ù„Ø©', 'Ù…Ù‚Ø¨ÙˆÙ„', 'Ù…Ø±ÙÙˆØ¶')) default 'Ù‚ÙŠØ¯ Ø§Ù„Ù…Ø±Ø§Ø¬Ø¹Ø©',
   message text,
+  cover_letter text,
   interview_date timestamp with time zone,
   interview_location text,
   interview_notes text,
@@ -78,6 +100,7 @@ create table if not exists public.notifications (
   title text not null,
   message text not null,
   type text not null,
+  link text,
   is_read boolean default false,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
@@ -423,7 +446,14 @@ create table if not exists public.subscription_plans (
   id uuid default uuid_generate_v4() primary key,
   name text not null,
   price integer not null default 0,
+  description text,
   job_limit integer default 0,
+  extra_job_price integer default 0,
+  duration_days integer default 30,
+  max_articles_per_month integer default 0,
+  allow_articles boolean default false,
+  featured_listings boolean default false,
+  allow_ads boolean default false,
   features text[] default '{}',
   is_active boolean default true,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
@@ -806,6 +836,10 @@ create trigger on_job_approved_alert
 -- 1. Add email column to profiles (synced from auth.users)
 alter table public.profiles
   add column if not exists email text;
+
+-- 1b. Add admin_role_id to profiles (for RBAC)
+alter table public.profiles
+  add column if not exists admin_role_id uuid references public.admin_roles(id) on delete set null;
 
 -- Trigger to sync email from auth.users to profiles
 -- This ensures profiles.email stays in sync with auth.users.email
