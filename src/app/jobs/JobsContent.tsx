@@ -21,6 +21,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { getJobs } from "@/app/actions/jobs";
 import { getSearchFilters } from "@/app/actions/search-filters";
+import { useAuth } from "@/hooks/useAuth";
 
 interface JobsContentProps {
   initialSearch?: string;
@@ -39,6 +40,7 @@ export default function JobsContent({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const { profile } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [category, setCategory] = useState(initialCategory);
@@ -303,7 +305,7 @@ export default function JobsContent({
           ))}
         </div>
       ) : jobs.length === 0 ? (
-        <EmptyState onClear={clearFilters} />
+        <EmptyState onClear={clearFilters} role={profile?.role} />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {jobs.map((job) => (
@@ -396,7 +398,8 @@ function JobCard({ job }: { job: any }) {
   );
 }
 
-function EmptyState({ onClear }: { onClear: () => void }) {
+function EmptyState({ onClear, role }: { onClear: () => void; role?: string }) {
+  const isEmployer = role === 'employer';
   return (
     <div className="bg-white border border-slate-100 rounded-[48px] p-12 sm:p-24 text-center relative overflow-hidden shadow-2xl shadow-slate-200/50">
       <div className="absolute top-0 right-0 w-64 h-64 bg-brand-50 rounded-full -mr-32 -mt-32 opacity-40 blur-3xl animate-pulse" />
@@ -407,18 +410,21 @@ function EmptyState({ onClear }: { onClear: () => void }) {
           <Sparkles className="h-12 w-12 text-white" />
         </div>
         <h3 className="text-2xl sm:text-4xl font-black text-slate-900 mb-4 tracking-tight">
-          كن السبّاق وابدأ رحلتك الآن!
+          {isEmployer ? 'كن السبّاق وانشر أول وظيفة!' : 'لا توجد وظائف حالياً'}
         </h3>
         <p className="text-slate-500 text-lg max-w-xl mx-auto mb-10 leading-relaxed font-medium">
-          نحن في مرحلة الإطلاق التجريبي الحصرية. كن أول من ينشر فرصة عمل أو ينضم لمنصتنا للحصول على ميزات خاصة للمبكرين.
+          {isEmployer
+            ? 'نحن في مرحلة الإطلاق التجريبي الحصرية. كن أول من ينشر فرصة عمل للحصول على ميزات خاصة للمبكرين.'
+            : 'نحن في مرحلة الإطلاق التجريبي. سيتم إضافة وظائف جديدة قريباً، أكمل ملفك الشخصي لتكون جاهزاً للتقديم فور توفرها.'
+          }
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
-            href="/dashboard"
+            href={isEmployer ? '/post-job' : '/dashboard'}
             className="w-full sm:w-auto px-10 py-4 bg-brand-600 text-white rounded-3xl text-base font-black hover:bg-brand-700 transition-all shadow-2xl shadow-brand-500/30 flex items-center justify-center gap-3 active:scale-95"
           >
             <Briefcase className="h-5 w-5" />
-            انشر وظيفة مجاناً
+            {isEmployer ? 'انشر وظيفة مجاناً' : 'أكمل ملفك الشخصي'}
           </Link>
           <button
             onClick={onClear}
