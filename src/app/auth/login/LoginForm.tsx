@@ -34,7 +34,11 @@ export default function LoginForm({ redirect = "/dashboard" }: LoginFormProps) {
       router.push(redirect);
       router.refresh();
     } catch (err: any) {
-      setError(err.message || "حدث خطأ أثناء تسجيل الدخول");
+      let errorMessage = err.message || "حدث خطأ أثناء تسجيل الدخول";
+      if (errorMessage === "Invalid login credentials") {
+        errorMessage = "بيانات الدخول غير صحيحة، أو لم تقم بتفعيل حسابك بعد (يرجى مراجعة بريدك الإلكتروني).";
+      }
+      setError(errorMessage);
       setLoading(false);
     }
   };
