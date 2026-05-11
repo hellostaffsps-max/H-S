@@ -44,8 +44,8 @@ export async function PATCH(
   // Build update object
   const updateObj: any = { status };
   
-  // If renewing, reset expiry to 30 days from now
-  if (renew) {
+  // If approving for the first time or renewing, set/reset expiry to 30 days from now
+  if (status === 'approved' || renew) {
     updateObj.expires_at = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
   }
 

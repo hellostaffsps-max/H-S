@@ -32,7 +32,8 @@ create table if not exists public.seekers (
   is_available boolean default true,
   skills text[],
   cv_url text,
-  resume_data jsonb default '{}'::jsonb
+  resume_data jsonb default '{}'::jsonb,
+  current_employer text
 );
 
 -- 4. Create Jobs Table
@@ -50,7 +51,7 @@ create table if not exists public.jobs (
   salary_min integer,
   salary_max integer,
   whatsapp_number text,
-  status text check (status in ('pending', 'approved', 'rejected', 'closed')) default 'pending',
+  status text check (status in ('pending', 'approved', 'rejected', 'closed', 'expired')) default 'pending',
   expires_at timestamp with time zone,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
@@ -62,6 +63,10 @@ create table if not exists public.applications (
   seeker_id uuid references public.seekers on delete cascade not null,
   status text check (status in ('Ù‚ÙŠØ¯ Ø§Ù„Ù…Ø±Ø§Ø¬Ø¹Ø©', 'Ù…Ù‚Ø§Ø¨Ù„Ø©', 'Ù…Ù‚Ø¨ÙˆÙ„', 'Ù…Ø±ÙÙˆØ¶')) default 'Ù‚ÙŠØ¯ Ø§Ù„Ù…Ø±Ø§Ø¬Ø¹Ø©',
   message text,
+  interview_date timestamp with time zone,
+  interview_location text,
+  interview_notes text,
+  rejection_reason text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   unique (job_id, seeker_id)
 );
@@ -690,9 +695,15 @@ create table if not exists public.advertisements (
   created_by uuid references public.profiles on delete set null,
   title text not null,
   media_url text,
+  media_type text check (media_type in ('image', 'video')),
   link_url text,
   status text check (status in ('pending', 'approved', 'rejected')) default 'pending',
   is_active boolean default true,
+  start_date timestamp with time zone,
+  end_date timestamp with time zone,
+  rejection_reason text,
+  cancellation_requested boolean default false,
+  order_index integer default 0,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
