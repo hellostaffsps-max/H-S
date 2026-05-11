@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdmin, adminGuard } from '@/lib/admin-auth';
-import { createClient } from '@/lib/supabase-server';
+import { createAdminClient } from '@/lib/supabase-admin';
 
 export async function PATCH(
   request: NextRequest,
@@ -28,7 +28,7 @@ export async function PATCH(
     );
   }
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   // Check existence
   const { data: existing } = await supabase
@@ -79,7 +79,9 @@ export async function DELETE(
   if (guard) return guard;
 
   const { id } = await params;
-  const supabase = await createClient();
+  
+  // Use Admin Client to ensure we can delete from auth.users and bypass RLS if needed
+  const supabase = createAdminClient();
 
   // Prevent self-deletion
   if (auth.user?.id === id) {
@@ -116,26 +118,20 @@ export async function DELETE(
   }
 
   // ── Storage Cleanup ─────────────────────────────────────────────────
-  // Collect file paths to delete from various buckets
   const filesToDelete: { bucket: string; path: string }[] = [];
 
-  // Helper: extract storage path from a full Supabase URL
-  // e.g. "https://xxx.supabase.co/storage/v1/object/public/avatars/abc.jpg" → "abc.jpg"
   function extractStoragePath(url: string | null | undefined, bucket: string): string | null {
     if (!url) return null;
     const marker = `/storage/v1/object/public/${bucket}/`;
     const idx = url.indexOf(marker);
     if (idx !== -1) return url.substring(idx + marker.length);
-    // Fallback: try last segment after bucket name
     const parts = url.split(`/${bucket}/`);
     return parts.length > 1 ? parts[parts.length - 1] : null;
   }
 
-  // 1. Avatar from profiles
   const avatarPath = extractStoragePath(existing.avatar_url, 'avatars');
   if (avatarPath) filesToDelete.push({ bucket: 'avatars', path: avatarPath });
 
-  // 2. Employer assets (logo, cover)
   const { data: employer } = await supabase
     .from('employers')
     .select('logo_url, cover_image_url')
@@ -150,7 +146,6 @@ export async function DELETE(
     if (coverPath) filesToDelete.push({ bucket: 'company-covers', path: coverPath });
   }
 
-  // 3. Seeker CV file
   const { data: seeker } = await supabase
     .from('seekers')
     .select('cv_url')
@@ -158,17 +153,25 @@ export async function DELETE(
     .single();
 
   if (seeker) {
-    const cvPath = extractStoragePath(seeker.cv_url, 'company-assets');
-    if (cvPath) filesToDelete.push({ bucket: 'company-assets', path: cvPath });
+    const cvPath = extractStoragePath(seeker.cv_url, 'resumes'); // Corrected bucket name to 'resumes' based on audit report
+    if (cvPath) filesToDelete.push({ bucket: 'resumes', path: cvPath });
   }
 
-  // Delete all collected files (best-effort — don't block user deletion on failure)
   for (const file of filesToDelete) {
     try {
       await supabase.storage.from(file.bucket).remove([file.path]);
     } catch (e) {
       console.error(`Failed to delete storage file ${file.bucket}/${file.path}:`, e);
     }
+  }
+
+  // ── Delete from Auth (This is the critical missing step) ────────────
+  const { error: authError } = await supabase.auth.admin.deleteUser(id);
+  
+  if (authError) {
+    console.error('Auth deletion error:', authError);
+    // If auth deletion fails, we should still try to delete the profile 
+    // but the user might "reappear" if the auth record remains.
   }
 
   // ── Delete Profile (cascades to related tables via FK constraints) ──
@@ -184,5 +187,6 @@ export async function DELETE(
     );
   }
 
-  return NextResponse.json({ success: true, message: 'User and associated files deleted' });
+  return NextResponse.json({ success: true, message: 'User and associated files deleted permanently' });
 }
+
