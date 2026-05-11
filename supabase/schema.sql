@@ -51,6 +51,7 @@ create table if not exists public.jobs (
   salary_max integer,
   whatsapp_number text,
   status text check (status in ('pending', 'approved', 'rejected', 'closed')) default 'pending',
+  expires_at timestamp with time zone,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -417,6 +418,7 @@ create table if not exists public.subscription_plans (
   id uuid default uuid_generate_v4() primary key,
   name text not null,
   price integer not null default 0,
+  job_limit integer default 0,
   features text[] default '{}',
   is_active boolean default true,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
@@ -580,6 +582,154 @@ create policy "Article images insert own" on storage.objects for insert to authe
     (storage.foldername(name))[1] = auth.uid()::text
   );
 
+
+-- ==========================================
+-- SUPPORT TICKETS TABLE
+-- ==========================================
+create table if not exists public.support_tickets (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references public.profiles on delete set null,
+  name text not null,
+  email text not null,
+  subject text not null,
+  message text not null,
+  status text check (status in ('open', 'in_progress', 'closed')) default 'open',
+  conversation_open boolean default true,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.support_tickets enable row level security;
+
+drop policy if exists "support_tickets_select_policy" on public.support_tickets;
+create policy "support_tickets_select_policy"
+  on public.support_tickets for select
+  using (
+    auth.uid() = user_id
+    or exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+  );
+
+drop policy if exists "support_tickets_insert_policy" on public.support_tickets;
+create policy "support_tickets_insert_policy"
+  on public.support_tickets for insert
+  with check (
+    auth.uid() = user_id
+    or exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+  );
+
+drop policy if exists "support_tickets_update_policy" on public.support_tickets;
+create policy "support_tickets_update_policy"
+  on public.support_tickets for update
+  using (
+    exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+  );
+
+drop policy if exists "support_tickets_delete_policy" on public.support_tickets;
+create policy "support_tickets_delete_policy"
+  on public.support_tickets for delete
+  using (
+    exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+  );
+
+-- ==========================================
+-- TICKET REPLIES TABLE
+-- ==========================================
+create table if not exists public.ticket_replies (
+  id uuid default uuid_generate_v4() primary key,
+  ticket_id uuid references public.support_tickets on delete cascade not null,
+  sender_role text check (sender_role in ('user', 'admin')) default 'user',
+  sender_name text not null,
+  content text not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.ticket_replies enable row level security;
+
+drop policy if exists "ticket_replies_select_policy" on public.ticket_replies;
+create policy "ticket_replies_select_policy"
+  on public.ticket_replies for select
+  using (
+    exists (
+      select 1 from public.support_tickets st
+      where st.id = ticket_id
+        and (
+          st.user_id = auth.uid()
+          or exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+        )
+    )
+  );
+
+drop policy if exists "ticket_replies_insert_policy" on public.ticket_replies;
+create policy "ticket_replies_insert_policy"
+  on public.ticket_replies for insert
+  with check (
+    exists (
+      select 1 from public.support_tickets st
+      where st.id = ticket_id
+        and (
+          st.user_id = auth.uid()
+          or exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+        )
+    )
+  );
+
+drop policy if exists "ticket_replies_admin_policy" on public.ticket_replies;
+create policy "ticket_replies_admin_policy"
+  on public.ticket_replies for all
+  using (
+    exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+  )
+  with check (
+    exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+  );
+
+-- ==========================================
+-- ADVERTISEMENTS TABLE
+-- ==========================================
+create table if not exists public.advertisements (
+  id uuid default uuid_generate_v4() primary key,
+  created_by uuid references public.profiles on delete set null,
+  title text not null,
+  media_url text,
+  link_url text,
+  status text check (status in ('pending', 'approved', 'rejected')) default 'pending',
+  is_active boolean default true,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.advertisements enable row level security;
+
+drop policy if exists "ads_select_policy" on public.advertisements;
+create policy "ads_select_policy"
+  on public.advertisements for select
+  using (
+    status = 'approved' and is_active = true
+    or (select auth.uid()) = created_by
+    or exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+  );
+
+drop policy if exists "ads_insert_policy" on public.advertisements;
+create policy "ads_insert_policy"
+  on public.advertisements for insert
+  with check (
+    (select auth.uid()) = created_by
+    or exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+  );
+
+drop policy if exists "ads_update_policy" on public.advertisements;
+create policy "ads_update_policy"
+  on public.advertisements for update
+  using (
+    (select auth.uid()) = created_by
+    or exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+  );
+
+drop policy if exists "ads_delete_policy" on public.advertisements;
+create policy "ads_delete_policy"
+  on public.advertisements for delete
+  using (
+    (select auth.uid()) = created_by
+    or exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+  );
 
 -- ==========================================
 -- JOB ALERTS TABLE

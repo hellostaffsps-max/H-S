@@ -21,7 +21,7 @@ on conflict (id) do update set
 -- ==========================================
 -- SUBSCRIPTION PLANS
 -- ==========================================
-insert into public.subscription_plans (name, description, price, max_jobs, duration_days, max_articles_per_month)
+insert into public.subscription_plans (name, description, price, job_limit, duration_days, max_articles_per_month)
 values
   ('باقة مجانية', 'باقة البداية للباحثين عن عمل وأصحاب العمل الصغار', 0, 1, 30, 0),
   ('باقة أساسية', 'باقة مثالية لأصحاب العمل المتوسطة', 49, 5, 30, 2),
