@@ -37,7 +37,8 @@ export default function CandidatesManagement() {
     try {
       const { data, error } = await supabase
         .from("seekers")
-        .select("*, profiles(full_name, email, phone, location, avatar_url, created_at)");
+        .select("*, profiles(full_name, email, phone, location, avatar_url, created_at)")
+        .limit(200);
 
       if (error) throw error;
       

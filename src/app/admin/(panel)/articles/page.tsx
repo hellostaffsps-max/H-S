@@ -20,6 +20,7 @@ import {
 import Link from 'next/link';
 import { motion } from 'motion/react';
 import Image from "next/image";
+import Pagination from '@/components/Pagination';
 
 type Article = {
   id: string;
@@ -39,10 +40,19 @@ type Article = {
 export default function AdminArticles() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all'); // all, pending_approval, published
+  const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [limit] = useState(20);
+  const [totalPages, setTotalPages] = useState(1);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrev, setHasPrev] = useState(false);
+  const [total, setTotal] = useState(0);
+
   const [newArticle, setNewArticle] = useState({
     id: '',
     title: '',
@@ -54,15 +64,22 @@ export default function AdminArticles() {
 
   useEffect(() => {
     fetchArticles();
-  }, []);
+  }, [page]);
 
   async function fetchArticles() {
     try {
-      const res = await fetch('/api/admin/articles');
+      setLoading(true);
+      const res = await fetch(`/api/admin/articles?page=${page}&limit=${limit}`);
       if (!res.ok) throw new Error('Failed to fetch articles');
       const json = await res.json();
       if (!json.success) throw new Error(json.message || 'Failed to fetch articles');
       setArticles(json.data);
+      if (json.pagination) {
+        setTotalPages(json.pagination.totalPages);
+        setHasNext(json.pagination.hasNext);
+        setHasPrev(json.pagination.hasPrev);
+        setTotal(json.pagination.total);
+      }
     } catch (error) {
       console.error('Error fetching articles:', error);
     } finally {
@@ -272,7 +289,7 @@ export default function AdminArticles() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {filteredArticles.map((article) => (
+              {articles.map((article) => (
                 <div key={article.id} className="border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all group flex flex-col">
                   {article.cover_image ? (
                     <div className="h-32 overflow-hidden bg-slate-100 relative">
@@ -359,6 +376,14 @@ export default function AdminArticles() {
             </div>
           )}
         </div>
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          hasNext={hasNext}
+          hasPrev={hasPrev}
+          total={total}
+          onPageChange={setPage}
+        />
       </div>
 
       {/* Create Article Modal */}

@@ -7,18 +7,17 @@ import {
   Filter, 
   MoreVertical, 
   Mail, 
-  Phone, 
   MapPin, 
   Calendar,
   Shield,
   User,
   Trash2,
-  CheckCircle,
   XCircle,
   UserPlus,
   Lock,
   ChevronDown
 } from 'lucide-react';
+import Pagination from '@/components/Pagination';
 
 export default function UsersManagement() {
   const [users, setUsers] = useState<any[]>([]);
@@ -27,6 +26,14 @@ export default function UsersManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [limit] = useState(20);
+  const [totalPages, setTotalPages] = useState(1);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrev, setHasPrev] = useState(false);
+  const [total, setTotal] = useState(0);
 
   // Add Moderator Form State
   const [newModEmail, setNewModEmail] = useState('');
@@ -38,14 +45,21 @@ export default function UsersManagement() {
   useEffect(() => {
     fetchUsers();
     fetchRoles();
-  }, []);
+  }, [page]);
 
   async function fetchUsers() {
     try {
-      const res = await fetch('/api/admin/users');
+      setLoading(true);
+      const res = await fetch(`/api/admin/users?page=${page}&limit=${limit}`);
       const json = await res.json();
       if (json.success && json.data) {
         setUsers(json.data);
+        if (json.pagination) {
+          setTotalPages(json.pagination.totalPages);
+          setHasNext(json.pagination.hasNext);
+          setHasPrev(json.pagination.hasPrev);
+          setTotal(json.pagination.total);
+        }
       }
     } catch (error: any) {
       alert('خطأ في تحميل المستخدمين: ' + error.message);
@@ -187,12 +201,12 @@ export default function UsersManagement() {
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center text-slate-400">جاري التحميل...</td>
                 </tr>
-              ) : filteredUsers.length === 0 ? (
+              ) : users.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center text-slate-400">لا يوجد مستخدمين حالياً</td>
                 </tr>
               ) : (
-                filteredUsers.map((user) => (
+                users.map((user) => (
                   <tr key={user.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
@@ -287,6 +301,14 @@ export default function UsersManagement() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          hasNext={hasNext}
+          hasPrev={hasPrev}
+          total={total}
+          onPageChange={setPage}
+        />
       </div>
 
       {/* Add Moderator Modal */}

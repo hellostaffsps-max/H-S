@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'motion/react';
+import Pagination from '@/components/Pagination';
 
 type Subscription = {
   id: string;
@@ -40,16 +41,24 @@ type Subscription = {
 export default function AdminSubscriptions() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all'); // 'all', 'pending', 'active'
+  const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [plans, setPlans] = useState<any[]>([]);
   const [editingSub, setEditingSub] = useState<Subscription | null>(null);
   const [updatingPlan, setUpdatingPlan] = useState(false);
 
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [limit] = useState(20);
+  const [totalPages, setTotalPages] = useState(1);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrev, setHasPrev] = useState(false);
+  const [total, setTotal] = useState(0);
+
   useEffect(() => {
     fetchSubscriptions();
     fetchPlans();
-  }, []);
+  }, [page]);
 
   async function fetchPlans() {
     const { data } = await supabase.from('subscription_plans').select('*').order('price', { ascending: true });
@@ -58,11 +67,18 @@ export default function AdminSubscriptions() {
 
   async function fetchSubscriptions() {
     try {
-      const res = await fetch('/api/admin/subscriptions');
+      setLoading(true);
+      const res = await fetch(`/api/admin/subscriptions?page=${page}&limit=${limit}`);
       if (!res.ok) throw new Error('Failed to fetch subscriptions');
       const result = await res.json();
       if (!result.success) throw new Error(result.error || 'Failed to fetch subscriptions');
       setSubscriptions(result.data);
+      if (result.pagination) {
+        setTotalPages(result.pagination.totalPages);
+        setHasNext(result.pagination.hasNext);
+        setHasPrev(result.pagination.hasPrev);
+        setTotal(result.pagination.total);
+      }
     } catch (error) {
       console.error('Error fetching subscriptions:', error);
     } finally {
@@ -229,7 +245,7 @@ export default function AdminSubscriptions() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {filteredSubs.map((sub) => (
+                {subscriptions.map((sub) => (
                   <tr key={sub.id} className="hover:bg-slate-50/30 transition-colors group">
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-4">
@@ -353,6 +369,14 @@ export default function AdminSubscriptions() {
             </table>
           )}
         </div>
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          hasNext={hasNext}
+          hasPrev={hasPrev}
+          total={total}
+          onPageChange={setPage}
+        />
       </div>
 
       {/* Upgrade Modal */}

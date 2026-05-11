@@ -46,7 +46,8 @@ export default function ApplicationsManagement() {
       const { data, error } = await supabase
         .from("applications")
         .select("id, status, cover_letter, created_at, jobs(title, company_name), profiles(full_name, avatar_url)")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(200);
 
       if (error) throw error;
       // Supabase may return joined data as arrays; normalize to single objects

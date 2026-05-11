@@ -55,7 +55,8 @@ export default function AdminMessages() {
           *,
           receiver:profiles!messages_receiver_id_fkey(full_name, email)
         `)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(100);
 
       if (error) throw error;
       setMessages(data as any);

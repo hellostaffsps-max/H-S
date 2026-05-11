@@ -19,6 +19,7 @@ import {
   AlertTriangle,
   Loader2
 } from 'lucide-react';
+import Pagination from '@/components/Pagination';
 
 export default function JobsManagement() {
   const [jobs, setJobs] = useState<any[]>([]);
@@ -27,16 +28,31 @@ export default function JobsManagement() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [renewingId, setRenewingId] = useState<string | null>(null);
 
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [limit] = useState(20);
+  const [totalPages, setTotalPages] = useState(1);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrev, setHasPrev] = useState(false);
+  const [total, setTotal] = useState(0);
+
   useEffect(() => {
     fetchJobs();
-  }, []);
+  }, [page]);
 
   async function fetchJobs() {
     try {
-      const res = await fetch('/api/admin/jobs');
+      setLoading(true);
+      const res = await fetch(`/api/admin/jobs?page=${page}&limit=${limit}`);
       const json = await res.json();
       if (json.success && json.data) {
         setJobs(json.data);
+        if (json.pagination) {
+          setTotalPages(json.pagination.totalPages);
+          setHasNext(json.pagination.hasNext);
+          setHasPrev(json.pagination.hasPrev);
+          setTotal(json.pagination.total);
+        }
       }
     } catch (err) {
       console.error('Failed to fetch jobs:', err);
@@ -185,7 +201,7 @@ export default function JobsManagement() {
       </div>
 
       {/* Jobs List */}
-      <div className="grid grid-cols-1 gap-4">
+      <div className="space-y-4">
         {loading ? (
           <div className="bg-white p-12 text-center rounded-3xl border border-slate-100 flex items-center justify-center gap-2 text-slate-400">
             <Loader2 className="h-5 w-5 animate-spin" /> جاري التحميل...
@@ -278,6 +294,15 @@ export default function JobsManagement() {
           })
         )}
       </div>
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        hasNext={hasNext}
+        hasPrev={hasPrev}
+        total={total}
+        onPageChange={setPage}
+      />
     </div>
   );
 }

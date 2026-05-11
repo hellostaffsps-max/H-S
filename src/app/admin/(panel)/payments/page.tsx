@@ -44,7 +44,8 @@ export default function PaymentsManagement() {
       const { data, error } = await supabase
         .from("user_subscriptions")
         .select("*, profiles(full_name, email, avatar_url)")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(200);
 
       if (error) throw error;
       setSubscriptions(data || []);

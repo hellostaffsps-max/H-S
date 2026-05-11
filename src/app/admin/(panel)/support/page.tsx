@@ -63,7 +63,8 @@ export default function SupportManagement() {
       const { data, error } = await supabase
         .from("support_tickets")
         .select("*")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(200);
 
       if (error) throw error;
 

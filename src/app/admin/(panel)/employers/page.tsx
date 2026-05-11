@@ -38,7 +38,8 @@ export default function EmployersManagement() {
     try {
       const { data, error } = await supabase
         .from("employers")
-        .select("*, profiles(full_name, email, phone, created_at)");
+        .select("*, profiles(full_name, email, phone, created_at)")
+        .limit(200);
 
       if (error) throw error;
       
