@@ -11,23 +11,26 @@ export async function GET() {
 
   try {
     const start = Date.now();
-    await redis.set('healthcheck', Date.now());
-    const value = await redis.get('healthcheck');
+    const testKey = `healthcheck:${Date.now()}`;
+    await redis.set(testKey, Date.now());
+    const value = await redis.get(testKey);
+    await redis.del(testKey);
     const latency = Date.now() - start;
 
     return NextResponse.json({
       status: 'ok',
       message: 'Redis connection successful',
       latency_ms: latency,
-      value_received: value,
+      value_received: value !== null,
       timestamp: new Date().toISOString(),
     });
   } catch (error: any) {
+    console.error('[Health Check] Redis error:', error);
     return NextResponse.json(
       {
         status: 'error',
         message: 'Redis connection failed',
-        error: error.message,
+        error: error.message || 'Unknown error',
       },
       { status: 500 }
     );
