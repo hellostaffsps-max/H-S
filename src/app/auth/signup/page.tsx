@@ -17,6 +17,7 @@ function SignupForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [needsConfirmation, setNeedsConfirmation] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const router = useRouter();
   const { signUp } = useAuth();
 
@@ -35,6 +36,12 @@ function SignupForm() {
 
     if (password.length < 6) {
       setError('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+      setLoading(false);
+      return;
+    }
+
+    if (!agreedToTerms) {
+      setError('يجب الموافقة على شروط الاستخدام وسياسة الخصوصية أولاً');
       setLoading(false);
       return;
     }
@@ -90,8 +97,27 @@ function SignupForm() {
         <Link href="/" className="inline-flex items-center justify-center mb-4">
           <Image src="/logo.png" alt="Hello Staff" width={56} height={56} />
         </Link>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">إنشاء حساب جديد</h1>
-        <p className="text-slate-500 mt-2">انضم إلى أكبر منصة توظيف في قطاع الضيافة</p>
+        
+        {role === 'employer' ? (
+          <>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
+              أنشئ حساب صاحب عمل
+            </h1>
+            <p className="text-slate-500 mt-3 text-sm sm:text-base max-w-sm mx-auto leading-relaxed">
+              وانشر أول وظيفة خلال أقل من دقيقة. وظّف كفاءات الضيافة بسرعة وبملفات واضحة.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3 mt-4 text-xs font-bold text-slate-600">
+              <span className="flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-full"><CheckCircle className="w-3.5 h-3.5 text-brand-600" /> أقل من دقيقة</span>
+              <span className="flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-full"><CheckCircle className="w-3.5 h-3.5 text-brand-600" /> مجاني</span>
+              <span className="flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-full"><CheckCircle className="w-3.5 h-3.5 text-brand-600" /> وصول مباشر للمرشحين</span>
+            </div>
+          </>
+        ) : (
+          <>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">إنشاء حساب جديد</h1>
+            <p className="text-slate-500 mt-2">انضم إلى أكبر منصة توظيف في قطاع الضيافة</p>
+          </>
+        )}
       </div>
 
       <div className="bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100">
@@ -176,6 +202,26 @@ function SignupForm() {
                 placeholder="••••••••"
               />
             </div>
+          </div>
+
+          <div className="flex items-start gap-2 mt-2">
+            <input
+              type="checkbox"
+              id="terms"
+              checked={agreedToTerms}
+              onChange={(e) => setAgreedToTerms(e.target.checked)}
+              className="mt-1 w-4 h-4 text-brand-600 border-slate-300 rounded focus:ring-brand-500 cursor-pointer"
+            />
+            <label htmlFor="terms" className="text-xs text-slate-600 leading-relaxed cursor-pointer select-none">
+              بتسجيلك، أنت توافق على{' '}
+              <Link href="/terms" className="text-brand-600 font-bold hover:underline" target="_blank">
+                شروط الاستخدام
+              </Link>
+              {' '}و{' '}
+              <Link href="/privacy" className="text-brand-600 font-bold hover:underline" target="_blank">
+                سياسة الخصوصية
+              </Link>
+            </label>
           </div>
 
           <button
