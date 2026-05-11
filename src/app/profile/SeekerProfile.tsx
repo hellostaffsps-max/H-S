@@ -5,6 +5,7 @@ import AvatarUpload from "@/components/AvatarUpload";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { updateProfile, updateSeekerProfile } from "@/app/actions/profile";
 import Link from "next/link";
+import { PALESTINIAN_CITIES, getSuggestedKeywords } from "@/lib/profile-utils";
 
 interface SeekerProfileProps {
   profile: any;
@@ -19,6 +20,52 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+
+  // States for new features
+  const isPalestinianCity = profile?.location && PALESTINIAN_CITIES.includes(profile.location);
+  const [selectedLocation, setSelectedLocation] = useState(isPalestinianCity ? profile.location : (profile?.location ? "أخرى" : ""));
+  const [customLocation, setCustomLocation] = useState(!isPalestinianCity ? (profile?.location || "") : "");
+  
+  const [currentJobTitle, setCurrentJobTitle] = useState(seekerData?.job_title || "");
+  const suggestedKeywords = getSuggestedKeywords(currentJobTitle);
+
+  const [uploadingCV, setUploadingCV] = useState(false);
+  const [cvUrl, setCvUrl] = useState(seekerData?.cv_url || null);
+
+  const handleCVUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 3 * 1024 * 1024) {
+      alert("حجم الملف يتجاوز 3 ميجابايت");
+      return;
+    }
+    if (file.type !== "application/pdf") {
+      alert("يرجى رفع ملف PDF فقط");
+      return;
+    }
+    
+    setUploadingCV(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random()}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
+      const { error: uploadError } = await supabase.storage.from('resumes').upload(filePath, file, { upsert: true });
+      
+      if (uploadError) throw uploadError;
+      
+      const { data: { publicUrl } } = supabase.storage.from('resumes').getPublicUrl(filePath);
+      
+      setCvUrl(publicUrl);
+      await supabase.from("seekers").update({ cv_url: publicUrl }).eq("profile_id", user.id);
+      onSeekerDataUpdate({ ...seekerData, cv_url: publicUrl });
+      alert("تم رفع السيرة الذاتية بنجاح!");
+    } catch (err) {
+      console.error("Error uploading CV:", err);
+      alert("حدث خطأ أثناء رفع السيرة الذاتية");
+    } finally {
+      setUploadingCV(false);
+    }
+  };
 
   const handleAvatarUpload = async (url: string) => {
     setAvatarUrl(url);
@@ -98,8 +145,30 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
             href="/cv-builder"
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-50 border border-brand-200 text-brand-700 text-sm hover:bg-brand-100 transition-colors font-bold"
           >
-            <FileText className="w-4 h-4" /> السيرة الذاتية (CV)
+            <FileText className="w-4 h-4" /> منشئ السيرة الذاتية
           </Link>
+          <div className="flex items-center gap-2">
+            <input 
+              type="file" 
+              accept=".pdf" 
+              className="hidden" 
+              id="cv-upload" 
+              onChange={handleCVUpload}
+              disabled={uploadingCV}
+            />
+            <label 
+              htmlFor="cv-upload"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 text-sm hover:bg-indigo-100 transition-colors font-bold cursor-pointer"
+            >
+              {uploadingCV ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+              {cvUrl ? "تحديث الـ CV (PDF)" : "رفع الـ CV (PDF)"}
+            </label>
+            {cvUrl && (
+              <a href={cvUrl} target="_blank" rel="noreferrer" className="text-xs text-indigo-600 font-bold hover:underline">
+                عرض الـ CV المرفوع
+              </a>
+            )}
+          </div>
           <Link
             href="/messages"
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-sm hover:bg-slate-100 transition-colors font-bold"
@@ -219,16 +288,29 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
               <label className="block text-sm font-bold text-slate-700 mb-1.5 w-full text-right">
                 الموقع
               </label>
-              <div className="relative">
+              <div className="relative mb-2">
                 <MapPin className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <input
-                  name="location"
-                  type="text"
-                  defaultValue={profile?.location || ""}
-                  className="w-full bg-white border border-slate-200 rounded-xl pr-10 pl-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-right"
-                  placeholder="رام الله، نابلس..."
-                />
+                <select
+                  value={selectedLocation}
+                  onChange={(e) => setSelectedLocation(e.target.value)}
+                  className="w-full bg-white border border-slate-200 rounded-xl pr-10 pl-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-right appearance-none"
+                >
+                  <option value="" disabled>اختر المدينة...</option>
+                  {PALESTINIAN_CITIES.map(city => (
+                    <option key={city} value={city}>{city}</option>
+                  ))}
+                </select>
               </div>
+              {selectedLocation === "أخرى" && (
+                <input
+                  type="text"
+                  value={customLocation}
+                  onChange={(e) => setCustomLocation(e.target.value)}
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-right mt-2"
+                  placeholder="اكتب اسم المدينة أو المنطقة..."
+                />
+              )}
+              <input type="hidden" name="location" value={selectedLocation === "أخرى" ? customLocation : selectedLocation} />
             </div>
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-1.5 w-full text-right">
@@ -237,7 +319,8 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
               <input
                 name="job_title"
                 type="text"
-                defaultValue={seekerData?.job_title || ""}
+                value={currentJobTitle}
+                onChange={(e) => setCurrentJobTitle(e.target.value)}
                 className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-right"
                 placeholder="نادل، طاهي، باريستا..."
               />
@@ -257,8 +340,34 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
             </div>
             <div className="sm:col-span-2">
               <label className="block text-sm font-bold text-slate-700 mb-1.5 w-full text-right">
-                المهارات (اضغط Enter للإضافة)
+                المهارات والكلمات المفتاحية (اضغط لاختيار المهارات المقترحة أو اكتب واضغط Enter للإضافة)
               </label>
+              
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                {suggestedKeywords.map(skill => {
+                  const isSelected = (seekerData?.skills || []).includes(skill);
+                  return (
+                    <button
+                      key={skill}
+                      type="button"
+                      onClick={() => {
+                        if (isSelected) {
+                          const newSkills = (seekerData.skills || []).filter((s: string) => s !== skill);
+                          onSeekerDataUpdate({ ...seekerData, skills: newSkills });
+                        } else {
+                          onSeekerDataUpdate({
+                            ...seekerData,
+                            skills: [...(seekerData?.skills || []), skill]
+                          });
+                        }
+                      }}
+                      className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${isSelected ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-brand-50 hover:text-brand-700'}`}
+                    >
+                      {skill}
+                    </button>
+                  );
+                })}
+              </div>
               <div className="flex flex-wrap gap-2 mb-3 bg-slate-50 p-3 rounded-xl border border-slate-100 min-h-[50px]">
                 {(seekerData?.skills || []).map((skill: string, idx: number) => (
                   <span key={idx} className="bg-brand-100 text-brand-700 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">

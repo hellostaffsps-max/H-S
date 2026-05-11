@@ -21,7 +21,10 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { getJobs } from "@/app/actions/jobs";
 import { getSearchFilters } from "@/app/actions/search-filters";
+import { getSearchFilters } from "@/app/actions/search-filters";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/lib/supabase";
+import { calculateProfileCompletion } from "@/lib/profile-utils";
 
 interface JobsContentProps {
   initialSearch?: string;
@@ -40,7 +43,8 @@ export default function JobsContent({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
+  const [seekerData, setSeekerData] = useState<any>(null);
 
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [category, setCategory] = useState(initialCategory);
@@ -59,8 +63,15 @@ export default function JobsContent({
       setDbCategories(filters.categories);
       setDbLocations(filters.locations);
     });
+    
+    if (user && profile?.role === 'seeker') {
+      supabase.from('seekers').select('*').eq('profile_id', user.id).single()
+        .then(({ data }) => {
+          if (data) setSeekerData(data);
+        });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user, profile]);
 
   async function fetchJobs() {
     setLoading(true);
@@ -305,7 +316,11 @@ export default function JobsContent({
           ))}
         </div>
       ) : jobs.length === 0 ? (
-        <EmptyState onClear={clearFilters} role={profile?.role} />
+        <EmptyState 
+          onClear={clearFilters} 
+          role={profile?.role} 
+          showCompleteProfileBtn={seekerData && profile ? calculateProfileCompletion(profile, seekerData).completionPercent < 90 : true}
+        />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {jobs.map((job) => (
@@ -398,7 +413,7 @@ function JobCard({ job }: { job: any }) {
   );
 }
 
-function EmptyState({ onClear, role }: { onClear: () => void; role?: string }) {
+function EmptyState({ onClear, role, showCompleteProfileBtn = true }: { onClear: () => void; role?: string, showCompleteProfileBtn?: boolean }) {
   const isEmployer = role === 'employer';
   return (
     <div className="bg-white border border-slate-100 rounded-[48px] p-12 sm:p-24 text-center relative overflow-hidden shadow-2xl shadow-slate-200/50">
@@ -419,13 +434,15 @@ function EmptyState({ onClear, role }: { onClear: () => void; role?: string }) {
           }
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link
-            href={isEmployer ? '/post-job' : '/dashboard'}
-            className="w-full sm:w-auto px-10 py-4 bg-brand-600 text-white rounded-3xl text-base font-black hover:bg-brand-700 transition-all shadow-2xl shadow-brand-500/30 flex items-center justify-center gap-3 active:scale-95"
-          >
-            <Briefcase className="h-5 w-5" />
-            {isEmployer ? 'انشر وظيفة مجاناً' : 'أكمل ملفك الشخصي'}
-          </Link>
+          {(isEmployer || showCompleteProfileBtn) && (
+            <Link
+              href={isEmployer ? '/post-job' : '/dashboard'}
+              className="w-full sm:w-auto px-10 py-4 bg-brand-600 text-white rounded-3xl text-base font-black hover:bg-brand-700 transition-all shadow-2xl shadow-brand-500/30 flex items-center justify-center gap-3 active:scale-95"
+            >
+              <Briefcase className="h-5 w-5" />
+              {isEmployer ? 'انشر وظيفة مجاناً' : 'أكمل ملفك الشخصي'}
+            </Link>
+          )}
           <button
             onClick={onClear}
             className="w-full sm:w-auto px-10 py-4 bg-white border-2 border-slate-100 text-slate-600 rounded-3xl text-base font-black hover:bg-slate-50 hover:border-slate-200 transition-all flex items-center justify-center gap-2"

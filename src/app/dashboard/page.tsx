@@ -34,6 +34,8 @@ import {
   User,
   Megaphone
 } from "lucide-react";
+import EmptyState from "@/components/EmptyState";
+import { calculateProfileCompletion } from "@/lib/profile-utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { getEmployerJobs, updateJobStatus } from "@/app/actions/jobs";
@@ -1071,17 +1073,8 @@ function SeekerDashboard({
   recommendedJobs: any[];
 }) {
   const [selectedApp, setSelectedApp] = useState<any>(null);
-  const fields = [
-    !!profile?.full_name,
-    !!profile?.phone,
-    !!profile?.location,
-    !!seekerProfile?.job_title,
-    !!(seekerProfile?.experience_years !== null && seekerProfile?.experience_years !== undefined),
-    !!(seekerProfile?.skills && seekerProfile.skills.length > 0),
-    !!seekerProfile?.bio,
-  ];
-  const completedFields = fields.filter(Boolean).length;
-  const completionPercent = Math.round((completedFields / fields.length) * 100);
+  
+  const { completionPercent, hasCV } = calculateProfileCompletion(profile, seekerProfile);
 
   return (
     <div className="space-y-8">
@@ -1096,7 +1089,11 @@ function SeekerDashboard({
         </div>
         {completionPercent < 100 && (
           <div className="flex items-center justify-between">
-            <p className="text-xs text-slate-500">أكمل بياناتك لزيادة فرصك في الحصول على وظيفة</p>
+            <p className="text-xs text-slate-500">
+              {hasCV 
+                ? "أكمل بياناتك لزيادة فرصك في الحصول على وظيفة" 
+                : "لقد أكملت ملفك الأساسي! قم برفع أو إنشاء السيرة الذاتية للحصول على 100%"}
+            </p>
             <Link href="/profile" className="text-xs font-bold text-brand-600 hover:text-brand-700">أكمل ملفك →</Link>
           </div>
         )}
