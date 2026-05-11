@@ -200,7 +200,7 @@ export default function LoginForm({ redirect = "/dashboard" }: LoginFormProps) {
         </button>
 
         <div className="mt-6 text-center text-sm text-slate-500">
-          ليس لديك حساب؈{" "}
+          ليس لديك حساب؟{" "}
           <Link
             href="/auth/signup"
             className="text-brand-600 font-bold hover:underline"
