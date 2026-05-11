@@ -1,232 +1,307 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import {
-  ShieldCheck, Loader2, Users, Building2, UserSearch, Crown,
-  Eye, Briefcase, FileText, Send, CreditCard, MessageSquare,
-  Flag, BarChart3, Settings, ChevronDown, ChevronUp, Check, X,
-  Lock
-} from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { useEffect, useState } from 'react';
+import { 
+  Shield, 
+  Plus, 
+  Trash2, 
+  Edit2, 
+  CheckCircle, 
+  XCircle,
+  Settings,
+  UserCheck,
+  Briefcase,
+  FileText,
+  CreditCard,
+  Bell,
+  Search,
+  MessageSquare,
+  Image as ImageIcon
+} from 'lucide-react';
 
-interface RoleInfo {
-  key: string;
-  label: string;
-  labelEn: string;
-  description: string;
-  icon: typeof Users;
-  color: string;
-  count: number;
-  permissions: { key: string; label: string; icon: typeof Eye; allowed: boolean }[];
-}
+const CATEGORY_ICONS: Record<string, any> = {
+  'المستخدمين': UserCheck,
+  'الوظائف': Briefcase,
+  'المحتوى': FileText,
+  'المالية': CreditCard,
+  'التواصل': Bell,
+  'النظام': Settings,
+  'الإعلانات': ImageIcon,
+  'الدعم': MessageSquare
+};
 
 export default function RolesManagement() {
+  const [roles, setRoles] = useState<any[]>([]);
+  const [permissions, setPermissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [roles, setRoles] = useState<RoleInfo[]>([]);
-  const [expandedRole, setExpandedRole] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingRole, setEditingRole] = useState<any>(null);
+  
+  // Form State
+  const [roleName, setRoleName] = useState('');
+  const [roleDesc, setRoleDesc] = useState('');
+  const [selectedPerms, setSelectedPerms] = useState<string[]>([]);
 
   useEffect(() => {
-    fetchRoles();
+    fetchData();
   }, []);
 
-  async function fetchRoles() {
-    setLoading(true);
+  async function fetchData() {
     try {
-      const { data: profiles } = await supabase.from("profiles").select("role");
-      const roleCounts: Record<string, number> = {};
-      (profiles || []).forEach((p: any) => {
-        roleCounts[p.role] = (roleCounts[p.role] || 0) + 1;
-      });
-
-      const allPermissions = [
-        { key: "view_dashboard", label: "عرض لوحة التحكم", icon: BarChart3 },
-        { key: "manage_users", label: "إدارة المستخدمين", icon: Users },
-        { key: "manage_jobs", label: "إدارة الوظائف", icon: Briefcase },
-        { key: "create_job", label: "إنشاء وظيفة", icon: Briefcase },
-        { key: "apply_job", label: "التقديم على وظيفة", icon: Send },
-        { key: "manage_articles", label: "إدارة المقالات (موافقة/رفض)", icon: FileText },
-        { key: "write_article", label: "كتابة مقال", icon: FileText },
-        { key: "manage_subscriptions", label: "إدارة الاشتراكات والباقات", icon: CreditCard },
-        { key: "send_broadcast", label: "إرسال تعميم عام", icon: MessageSquare },
-        { key: "manage_support", label: "إدارة البلاغات والدعم", icon: Flag },
-        { key: "view_reports", label: "عرض التقارير والإحصائيات", icon: BarChart3 },
-        { key: "platform_settings", label: "إعدادات المنصة", icon: Settings },
-        { key: "send_messages", label: "إرسال واستقبال الرسائل", icon: MessageSquare },
-        { key: "view_applications", label: "عرض طلبات التوظيف", icon: Eye },
-        { key: "manage_profile", label: "إدارة الملف الشخصي", icon: Users },
-      ];
-
-      const adminPerms = ["view_dashboard", "manage_users", "manage_jobs", "create_job", "manage_articles", "write_article", "manage_subscriptions", "send_broadcast", "manage_support", "view_reports", "platform_settings", "send_messages", "view_applications", "manage_profile"];
-      const employerPerms = ["create_job", "write_article", "send_messages", "view_applications", "manage_profile"];
-      const seekerPerms = ["apply_job", "send_messages", "manage_profile"];
-
-      const roleData: RoleInfo[] = [
-        {
-          key: "admin",
-          label: "مدير النظام",
-          labelEn: "Admin",
-          description: "صلاحيات كاملة للتحكم بجميع أقسام المنصة بما في ذلك إدارة المستخدمين والباقات والتقارير",
-          icon: Crown,
-          color: "brand",
-          count: roleCounts["admin"] || 0,
-          permissions: allPermissions.map(p => ({ ...p, allowed: adminPerms.includes(p.key) })),
-        },
-        {
-          key: "employer",
-          label: "صاحب عمل",
-          labelEn: "Employer",
-          description: "يمكنه نشر الوظائف، كتابة المقالات، استعراض طلبات التوظيف، والتواصل مع المرشحين",
-          icon: Building2,
-          color: "blue",
-          count: roleCounts["employer"] || 0,
-          permissions: allPermissions.map(p => ({ ...p, allowed: employerPerms.includes(p.key) })),
-        },
-        {
-          key: "seeker",
-          label: "باحث عن عمل",
-          labelEn: "Seeker",
-          description: "يمكنه تصفح الوظائف والتقديم عليها والتواصل مع أصحاب العمل وإدارة ملفه الشخصي",
-          icon: UserSearch,
-          color: "emerald",
-          count: roleCounts["seeker"] || 0,
-          permissions: allPermissions.map(p => ({ ...p, allowed: seekerPerms.includes(p.key) })),
-        },
-      ];
-
-      setRoles(roleData);
-    } catch (e) {
-      console.error("Error:", e);
+      const [rolesRes, permsRes] = await Promise.all([
+        fetch('/api/admin/roles'),
+        fetch('/api/admin/permissions')
+      ]);
+      
+      const rolesJson = await rolesRes.json();
+      const permsJson = await permsRes.json();
+      
+      if (rolesJson.success) setRoles(rolesJson.data);
+      if (permsJson.success) setPermissions(permsJson.data);
+    } catch (error) {
+      console.error('Fetch error:', error);
     } finally {
       setLoading(false);
     }
   }
 
-  const colorMap: Record<string, { bg: string; icon: string; border: string; badge: string; light: string }> = {
-    brand: { bg: "bg-brand-50", icon: "text-brand-600", border: "border-brand-200", badge: "bg-brand-600 text-white", light: "bg-brand-50/50" },
-    blue: { bg: "bg-blue-50", icon: "text-blue-600", border: "border-blue-200", badge: "bg-blue-600 text-white", light: "bg-blue-50/50" },
-    emerald: { bg: "bg-emerald-50", icon: "text-emerald-600", border: "border-emerald-200", badge: "bg-emerald-600 text-white", light: "bg-emerald-50/50" },
+  const handleOpenModal = (role: any = null) => {
+    if (role) {
+      setEditingRole(role);
+      setRoleName(role.name);
+      setRoleDesc(role.description || '');
+      setSelectedPerms(role.permissions || []);
+    } else {
+      setEditingRole(null);
+      setRoleName('');
+      setRoleDesc('');
+      setSelectedPerms([]);
+    }
+    setIsModalOpen(true);
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-brand-600" />
-      </div>
+  const handleTogglePerm = (permId: string) => {
+    setSelectedPerms(prev => 
+      prev.includes(permId) ? prev.filter(p => p !== permId) : [...prev, permId]
     );
-  }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const payload = {
+      name: roleName,
+      description: roleDesc,
+      permissions: selectedPerms
+    };
+
+    try {
+      const url = editingRole ? `/api/admin/roles/${editingRole.id}` : '/api/admin/roles';
+      const method = editingRole ? 'PATCH' : 'POST';
+      
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      const json = await res.json();
+      if (json.success) {
+        setIsModalOpen(false);
+        fetchData();
+      } else {
+        alert('خطأ: ' + json.error);
+      }
+    } catch (error) {
+      alert('خطأ في الاتصال بالسيرفر');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('هل أنت متأكد من حذف هذا الدور؟ سيتم إزالة الدور من جميع المشرفين المرتبطين به.')) return;
+    
+    try {
+      const res = await fetch(`/api/admin/roles/${id}`, { method: 'DELETE' });
+      const json = await res.json();
+      if (json.success) fetchData();
+    } catch (error) {
+      alert('خطأ في الحذف');
+    }
+  };
+
+  // Group permissions by category
+  const groupedPermissions = permissions.reduce((acc: any, perm) => {
+    if (!acc[perm.category]) acc[perm.category] = [];
+    acc[perm.category].push(perm);
+    return acc;
+  }, {});
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-black text-slate-900">الصلاحيات والأدوار</h2>
-          <p className="text-slate-500">إدارة أدوار المستخدمين والصلاحيات الممنوحة لكل دور</p>
+          <h2 className="text-2xl font-black text-slate-900">إدارة الأدوار والصلاحيات</h2>
+          <p className="text-slate-500">قم بإنشاء أدوار مخصصة وتحديد ما يمكن لكل مشرف القيام به</p>
         </div>
-        <div className="flex items-center gap-2 text-sm bg-amber-50 text-amber-700 px-4 py-2 rounded-xl border border-amber-200">
-          <Lock className="h-4 w-4" />
-          <span className="font-bold">الأدوار محمية ومحددة مسبقاً في النظام</span>
-        </div>
+        <button 
+          onClick={() => handleOpenModal()}
+          className="flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-2xl font-bold hover:bg-brand-700 transition-all shadow-lg shadow-brand-200"
+        >
+          <Plus className="h-5 w-5" />
+          إضافة دور جديد
+        </button>
       </div>
 
-      {/* Roles Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {roles.map((role) => {
-          const cm = colorMap[role.color] || colorMap.brand;
-          const Icon = role.icon;
-          const allowedCount = role.permissions.filter(p => p.allowed).length;
-          return (
-            <div key={role.key} className={`bg-white rounded-2xl border ${cm.border} p-5 shadow-sm`}>
-              <div className="flex items-center gap-3 mb-3">
-                <div className={`p-2.5 rounded-xl ${cm.bg}`}>
-                  <Icon className={`h-5 w-5 ${cm.icon}`} />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {loading ? (
+          <p className="col-span-full text-center py-12 text-slate-400">جاري التحميل...</p>
+        ) : roles.length === 0 ? (
+          <p className="col-span-full text-center py-12 text-slate-400">لا يوجد أدوار معرفة حالياً</p>
+        ) : (
+          roles.map((role) => (
+            <div key={role.id} className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm hover:shadow-md transition-all group">
+              <div className="flex justify-between items-start mb-4">
+                <div className="h-12 w-12 rounded-2xl bg-brand-50 flex items-center justify-center text-brand-600">
+                  <Shield className="h-6 w-6" />
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-slate-900">{role.label}</h3>
-                  <p className="text-xs text-slate-500">{role.labelEn}</p>
+                <div className="flex gap-1">
+                  <button 
+                    onClick={() => handleOpenModal(role)}
+                    className="p-2 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-xl transition-all"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </button>
+                  <button 
+                    onClick={() => handleDelete(role.id)}
+                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </div>
-                <span className={`text-sm font-black px-3 py-1 rounded-full ${cm.badge}`}>
-                  {role.count}
-                </span>
               </div>
-              <p className="text-xs text-slate-500 mb-3 leading-relaxed">{role.description}</p>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400">
-                  <span className="font-bold text-slate-700">{allowedCount}</span> / {role.permissions.length} صلاحية
-                </span>
-                <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${role.key === "admin" ? "bg-brand-500" : role.key === "employer" ? "bg-blue-500" : "bg-emerald-500"}`}
-                    style={{ width: `${(allowedCount / role.permissions.length) * 100}%` }}
+              
+              <h3 className="text-lg font-black text-slate-900 mb-1">{role.name}</h3>
+              <p className="text-sm text-slate-500 mb-4 line-clamp-2">{role.description || 'لا يوجد وصف لهذا الدور'}</p>
+              
+              <div className="flex flex-wrap gap-1.5">
+                {role.permissions?.slice(0, 3).map((pId: string) => {
+                  const perm = permissions.find(p => p.id === pId);
+                  return (
+                    <span key={pId} className="px-2 py-1 bg-slate-50 text-slate-600 text-[10px] font-bold rounded-lg border border-slate-100">
+                      {perm?.name_ar || pId}
+                    </span>
+                  );
+                })}
+                {role.permissions?.length > 3 && (
+                  <span className="px-2 py-1 bg-slate-50 text-slate-400 text-[10px] font-bold rounded-lg">
+                    +{role.permissions.length - 3} أخرى
+                  </span>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Modal Role Editor */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-xl font-black text-slate-900">
+                {editingRole ? 'تعديل الدور' : 'إنشاء دور جديد'}
+              </h3>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <XCircle className="h-6 w-6" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">اسم الدور</label>
+                  <input 
+                    type="text"
+                    required
+                    value={roleName}
+                    onChange={(e) => setRoleName(e.target.value)}
+                    placeholder="مثلاً: مدير محتوى"
+                    className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-brand-500/20 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">الوصف</label>
+                  <textarea 
+                    value={roleDesc}
+                    onChange={(e) => setRoleDesc(e.target.value)}
+                    placeholder="وصف مختصر لمهام هذا الدور..."
+                    className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-brand-500/20 outline-none h-24"
                   />
                 </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
 
-      {/* Permissions Table */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-          <h3 className="font-bold text-slate-900 flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-slate-400" />
-            جدول الصلاحيات التفصيلي
-          </h3>
-          <p className="text-xs text-slate-500 mt-1">مقارنة الصلاحيات بين الأدوار الثلاثة</p>
-        </div>
-
-        {/* Table Header */}
-        <div className="grid grid-cols-[1fr_100px_100px_100px] gap-0 px-6 py-3 border-b border-slate-100 bg-slate-50/30 text-xs font-bold text-slate-500">
-          <div>الصلاحية</div>
-          <div className="text-center">مدير</div>
-          <div className="text-center">صاحب عمل</div>
-          <div className="text-center">باحث</div>
-        </div>
-
-        {/* Table Rows */}
-        <div className="divide-y divide-slate-50">
-          {roles[0]?.permissions.map((perm, idx) => {
-            const PermIcon = perm.icon;
-            return (
-              <div key={perm.key} className="grid grid-cols-[1fr_100px_100px_100px] gap-0 px-6 py-3 items-center hover:bg-slate-50/50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <PermIcon className="h-4 w-4 text-slate-400" />
-                  <span className="text-sm text-slate-700 font-medium">{perm.label}</span>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-3">تحديد الصلاحيات</label>
+                <div className="space-y-6">
+                  {Object.entries(groupedPermissions).map(([category, perms]: [string, any]) => {
+                    const Icon = CATEGORY_ICONS[category] || Shield;
+                    return (
+                      <div key={category} className="space-y-3">
+                        <div className="flex items-center gap-2 text-slate-400">
+                          <Icon className="h-4 w-4" />
+                          <span className="text-xs font-black uppercase tracking-wider">{category}</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {perms.map((perm: any) => (
+                            <button
+                              key={perm.id}
+                              type="button"
+                              onClick={() => handleTogglePerm(perm.id)}
+                              className={`flex items-center gap-3 p-3 rounded-xl border text-right transition-all ${
+                                selectedPerms.includes(perm.id)
+                                  ? 'bg-brand-50 border-brand-200 text-brand-700 ring-2 ring-brand-500/10'
+                                  : 'bg-white border-slate-100 text-slate-600 hover:border-slate-200'
+                              }`}
+                            >
+                              <div className={`h-5 w-5 rounded flex items-center justify-center border ${
+                                selectedPerms.includes(perm.id) ? 'bg-brand-600 border-brand-600 text-white' : 'border-slate-200'
+                              }`}>
+                                {selectedPerms.includes(perm.id) && <CheckCircle className="h-3 w-3" />}
+                              </div>
+                              <span className="text-sm font-bold">{perm.name_ar}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-                {roles.map((role) => {
-                  const isAllowed = role.permissions[idx]?.allowed;
-                  return (
-                    <div key={role.key} className="flex justify-center">
-                      {isAllowed ? (
-                        <div className="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center">
-                          <Check className="h-4 w-4 text-green-600" />
-                        </div>
-                      ) : (
-                        <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center">
-                          <X className="h-4 w-4 text-slate-300" />
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
               </div>
-            );
-          })}
-        </div>
-      </div>
+            </form>
 
-      {/* Info Note */}
-      <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200 flex gap-4">
-        <ShieldCheck className="h-8 w-8 text-slate-400 shrink-0" />
-        <div>
-          <h4 className="font-bold text-slate-900 mb-1">ملاحظة أمنية</h4>
-          <p className="text-sm text-slate-500 leading-relaxed">
-            الأدوار والصلاحيات مُحددة ومُطبّقة على مستوى قاعدة البيانات (Row Level Security) لضمان أعلى مستوى من الحماية.
-            لا يمكن تعديل صلاحيات الأدوار من الواجهة لأسباب أمنية. لتغيير الصلاحيات يرجى التواصل مع فريق التطوير.
-          </p>
+            <div className="p-6 border-t border-slate-100 bg-slate-50/50 flex gap-3">
+              <button 
+                type="submit"
+                disabled={loading}
+                onClick={handleSubmit}
+                className="flex-1 py-3 bg-brand-600 text-white rounded-xl font-bold hover:bg-brand-700 transition-all disabled:opacity-50"
+              >
+                {loading ? 'جاري الحفظ...' : 'حفظ التغييرات'}
+              </button>
+              <button 
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="px-6 py-3 bg-white text-slate-600 border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-all"
+              >
+                إلغاء
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

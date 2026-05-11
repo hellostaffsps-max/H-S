@@ -3,8 +3,10 @@ import { createClient } from '@/lib/supabase-server';
 
 export interface AdminAuthResult {
   user: { id: string; email?: string } | null;
-  profile: { role: string; full_name?: string } | null;
+  profile: { role: string; full_name?: string; admin_role_id?: string | null } | null;
+  permissions: string[];
   isAdmin: boolean;
+  isSuperAdmin: boolean;
   error?: string;
 }
 
@@ -14,35 +16,56 @@ export async function verifyAdmin(): Promise<AdminAuthResult> {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return { user: null, profile: null, isAdmin: false, error: 'Unauthorized' };
+      return { user: null, profile: null, permissions: [], isAdmin: false, isSuperAdmin: false, error: 'Unauthorized' };
     }
 
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('role, full_name')
+      .select('role, full_name, admin_role_id')
       .eq('id', user.id)
       .single();
 
     if (profileError || !profile) {
-      return { user: null, profile: null, isAdmin: false, error: 'Profile not found' };
+      return { user: null, profile: null, permissions: [], isAdmin: false, isSuperAdmin: false, error: 'Profile not found' };
     }
 
     if (profile.role !== 'admin') {
-      return { user, profile, isAdmin: false, error: 'Forbidden: Admin role required' };
+      return { user, profile, permissions: [], isAdmin: false, isSuperAdmin: false, error: 'Forbidden: Admin role required' };
     }
 
-    return { user, profile, isAdmin: true };
+    const isSuperAdmin = profile.admin_role_id === null;
+    let permissions: string[] = [];
+
+    if (!isSuperAdmin) {
+      // Fetch permissions for the specific role
+      const { data: rolePerms } = await supabase
+        .from('admin_role_permissions')
+        .select('permission_id')
+        .eq('role_id', profile.admin_role_id);
+      
+      permissions = rolePerms?.map(p => p.permission_id) || [];
+    }
+
+    return { user, profile, permissions, isAdmin: true, isSuperAdmin };
   } catch {
-    return { user: null, profile: null, isAdmin: false, error: 'Internal error' };
+    return { user: null, profile: null, permissions: [], isAdmin: false, isSuperAdmin: false, error: 'Internal error' };
   }
 }
 
-export function adminGuard(result: AdminAuthResult): NextResponse | null {
+export function adminGuard(result: AdminAuthResult, requiredPermission?: string): NextResponse | null {
   if (!result.isAdmin) {
     return NextResponse.json(
       { success: false, error: result.error || 'Unauthorized' },
       { status: result.error?.includes('Forbidden') ? 403 : 401 }
     );
   }
+
+  if (requiredPermission && !result.isSuperAdmin && !result.permissions.includes(requiredPermission)) {
+    return NextResponse.json(
+      { success: false, error: 'Forbidden: Insufficient permissions' },
+      { status: 403 }
+    );
+  }
+
   return null;
 }

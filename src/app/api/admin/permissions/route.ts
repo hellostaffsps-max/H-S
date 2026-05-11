@@ -1,17 +1,17 @@
 import { NextResponse } from 'next/server';
 import { verifyAdmin, adminGuard } from '@/lib/admin-auth';
-import { createClient } from '@/lib/supabase-server';
+import { createAdminClient } from '@/lib/supabase-admin';
 
 export async function GET() {
   const auth = await verifyAdmin();
-  const guard = adminGuard(auth, 'users:view');
+  const guard = adminGuard(auth);
   if (guard) return guard;
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data, error } = await supabase
-    .from('profiles')
-    .select('id, role, full_name, avatar_url, phone, location, created_at')
-    .order('created_at', { ascending: false });
+    .from('admin_permissions')
+    .select('*')
+    .order('category', { ascending: true });
 
   if (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
