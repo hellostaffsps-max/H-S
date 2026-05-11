@@ -8,7 +8,10 @@
     "build": "cross-env NEXT_TURBOPACK=0 next build",
     "lint": "tsc --noEmit",
     "start": "next start",
-    "seed": "tsx scripts/seed-hospitality-jobs.ts"
+    "seed": "tsx scripts/seed-hospitality-jobs.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",
@@ -35,14 +38,19 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/dotenv": "^6.1.1",
     "@types/node": "^22.14.0",
     "@types/react": "19.2.14",
+    "@vitejs/plugin-react": "^6.0.1",
     "autoprefixer": "^10.4.21",
     "cross-env": "^10.1.0",
     "dotenv": "^17.4.2",
+    "jsdom": "^29.1.1",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
-    "typescript": "~5.8.2"
+    "typescript": "~5.8.2",
+    "vitest": "^4.1.6"
   }
 }
