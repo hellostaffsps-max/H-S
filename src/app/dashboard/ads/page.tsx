@@ -21,6 +21,7 @@ import {
   Ban
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import Image from "next/image";
 import Link from 'next/link';
 
 type AdStatus = 'pending' | 'approved' | 'rejected' | 'archived';
@@ -308,7 +309,7 @@ export default function EstablishmentAds() {
                       onMouseOut={(e) => e.currentTarget.pause()}
                     />
                   ) : (
-                    <img src={ad.media_url} alt={ad.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    <Image src={ad.media_url} alt={ad.title} fill className="object-cover transition-transform duration-700 group-hover:scale-110" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                   )}
                   
                   <div className="absolute top-4 left-4 flex gap-2">
@@ -416,7 +417,7 @@ export default function EstablishmentAds() {
                         {newAd.media_type === 'video' ? (
                           <video src={newAd.media_url} className="w-full h-full object-cover" muted autoPlay loop />
                         ) : (
-                          <img src={newAd.media_url} alt="Preview" className="w-full h-full object-cover" />
+                          <Image src={newAd.media_url} alt="Preview" fill className="object-cover" sizes="(max-width: 768px) 100vw, 500px" />
                         )}
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                           <label className="cursor-pointer p-5 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/40 transition-all shadow-xl">

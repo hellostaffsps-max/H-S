@@ -1,3 +1,4 @@
+import Image from "next/image";
 import React, { useState, useRef } from 'react';
 import imageCompression from 'browser-image-compression';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
@@ -79,9 +80,9 @@ export default function AvatarUpload({
 
   return (
     <div className={cn("relative group", className)}>
-      <div className="w-24 h-24 rounded-full bg-brand-100 flex items-center justify-center text-4xl font-bold text-brand-700 shadow-sm border-4 border-white overflow-hidden shrink-0">
+      <div className="w-24 h-24 rounded-full bg-brand-100 flex items-center justify-center text-4xl font-bold text-brand-700 shadow-sm border-4 border-white overflow-hidden shrink-0 relative">
         {currentUrl ? (
-          <img src={currentUrl} alt="Avatar" className="w-full h-full object-cover" />
+          <Image src={currentUrl} alt="Avatar" fill className="object-cover" sizes="96px" />
         ) : (
           <span className="uppercase">{fallbackInitial}</span>
         )}

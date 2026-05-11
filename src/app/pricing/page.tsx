@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import {
@@ -402,11 +403,13 @@ export default function PricingPage() {
                     </div>
                   </div>
                   {settings?.wallet_qr_url ? (
-                    <div className="flex justify-center">
-                      <img
+                    <div className="flex justify-center relative w-40 h-40 sm:w-48 sm:h-48 mx-auto">
+                      <Image
                         src={settings.wallet_qr_url}
                         alt="Wallet QR"
-                        className="w-40 h-40 sm:w-48 sm:h-48 object-contain rounded-xl border border-slate-100"
+                        fill
+                        className="object-contain rounded-xl border border-slate-100"
+                        sizes="200px"
                       />
                     </div>
                   ) : (

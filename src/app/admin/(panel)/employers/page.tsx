@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { Building2, Search, Loader2, MapPin, Phone, Calendar, Briefcase, ExternalLink } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -119,9 +120,9 @@ export default function EmployersManagement() {
                   <tr key={emp.profile_id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 overflow-hidden">
+                        <div className="relative h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 overflow-hidden">
                           {emp.logo_url ? (
-                            <img src={emp.logo_url} alt="" className="h-full w-full object-cover rounded-xl" />
+                            <Image src={emp.logo_url} alt="" fill className="object-cover rounded-xl" sizes="40px" />
                           ) : (
                             <Building2 className="h-5 w-5 text-emerald-600" />
                           )}

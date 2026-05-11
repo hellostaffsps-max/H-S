@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   Search,
@@ -223,10 +224,12 @@ export default async function Home() {
               >
                 <div className="h-40 sm:h-44 bg-slate-100 relative overflow-hidden">
                   {article.cover_image ? (
-                    <img
+                    <Image
                       src={article.cover_image}
                       alt={article.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-slate-300">

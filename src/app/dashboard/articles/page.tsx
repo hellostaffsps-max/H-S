@@ -13,6 +13,7 @@ import {
   Lock
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import Image from "next/image";
 import Link from 'next/link';
 
 type Article = {
@@ -254,7 +255,7 @@ export default function EmployerArticles() {
               <label className="block text-sm font-bold text-slate-700 mb-2">صورة المقال (اختياري)</label>
               {imageUrl ? (
                 <div className="relative rounded-2xl overflow-hidden h-48 w-full md:w-64 border border-slate-200">
-                  <img src={imageUrl} alt="Article cover" className="w-full h-full object-cover" />
+                  <Image src={imageUrl} alt="Article cover" fill className="object-cover" sizes="(max-width: 768px) 100vw, 256px" />
                   <button type="button" onClick={() => setImageUrl('')} className="absolute top-2 right-2 bg-white/90 text-red-600 px-2 py-1 rounded text-xs font-bold shadow-sm">إزالة</button>
                 </div>
               ) : (
@@ -310,8 +311,8 @@ export default function EmployerArticles() {
             {articles.map((article) => (
               <div key={article.id} className="bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-sm flex flex-col">
                 {article.cover_image && (
-                  <div className="h-40 overflow-hidden bg-slate-100">
-                    <img src={article.cover_image} alt={article.title} className="w-full h-full object-cover" />
+                  <div className="relative h-40 overflow-hidden bg-slate-100">
+                    <Image src={article.cover_image} alt={article.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" />
                   </div>
                 )}
                 <div className="p-6 flex flex-col flex-grow">

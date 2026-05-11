@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { UserCircle, Search, Loader2, MapPin, Calendar, Briefcase, Star, CheckCircle, XCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -119,9 +120,9 @@ export default function CandidatesManagement() {
                   <tr key={s.profile_id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-brand-50 flex items-center justify-center shrink-0 overflow-hidden">
+                        <div className="relative h-10 w-10 rounded-full bg-brand-50 flex items-center justify-center shrink-0 overflow-hidden">
                           {s.profiles?.avatar_url ? (
-                            <img src={s.profiles.avatar_url} alt="" className="h-full w-full object-cover rounded-full" />
+                            <Image src={s.profiles.avatar_url} alt="" fill className="object-cover rounded-full" sizes="40px" />
                           ) : (
                             <UserCircle className="h-5 w-5 text-brand-600" />
                           )}

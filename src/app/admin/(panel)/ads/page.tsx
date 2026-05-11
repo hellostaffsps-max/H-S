@@ -26,6 +26,7 @@ import {
   History
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import Image from "next/image";
 
 type AdStatus = 'pending' | 'approved' | 'rejected' | 'archived';
 
@@ -538,7 +539,7 @@ export default function AdminAds() {
                   {ad.media_type === 'video' ? (
                     <video src={ad.media_url} className="w-full h-full object-cover transition-transform group-hover:scale-105" muted loop playsInline onMouseOver={(e) => e.currentTarget.play()} onMouseOut={(e) => e.currentTarget.pause()} />
                   ) : (
-                    <img src={ad.media_url} alt={ad.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                    <Image src={ad.media_url} alt={ad.title} fill className="object-cover transition-transform group-hover:scale-105" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                   )}
                   
                   <div className="absolute top-4 left-4 flex gap-2">
@@ -690,11 +691,11 @@ export default function AdminAds() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-4">
-                  <div className="aspect-[3/1] bg-slate-50 rounded-2xl overflow-hidden border border-slate-100">
+                  <div className="relative aspect-[3/1] bg-slate-50 rounded-2xl overflow-hidden border border-slate-100">
                     {selectedAd.media_type === 'video' ? (
                       <video src={selectedAd.media_url} className="w-full h-full object-cover" autoPlay muted loop />
                     ) : (
-                      <img src={selectedAd.media_url} alt="" className="w-full h-full object-cover" />
+                      <Image src={selectedAd.media_url} alt="" fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" />
                     )}
                   </div>
                   <div className="space-y-2">
@@ -791,7 +792,7 @@ export default function AdminAds() {
                         {newAd.media_type === 'video' ? (
                           <video src={newAd.media_url} className="w-full h-full object-cover" muted autoPlay loop />
                         ) : (
-                          <img src={newAd.media_url} alt="Preview" className="w-full h-full object-cover" />
+                          <Image src={newAd.media_url} alt="Preview" fill className="object-cover" sizes="(max-width: 768px) 100vw, 500px" />
                         )}
                         <label className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                           <Upload className="h-8 w-8 text-white" />

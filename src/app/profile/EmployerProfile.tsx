@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { useState, useRef } from "react";
 import {
   CheckCircle2,
@@ -177,7 +178,7 @@ export default function EmployerProfile({ profile, user, employerData, onEmploye
       <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden mb-8 shadow-sm">
         <div className="h-32 sm:h-48 w-full relative bg-slate-100">
           {coverUrl ? (
-            <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" />
+            <Image src={coverUrl} alt="Cover" fill className="object-cover" sizes="(max-width: 640px) 100vw, 800px" />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-brand-50 to-slate-100" />
           )}
@@ -187,9 +188,9 @@ export default function EmployerProfile({ profile, user, employerData, onEmploye
         <div className="px-4 sm:px-6 pb-6 relative">
           <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-12 sm:-mt-14 mb-4">
             <div className="relative shrink-0">
-              <div className="w-24 h-24 rounded-2xl bg-white shadow-md border-4 border-white overflow-hidden flex items-center justify-center">
+              <div className="w-24 h-24 rounded-2xl bg-white shadow-md border-4 border-white overflow-hidden flex items-center justify-center relative">
                 {logoUrl ? (
-                  <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
+                  <Image src={logoUrl} alt="Logo" fill className="object-cover" sizes="96px" />
                 ) : (
                   <Building2 className="w-10 h-10 text-slate-300" />
                 )}

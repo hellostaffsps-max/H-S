@@ -14,6 +14,7 @@ import {
   Upload
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import Image from "next/image";
 
 export default function PlatformSettings() {
   const [loading, setLoading] = useState(true);
@@ -198,7 +199,7 @@ export default function PlatformSettings() {
                   <div className="h-24 w-24 rounded-2xl border-2 border-dashed border-slate-300 flex items-center justify-center bg-slate-50 overflow-hidden relative group/img cursor-pointer" onClick={() => logoInputRef.current?.click()}>
                     {settings.logo_url ? (
                       <>
-                        <img src={settings.logo_url} alt="Logo" className="w-full h-full object-contain p-2" />
+                        <Image src={settings.logo_url} alt="Logo" fill className="object-contain p-2" sizes="96px" />
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity">
                           <Upload className="h-6 w-6 text-white" />
                         </div>
@@ -254,7 +255,7 @@ export default function PlatformSettings() {
                   <div className="h-32 w-32 rounded-2xl border-2 border-dashed border-slate-300 flex items-center justify-center bg-slate-50 overflow-hidden relative group/img cursor-pointer" onClick={() => qrInputRef.current?.click()}>
                     {settings.wallet_qr_url ? (
                       <>
-                        <img src={settings.wallet_qr_url} alt="QR Code" className="w-full h-full object-cover" />
+                        <Image src={settings.wallet_qr_url} alt="QR Code" fill className="object-cover" sizes="128px" />
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity">
                           <Upload className="h-6 w-6 text-white" />
                         </div>

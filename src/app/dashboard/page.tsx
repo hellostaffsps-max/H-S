@@ -2,6 +2,7 @@
 import type { FormEvent } from "react";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   Briefcase,
@@ -922,7 +923,7 @@ function EmployerDashboard({
                       <div className="relative">
                         <div className="w-12 h-12 rounded-2xl bg-brand-50 flex items-center justify-center text-brand-700 text-lg font-black overflow-hidden border border-brand-100">
                           {app.seekers?.profiles?.avatar_url ? (
-                            <img src={app.seekers.profiles.avatar_url} alt="" className="w-full h-full object-cover" />
+                            <Image src={app.seekers.profiles.avatar_url} alt="" fill className="object-cover" sizes="48px" />
                           ) : (
                             app.seekers?.profiles?.full_name?.charAt(0) || "م"
                           )}

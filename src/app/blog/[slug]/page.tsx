@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Calendar, User, Share2 } from "lucide-react";
 import { createClient } from "@/lib/supabase-server";
@@ -61,11 +62,14 @@ export default async function ArticlePage({ params }: Props) {
 
       {/* Cover Image */}
       {article.cover_image && (
-        <div className="rounded-xl sm:rounded-2xl overflow-hidden mb-6 sm:mb-10 bg-slate-100">
-          <img
+        <div className="rounded-xl sm:rounded-2xl overflow-hidden mb-6 sm:mb-10 bg-slate-100 relative h-52 sm:h-64 lg:h-80">
+          <Image
             src={article.cover_image}
             alt={article.title}
-            className="w-full h-52 sm:h-64 lg:h-80 object-cover"
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 800px"
+            priority
           />
         </div>
       )}

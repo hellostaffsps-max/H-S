@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Suspense, useEffect, useRef, useState } from "react";
 import {
   getConversations,
@@ -294,12 +295,14 @@ function MessagesPage() {
                         : ""
                     }`}
                   >
-                    <div className="shrink-0 w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
+                    <div className="shrink-0 w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden relative">
                       {conv.partnerAvatar ? (
-                        <img
+                        <Image
                           src={conv.partnerAvatar}
                           alt=""
-                          className="w-full h-full object-cover"
+                          fill
+                          className="object-cover"
+                          sizes="40px"
                         />
                       ) : (
                         <User className="w-5 h-5 text-slate-400" />

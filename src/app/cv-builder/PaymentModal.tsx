@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { requestCVDownload } from '@/app/actions/cv';
 import { X, Upload, CreditCard, Building, Loader2, CheckCircle2 } from 'lucide-react';
+import Image from "next/image";
 
 interface Props {
   isOpen: boolean;
@@ -91,7 +92,7 @@ export default function PaymentModal({ isOpen, onClose, userId }: Props) {
                   <Building className="w-4 h-4 text-indigo-600" />
                   <h3 className="font-bold text-sm text-slate-900">المحفظة الإلكترونية</h3>
                 </div>
-                <img src={settings.wallet_qr_url} alt="QR" className="w-36 h-36 object-contain mx-auto rounded-lg border" />
+                <Image src={settings.wallet_qr_url} alt="QR" width={144} height={144} className="object-contain mx-auto rounded-lg border" />
               </div>
             )}
 
@@ -106,7 +107,7 @@ export default function PaymentModal({ isOpen, onClose, userId }: Props) {
             ) : (
               <div className="space-y-3">
                 <div className="relative rounded-xl overflow-hidden border h-32 bg-slate-50">
-                  <img src={receiptUrl} alt="Receipt" className="w-full h-full object-contain p-2" />
+                  <Image src={receiptUrl} alt="Receipt" fill className="object-contain p-2" sizes="(max-width: 768px) 100vw, 512px" />
                   <button onClick={() => setReceiptUrl('')} className="absolute top-2 left-2 bg-white/90 text-red-600 px-2 py-1 rounded text-xs font-bold">تغيير</button>
                 </div>
                 <button onClick={handleSubmit} disabled={submitting} className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 flex items-center justify-center gap-2">

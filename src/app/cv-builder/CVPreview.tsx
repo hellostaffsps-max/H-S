@@ -1,5 +1,6 @@
 "use client";
 import React from 'react';
+import Image from "next/image";
 import { Mail, Phone, MapPin, CheckCircle2 } from 'lucide-react';
 
 interface Experience {
@@ -43,10 +44,12 @@ export default function CVPreview({ cvData, profile, componentRef, logoUrl }: Pr
           <div className="p-8 text-center bg-slate-800/50 print:bg-[#1e293b]">
             <div className="relative inline-block mb-5">
               {profile?.avatar_url ? (
-                <img 
+                <Image 
                   src={profile.avatar_url} 
                   alt={profile?.full_name} 
-                  className="w-32 h-32 rounded-2xl object-cover border-4 border-slate-700/50 shadow-xl" 
+                  width={128} 
+                  height={128} 
+                  className="rounded-2xl object-cover border-4 border-slate-700/50 shadow-xl" 
                 />
               ) : (
                 <div className="w-32 h-32 rounded-2xl mx-auto bg-slate-800 flex items-center justify-center text-4xl font-bold border-4 border-slate-700/50 shadow-xl text-emerald-400">
@@ -209,7 +212,7 @@ export default function CVPreview({ cvData, profile, componentRef, logoUrl }: Pr
       {/* Footer Branding */}
       <div className="absolute bottom-0 left-0 w-full bg-slate-900 py-3 px-6 flex items-center justify-between z-10 print:bg-[#0f172a]">
         <div className="flex items-center gap-3">
-          {logoUrl && <img src={logoUrl} alt="Hello Staff" className="h-6 w-auto object-contain brightness-0 invert opacity-80" />}
+          {logoUrl && <Image src={logoUrl} alt="Hello Staff" width={100} height={24} className="object-contain brightness-0 invert opacity-80" />}
           <span className="text-xs text-white/50 tracking-wider">WWW.HELLOSTAFF.PS</span>
         </div>
         <div className="text-[10px] text-white/40 uppercase tracking-widest font-medium">

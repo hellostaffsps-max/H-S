@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'motion/react';
+import Image from "next/image";
 
 type Article = {
   id: string;
@@ -275,7 +276,7 @@ export default function AdminArticles() {
                 <div key={article.id} className="border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all group flex flex-col">
                   {article.cover_image ? (
                     <div className="h-32 overflow-hidden bg-slate-100 relative">
-                      <img src={article.cover_image} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <Image src={article.cover_image} alt={article.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 25vw" />
                     </div>
                   ) : (
                     <div className="h-32 bg-slate-50 flex items-center justify-center relative">
@@ -382,7 +383,7 @@ export default function AdminArticles() {
                 <div className="relative group">
                   {newArticle.cover_image ? (
                     <div className="h-48 w-full rounded-2xl overflow-hidden relative">
-                      <img src={newArticle.cover_image} alt="Cover preview" className="w-full h-full object-cover" />
+                      <Image src={newArticle.cover_image} alt="Cover preview" fill className="object-cover" sizes="(max-width: 768px) 100vw, 500px" />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                         <label className="cursor-pointer p-3 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/40 transition-colors">
                           <Upload className="h-6 w-6" />

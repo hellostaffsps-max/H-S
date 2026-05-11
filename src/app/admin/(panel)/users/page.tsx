@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import Image from "next/image";
 import { 
   Search, 
   Filter, 
@@ -195,9 +196,9 @@ export default function UsersManagement() {
                   <tr key={user.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
+                        <div className="relative h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
                           {user.avatar_url ? (
-                            <img src={user.avatar_url} alt="" className="h-full w-full object-cover rounded-xl" />
+                            <Image src={user.avatar_url} alt="" fill className="object-cover rounded-xl" sizes="40px" />
                           ) : (
                             <User className="h-5 w-5" />
                           )}

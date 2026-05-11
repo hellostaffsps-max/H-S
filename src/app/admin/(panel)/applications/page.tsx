@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { ClipboardList, Search, Loader2, Calendar, Filter } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -146,9 +147,9 @@ export default function ApplicationsManagement() {
                   <tr key={app.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-full bg-indigo-50 flex items-center justify-center shrink-0 overflow-hidden">
+                        <div className="h-9 w-9 rounded-full bg-indigo-50 flex items-center justify-center shrink-0 overflow-hidden relative">
                           {app.profiles?.avatar_url ? (
-                            <img src={app.profiles.avatar_url} alt="" className="h-full w-full object-cover rounded-full" />
+                            <Image src={app.profiles.avatar_url} alt="" fill className="object-cover rounded-full" sizes="36px" />
                           ) : (
                             <span className="text-sm font-bold text-indigo-600">
                               {app.profiles?.full_name?.charAt(0) || "م"}

@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { Search, MapPin, Briefcase, Star, Filter, Loader2, MessageCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getSearchFilters } from "@/app/actions/search-filters";
+import Image from "next/image";
 import Link from "next/link";
 
 interface SeekerProfile {
@@ -192,12 +193,14 @@ export default function SearchResumes() {
               className="bg-white border border-slate-100 rounded-2xl p-5 hover:border-brand-200 hover:shadow-md transition-all flex flex-col h-full"
             >
               <div className="flex items-start gap-4 mb-4">
-                <div className="w-14 h-14 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-bold text-xl shrink-0 shadow-sm border border-brand-200 overflow-hidden">
+                <div className="w-14 h-14 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-bold text-xl shrink-0 shadow-sm border border-brand-200 overflow-hidden relative">
                   {candidate.profiles?.avatar_url ? (
-                    <img
+                    <Image
                       src={candidate.profiles.avatar_url}
-                      alt={candidate.profiles.full_name}
-                      className="w-full h-full object-cover"
+                      alt={candidate.profiles.full_name || "مستخدم"}
+                      fill
+                      className="object-cover"
+                      sizes="56px"
                     />
                   ) : (
                     candidate.profiles?.full_name?.[0] || "؟"
