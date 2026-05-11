@@ -1,20 +1,73 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# 🚀 Hello Staff - منصة هيلو ستاف للتوظيف
 
-# Run and deploy your AI Studio app
+**هيلو ستاف (Hello Staff)** هي منصة توظيف متكاملة مصممة خصيصاً لقطاع الضيافة والخدمات في فلسطين، تهدف إلى ربط أصحاب العمل بالباحثين عن عمل بطريقة ذكية، سريعة، واحترافية.
 
-This contains everything you need to run your app locally.
+---
 
-View your app in AI Studio: https://ai.studio/apps/24c06593-ef9f-4b66-aec9-9893e95f0b14
+## ✨ المميزات الرئيسية
 
-## Run Locally
+### 🧑‍💻 للباحثين عن عمل (Candidates)
+- **منشئ سيرة ذاتية احترافي (CV Builder):** قم ببناء سيرة ذاتية متكاملة بتنسيق A4 عالمي في دقائق.
+- **تصدير PDF:** إمكانية تحميل السيرة الذاتية بجودة عالية للطباعة أو الإرسال.
+- **نظام تقديم ذكي:** تتبع حالة طلبات التوظيف الخاصة بك (قيد المراجعة، مقابلة، مقبول، إلخ).
+- **تنبيهات الوظائف:** احصل على إشعارات فورية بالوظائف التي تناسب مهاراتك.
+- **تطبيق PWA:** قم بتثبيت المنصة كأيقونة على هاتفك للوصول السريع.
 
-**Prerequisites:**  Node.js
+### 🏢 لأصحاب العمل (Employers)
+- **إدارة الوظائف:** نشر وإدارة الوظائف بسهولة مع نظام اشتراكات مرن.
+- **فرز المتقدمين:** نظام لوحة معلومات متطور لمراجعة السير الذاتية وتغيير حالات المتقدمين.
+- **جدولة المقابلات:** إرسال مواعيد المقابلات والمواقع للمرشحين مباشرة عبر المنصة.
+- **نظام الرسائل:** تواصل مباشر مع المرشحين داخل المنصة.
+- **نشر المقالات والإعلانات:** تعزيز العلامة التجارية للشركة عبر قسم المدونة والمساحات الإعلانية.
 
+### 🛡️ الإدارة (Admin)
+- **لوحة تحكم شاملة:** إدارة المستخدمين، الوظائف، الاشتراكات، والمدفوعات.
+- **نظام تذاكر الدعم:** الرد على استفسارات المستخدمين وحل مشكلاتهم.
+- **إرسال إشعارات جماعية:** التواصل مع جميع مستخدمي المنصة بضغطة زر.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+---
+
+## 🛠️ التقنيات المستخدمة (Tech Stack)
+
+- **Frontend:** [Next.js 15](https://nextjs.org/) (App Router), [React 19](https://reactjs.org/), [Tailwind CSS 4](https://tailwindcss.com/).
+- **Backend/Database:** [Supabase](https://supabase.com/) (PostgreSQL).
+- **Authentication:** Supabase Auth (Email & Google OAuth).
+- **Storage:** Supabase Storage (للسير الذاتية، الصور، والشعارات).
+- **Animations:** [Motion](https://motion.dev/) (Framer Motion).
+- **AI Integration:** [Gemini AI](https://ai.google.dev/) لتسهيل عمليات بناء المحتوى.
+
+---
+
+## 🚀 البدء بالعمل (Local Development)
+
+1. **استنساخ المستودع:**
+   ```bash
+   git clone https://github.com/hellostaffsps-max/H-S.git
+   ```
+
+2. **تثبيت الاعتمادات:**
+   ```bash
+   npm install
+   ```
+
+3. **إعداد البيئة:**
+   قم بإنشاء ملف `.env.local` وأضف مفاتيح Supabase:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=your_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+   ```
+
+4. **تشغيل المشروع:**
+   ```bash
+   npm run dev
+   ```
+
+---
+
+## 🔒 الأمان والأداء
+تم تدقيق المنصة أمنياً لضمان حماية بيانات المستخدمين عبر سياسات **RLS (Row Level Security)** المتقدمة، مع تحسين الأداء عبر الفهارس الذكية وتوحيد السياسات.
+
+---
+
+## 📄 الترخيص
+حقوق الطبع والنشر محفوظة لمنصة هيلو ستاف © 2026.
