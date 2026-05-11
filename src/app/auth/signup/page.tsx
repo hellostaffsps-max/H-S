@@ -19,7 +19,13 @@ function SignupForm() {
   const [needsConfirmation, setNeedsConfirmation] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const router = useRouter();
-  const { signUp } = useAuth();
+  const { signUp, user, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace('/dashboard');
+    }
+  }, [user, authLoading, router]);
 
   useEffect(() => {
     const roleParam = searchParams.get('role');
