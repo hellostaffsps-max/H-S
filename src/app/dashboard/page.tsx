@@ -34,7 +34,6 @@ import {
   User,
   Megaphone
 } from "lucide-react";
-import EmptyState from "@/components/EmptyState";
 import { calculateProfileCompletion } from "@/lib/profile-utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";

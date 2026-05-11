@@ -21,7 +21,6 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { getJobs } from "@/app/actions/jobs";
 import { getSearchFilters } from "@/app/actions/search-filters";
-import { getSearchFilters } from "@/app/actions/search-filters";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
 import { calculateProfileCompletion } from "@/lib/profile-utils";
