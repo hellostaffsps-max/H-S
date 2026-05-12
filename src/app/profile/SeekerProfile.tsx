@@ -217,6 +217,10 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
               <p className="font-semibold text-slate-900" dir="ltr">{profile?.phone || "غير محدد"}</p>
             </div>
             <div className="space-y-1">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">البريد الإلكتروني</p>
+              <p className="font-semibold text-slate-900 break-all" dir="ltr">{profile?.email || "غير محدد"}</p>
+            </div>
+            <div className="space-y-1">
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">الموقع</p>
               <p className="font-semibold text-slate-900">{profile?.location || "غير محدد"}</p>
             </div>
