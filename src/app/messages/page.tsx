@@ -200,6 +200,28 @@ function MessagesPage() {
           }
         }
       )
+      // Listen for broadcast messages (receiver_id IS NULL)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `receiver_id=is.null`,
+        },
+        (payload) => {
+          const newMsg = payload.new as Message;
+          // If broadcast chat is currently selected, add the message
+          if (selectedPartner === 'system-broadcasts') {
+            setMessages((prev) => {
+              if (prev.find((m) => m.id === newMsg.id)) return prev;
+              return [...prev, newMsg];
+            });
+          }
+          // Refresh conversations list
+          loadConversations();
+        }
+      )
       .subscribe();
 
     return () => {

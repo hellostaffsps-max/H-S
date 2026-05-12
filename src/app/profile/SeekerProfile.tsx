@@ -12,9 +12,10 @@ interface SeekerProfileProps {
   user: any;
   seekerData: any;
   onSeekerDataUpdate: (data: any) => void;
+  onProfileUpdate?: () => Promise<void>;
 }
 
-export default function SeekerProfile({ profile, user, seekerData, onSeekerDataUpdate }: SeekerProfileProps) {
+export default function SeekerProfile({ profile, user, seekerData, onSeekerDataUpdate, onProfileUpdate }: SeekerProfileProps) {
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -97,6 +98,10 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
           .eq("profile_id", user.id)
           .single();
         onSeekerDataUpdate(data);
+      }
+      // Refresh profile data (phone, location) in parent
+      if (onProfileUpdate) {
+        await onProfileUpdate();
       }
     } else {
       setError(profileResult.error || seekerResult.error || "حدث خطأ");

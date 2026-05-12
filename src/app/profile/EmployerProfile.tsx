@@ -31,6 +31,7 @@ interface EmployerProfileProps {
   user: any;
   employerData: any;
   onEmployerDataUpdate: (data: any) => void;
+  onProfileUpdate?: () => Promise<void>;
 }
 
 const businessTypes = [
@@ -59,7 +60,7 @@ const applicationPrefs = [
   { value: "both", label: "الطريقتين", desc: "استقبل الطلبات عبر المنصة والواتساب" },
 ];
 
-export default function EmployerProfile({ profile, user, employerData, onEmployerDataUpdate }: EmployerProfileProps) {
+export default function EmployerProfile({ profile, user, employerData, onEmployerDataUpdate, onProfileUpdate }: EmployerProfileProps) {
   const [logoUrl, setLogoUrl] = useState(employerData?.logo_url || null);
   const [coverUrl, setCoverUrl] = useState(employerData?.cover_image_url || null);
   const [isEditing, setIsEditing] = useState(false);
@@ -159,6 +160,10 @@ export default function EmployerProfile({ profile, user, employerData, onEmploye
           .eq("profile_id", user.id)
           .single();
         if (data) onEmployerDataUpdate(data);
+      }
+      // Refresh profile data (phone, location) in parent
+      if (onProfileUpdate) {
+        await onProfileUpdate();
       }
     } catch (err: any) {
       console.error("Submit error:", err);

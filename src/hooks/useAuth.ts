@@ -144,5 +144,11 @@ export function useAuth() {
     }
   };
 
-  return { user, profile, loading, error, signUp, signIn, signInWithGoogle, signOut };
+  const refreshProfile = useCallback(async () => {
+    if (user?.id) {
+      await fetchProfile(user.id);
+    }
+  }, [user, fetchProfile]);
+
+  return { user, profile, loading, error, signUp, signIn, signInWithGoogle, signOut, refreshProfile };
 }

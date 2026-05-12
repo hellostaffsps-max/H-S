@@ -13,17 +13,35 @@ export async function getConversations() {
     return { success: false, error: 'Unauthorized', data: [] };
   }
 
-  // Get all messages where user is sender or receiver OR it's a broadcast
-  const { data: messages, error } = await supabase
+  // 1. Get regular messages where user is sender or receiver (RLS protected)
+  const { data: regularMessages, error: regularError } = await supabase
     .from('messages')
     .select('*, sender:profiles!sender_id(full_name, avatar_url, role), receiver:profiles!receiver_id(full_name, avatar_url, role)')
-    .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id},receiver_id.is.null`)
-    .order('created_at', { ascending: false })
-    .limit(200);
+    .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+    .order('created_at', { ascending: false });
 
-  if (error) {
-    return { success: false, error: toArabicError(error.message), data: [] };
+  // 2. Get broadcast messages (receiver_id IS NULL) using admin client to bypass RLS
+  const { createAdminClient } = await import('@/lib/supabase-admin');
+  const adminClient = createAdminClient();
+  const { data: broadcastMessages, error: broadcastError } = await adminClient
+    .from('messages')
+    .select('*, sender:profiles!sender_id(full_name, avatar_url, role), receiver:profiles!receiver_id(full_name, avatar_url, role)')
+    .is('receiver_id', null)
+    .not('sender_id', 'is', null)
+    .order('created_at', { ascending: false });
+
+  if (regularError) {
+    return { success: false, error: toArabicError(regularError.message), data: [] };
   }
+  if (broadcastError) {
+    console.error('Broadcast fetch error:', broadcastError);
+  }
+
+  // Merge and sort by created_at desc
+  const allMessages = [
+    ...(regularMessages || []),
+    ...(broadcastMessages || []),
+  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 200);
 
   // Group by conversation partner
   const conversationsMap = new Map<string, {
@@ -36,7 +54,7 @@ export async function getConversations() {
     unreadCount: number;
   }>();
 
-  messages?.forEach((msg: any) => {
+  allMessages?.forEach((msg: any) => {
     const isBroadcast = msg.receiver_id === null;
     const isMeSender = msg.sender_id === user.id;
     const partnerId = isBroadcast ? 'system-broadcasts' : (isMeSender ? msg.receiver_id : msg.sender_id);
@@ -73,19 +91,32 @@ export async function getMessages(partnerId: string) {
     return { success: false, error: 'Unauthorized', data: [] };
   }
 
-  let query = supabase
-    .from('messages')
-    .select('*, sender:profiles!sender_id(full_name, avatar_url)');
-    
-  if (partnerId === 'system-broadcasts') {
-    query = query.is('receiver_id', null);
-  } else {
-    query = query.or(`and(sender_id.eq.${user.id},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${user.id})`);
-  }
+  let data: any[] | null = null;
+  let error: any = null;
 
-  const { data, error } = await query
-    .order('created_at', { ascending: true })
-    .limit(200);
+  if (partnerId === 'system-broadcasts') {
+    // Use admin client for broadcasts since RLS blocks receiver_id = null for regular users
+    const { createAdminClient } = await import('@/lib/supabase-admin');
+    const adminClient = createAdminClient();
+    const result = await adminClient
+      .from('messages')
+      .select('*, sender:profiles!sender_id(full_name, avatar_url)')
+      .is('receiver_id', null)
+      .not('sender_id', 'is', null)
+      .order('created_at', { ascending: true })
+      .limit(200);
+    data = result.data;
+    error = result.error;
+  } else {
+    const result = await supabase
+      .from('messages')
+      .select('*, sender:profiles!sender_id(full_name, avatar_url)')
+      .or(`and(sender_id.eq.${user.id},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${user.id})`)
+      .order('created_at', { ascending: true })
+      .limit(200);
+    data = result.data;
+    error = result.error;
+  }
 
   if (error) {
     return { success: false, error: error.message, data: [] };

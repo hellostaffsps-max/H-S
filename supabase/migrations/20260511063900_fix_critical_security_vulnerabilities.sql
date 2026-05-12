@@ -34,6 +34,9 @@ ALTER FUNCTION public.archive_expired_ads() SET search_path = public, extensions
 -- 3. إصلاح سياسة resumes bucket — منع سرد الملفات للجمهور
 -- ============================================================
 DROP POLICY IF EXISTS "Public resumes are viewable by everyone." ON storage.objects;
+DROP POLICY IF EXISTS "Owners can view own resumes" ON storage.objects;
+DROP POLICY IF EXISTS "Employers can view applicant resumes" ON storage.objects;
+DROP POLICY IF EXISTS "Admins can view all resumes" ON storage.objects;
 
 CREATE POLICY "Owners can view own resumes"
 ON storage.objects FOR SELECT
@@ -68,6 +71,9 @@ USING (
 -- 4. إصلاح سياسة ads bucket — منع سرد الملفات للجمهور
 -- ============================================================
 DROP POLICY IF EXISTS "Ads Media is publicly accessible" ON storage.objects;
+DROP POLICY IF EXISTS "Approved ads media is viewable" ON storage.objects;
+DROP POLICY IF EXISTS "Admins can view all ads media" ON storage.objects;
+DROP POLICY IF EXISTS "Employers can view own ads media" ON storage.objects;
 
 CREATE POLICY "Approved ads media is viewable"
 ON storage.objects FOR SELECT
@@ -109,6 +115,13 @@ DROP POLICY IF EXISTS "Employers can insert own ads" ON public.advertisements;
 DROP POLICY IF EXISTS "Employers can view own ads" ON public.advertisements;
 DROP POLICY IF EXISTS "Employers can delete own ads" ON public.advertisements;
 DROP POLICY IF EXISTS "Ads are viewable by everyone" ON public.advertisements;
+DROP POLICY IF EXISTS "Public can view active approved ads" ON public.advertisements;
+DROP POLICY IF EXISTS "Owners and admins can view all their ads" ON public.advertisements;
+DROP POLICY IF EXISTS "Employers can insert ads" ON public.advertisements;
+DROP POLICY IF EXISTS "Admins can insert ads" ON public.advertisements;
+DROP POLICY IF EXISTS "Employers can update own ads" ON public.advertisements;
+DROP POLICY IF EXISTS "Admins can update any ad" ON public.advertisements;
+DROP POLICY IF EXISTS "Owners or admins can delete ads" ON public.advertisements;
 
 CREATE POLICY "Public can view active approved ads"
 ON public.advertisements FOR SELECT

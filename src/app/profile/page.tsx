@@ -7,7 +7,7 @@ import SeekerProfile from "./SeekerProfile";
 import EmployerProfile from "./EmployerProfile";
 
 export default function ProfilePage() {
-  const { profile, user, loading: authLoading } = useAuth();
+  const { profile, user, loading: authLoading, refreshProfile } = useAuth();
   const [detailData, setDetailData] = useState<any>(null);
   const [fetching, setFetching] = useState(true);
 
@@ -84,6 +84,7 @@ export default function ProfilePage() {
         user={user}
         employerData={detailData}
         onEmployerDataUpdate={setDetailData}
+        onProfileUpdate={refreshProfile}
       />
     );
   }
@@ -94,6 +95,7 @@ export default function ProfilePage() {
       user={user}
       seekerData={detailData}
       onSeekerDataUpdate={setDetailData}
+      onProfileUpdate={refreshProfile}
     />
   );
 }
