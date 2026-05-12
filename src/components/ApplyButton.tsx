@@ -8,9 +8,10 @@ import { Briefcase, Loader2, CheckCircle } from 'lucide-react';
 interface ApplyButtonProps {
   jobId: string;
   isLoggedIn: boolean;
+  profileComplete?: boolean;
 }
 
-export default function ApplyButton({ jobId, isLoggedIn }: ApplyButtonProps) {
+export default function ApplyButton({ jobId, isLoggedIn, profileComplete = true }: ApplyButtonProps) {
   const [loading, setLoading] = useState(false);
   const [applied, setApplied] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,6 +20,11 @@ export default function ApplyButton({ jobId, isLoggedIn }: ApplyButtonProps) {
   async function handleApply() {
     if (!isLoggedIn) {
       router.push('/auth/login?redirect=' + encodeURIComponent(`/jobs/${jobId}`));
+      return;
+    }
+
+    if (!profileComplete) {
+      router.push('/dashboard?tab=profile&incomplete=true');
       return;
     }
 

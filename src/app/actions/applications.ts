@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase-server';
 import { revalidatePath } from 'next/cache';
 import { toArabicError } from '@/lib/error-messages';
+import { calculateProfileCompletion } from '@/lib/profile-utils';
 
 export async function applyToJob(jobId: string, message?: string) {
   const supabase = await createClient();
@@ -15,7 +16,7 @@ export async function applyToJob(jobId: string, message?: string) {
   // Verify seeker
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role')
+    .select('role, full_name, phone, location')
     .eq('id', user.id)
     .single();
 
@@ -23,15 +24,21 @@ export async function applyToJob(jobId: string, message?: string) {
     return { success: false, error: 'فقط الباحثين عن عمل يمكنهم التقديم' };
   }
 
-  // Get seeker record
+  // Get seeker record with profile data for completion check
   const { data: seeker } = await supabase
     .from('seekers')
-    .select('profile_id')
+    .select('profile_id, job_title, experience_years, skills, bio, cv_url, resume_data')
     .eq('profile_id', user.id)
     .single();
 
   if (!seeker) {
     return { success: false, error: 'لم يتم العثور على بيانات الباحث' };
+  }
+
+  // Check profile completion
+  const { completionPercent } = calculateProfileCompletion(profile, seeker);
+  if (completionPercent < 90) {
+    return { success: false, error: 'يجب إكمال الملف الشخصي قبل التقديم للوظائف' };
   }
 
   const { data, error } = await supabase

@@ -21,6 +21,7 @@ import { getJobById } from "@/app/actions/jobs";
 import { createClient } from "@/lib/supabase-server";
 import ApplyButton from "@/components/ApplyButton";
 import { cn } from "@/lib/utils";
+import { calculateProfileCompletion } from "@/lib/profile-utils";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -43,13 +44,28 @@ export default async function JobDetailPage({ params }: Props) {
   } = await supabase.auth.getUser();
 
   let userRole: string | null = null;
+  let profileComplete = true;
   if (user) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, full_name, phone, location')
       .eq('id', user.id)
       .single();
     userRole = profile?.role || null;
+
+    if (userRole === 'seeker') {
+      const { data: seekerProfile } = await supabase
+        .from('seekers')
+        .select('job_title, experience_years, skills, bio, cv_url, resume_data')
+        .eq('profile_id', user.id)
+        .single();
+      if (seekerProfile) {
+        const { completionPercent } = calculateProfileCompletion(profile, seekerProfile);
+        profileComplete = completionPercent >= 90;
+      } else {
+        profileComplete = false;
+      }
+    }
   }
 
   // Fetch related jobs (same category, excluding current)
@@ -123,7 +139,7 @@ export default async function JobDetailPage({ params }: Props) {
 
             <div className="flex flex-wrap gap-4">
               {userRole !== 'employer' && (
-                <ApplyButton jobId={job.id} isLoggedIn={!!user} />
+                <ApplyButton jobId={job.id} isLoggedIn={!!user} profileComplete={profileComplete} />
               )}
               {job.whatsapp_number && (
                 <a
