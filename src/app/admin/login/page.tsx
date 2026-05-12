@@ -22,11 +22,12 @@ export default function AdminLogin() {
     setSuccess(null);
 
     try {
-      // Look up the email associated with this username
+      // Look up the email associated with this username (case-insensitive by normalizing)
+      const normalizedUsername = username.trim().toLowerCase();
       const { data: profile, error: lookupError } = await supabase
         .from('profiles')
         .select('id, email, role')
-        .eq('username', username.trim())
+        .eq('username', normalizedUsername)
         .single();
 
       if (lookupError || !profile) {

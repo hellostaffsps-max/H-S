@@ -13,11 +13,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
   }
 
+  // Normalize username to lowercase
+  const normalizedUsername = username.trim().toLowerCase();
+
   // Validate username format (alphanumeric, underscore, hyphen, 3-30 chars)
-  if (!/^[a-zA-Z0-9_-]{3,30}$/.test(username)) {
+  if (!/^[a-z0-9_-]{3,30}$/.test(normalizedUsername)) {
     return NextResponse.json({ 
       success: false, 
-      error: 'Username must be 3-30 characters and contain only letters, numbers, underscores, or hyphens' 
+      error: 'Username must be 3-30 lowercase characters and contain only letters, numbers, underscores, or hyphens' 
     }, { status: 400 });
   }
 
@@ -27,7 +30,7 @@ export async function POST(request: NextRequest) {
   const { data: existingUser } = await supabase
     .from('profiles')
     .select('username')
-    .eq('username', username)
+    .eq('username', normalizedUsername)
     .single();
 
   if (existingUser) {
@@ -35,14 +38,14 @@ export async function POST(request: NextRequest) {
   }
 
   // Generate a deterministic email from username for Supabase Auth
-  const email = `${username}@admin.local`;
+  const email = `${normalizedUsername}@admin.local`;
 
   // 1. Create the user in Auth
   const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
     email,
     password,
     email_confirm: true,
-    user_metadata: { full_name: fullName, username }
+    user_metadata: { full_name: fullName, username: normalizedUsername }
   });
 
   if (authError) {
@@ -56,7 +59,7 @@ export async function POST(request: NextRequest) {
     .from('profiles')
     .update({ 
       full_name: fullName,
-      username,
+      username: normalizedUsername,
       role: 'admin',
       admin_role_id: isSuper ? null : roleId
     })
