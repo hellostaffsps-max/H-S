@@ -20,6 +20,7 @@ import {
   BarChart3,
   Settings,
   ShieldCheck,
+  ScrollText,
   Menu,
   X,
   ChevronLeft,
@@ -55,6 +56,7 @@ const navItems: NavItem[] = [
   { label: "التقارير", href: "/admin/reports", icon: BarChart3, permission: "jobs:manage" },
   { label: "إعدادات المنصة", href: "/admin/settings", icon: Settings, permission: "settings_edit" },
   { label: "الصلاحيات والأدوار", href: "/admin/roles", icon: ShieldCheck, permission: "roles:manage" },
+  { label: "سجل النشاطات", href: "/admin/audit-logs", icon: ScrollText, permission: "__super_admin_only__" },
 ];
 
 interface AdminLayoutClientProps {
@@ -77,6 +79,7 @@ export default function AdminLayoutClient({
   // Filter nav items based on permissions
   const visibleNavItems = navItems.filter((item) => {
     if (!item.permission) return true; // Dashboard is always visible
+    if (item.permission === "__super_admin_only__") return isSuperAdmin;
     if (isSuperAdmin) return true;
     return permissions.includes(item.permission);
   });

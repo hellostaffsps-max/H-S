@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdmin, adminGuard } from '@/lib/admin-auth';
 import { createClient } from '@/lib/supabase-server';
+import { logAdminAction, getClientIP, AuditActions } from '@/lib/admin-audit';
 
 export async function PATCH(
   request: NextRequest,
@@ -60,6 +61,23 @@ export async function PATCH(
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 
+  // Determine action type
+  let action = AuditActions.JOB_UPDATE;
+  if (status === 'approved') action = renew ? AuditActions.JOB_RENEW : AuditActions.JOB_APPROVE;
+  else if (status === 'rejected') action = AuditActions.JOB_REJECT;
+
+  await logAdminAction({
+    admin_id: auth.user?.id,
+    admin_name: auth.profile?.full_name,
+    admin_username: auth.profile?.username,
+    action,
+    target_type: 'job',
+    target_id: id,
+    target_name: data?.title,
+    details: { status, renew, expires_at: data?.expires_at },
+    ip_address: await getClientIP(),
+  });
+
   return NextResponse.json({ success: true, data });
 }
 
@@ -74,11 +92,26 @@ export async function DELETE(
   const { id } = await params;
   const supabase = await createClient();
 
+  // Fetch job title before deletion for audit log
+  const { data: jobBefore } = await supabase.from('jobs').select('title').eq('id', id).single();
+
   const { error } = await supabase.from('jobs').delete().eq('id', id);
 
   if (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
+
+  await logAdminAction({
+    admin_id: auth.user?.id,
+    admin_name: auth.profile?.full_name,
+    admin_username: auth.profile?.username,
+    action: AuditActions.JOB_DELETE,
+    target_type: 'job',
+    target_id: id,
+    target_name: jobBefore?.title,
+    details: {},
+    ip_address: await getClientIP(),
+  });
 
   return NextResponse.json({ success: true, message: 'Job deleted' });
 }

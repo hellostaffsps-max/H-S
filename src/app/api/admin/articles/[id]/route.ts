@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdmin, adminGuard } from '@/lib/admin-auth';
 import { createClient } from '@/lib/supabase-server';
+import { logAdminAction, getClientIP, AuditActions } from '@/lib/admin-audit';
 
 export async function PATCH(
   request: NextRequest,
@@ -70,6 +71,19 @@ export async function PATCH(
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 
+  const action = data?.status === 'published' ? AuditActions.ARTICLE_PUBLISH : AuditActions.ARTICLE_UPDATE;
+  await logAdminAction({
+    admin_id: auth.user?.id,
+    admin_name: auth.profile?.full_name,
+    admin_username: auth.profile?.username,
+    action,
+    target_type: 'article',
+    target_id: id,
+    target_name: data?.title,
+    details: { status: data?.status, slug: data?.slug },
+    ip_address: await getClientIP(),
+  });
+
   return NextResponse.json({ success: true, data });
 }
 
@@ -84,11 +98,25 @@ export async function DELETE(
   const { id } = await params;
   const supabase = await createClient();
 
+  const { data: articleBefore } = await supabase.from('articles').select('title').eq('id', id).single();
+
   const { error } = await supabase.from('articles').delete().eq('id', id);
 
   if (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
+
+  await logAdminAction({
+    admin_id: auth.user?.id,
+    admin_name: auth.profile?.full_name,
+    admin_username: auth.profile?.username,
+    action: AuditActions.ARTICLE_DELETE,
+    target_type: 'article',
+    target_id: id,
+    target_name: articleBefore?.title,
+    details: {},
+    ip_address: await getClientIP(),
+  });
 
   return NextResponse.json({ success: true, message: 'Article deleted' });
 }

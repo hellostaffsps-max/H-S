@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdmin, adminGuard } from '@/lib/admin-auth';
 import { createAdminClient } from '@/lib/supabase-admin';
+import { logAdminAction, getClientIP, AuditActions } from '@/lib/admin-audit';
 
 export async function POST(request: NextRequest) {
   const auth = await verifyAdmin();
@@ -72,6 +73,18 @@ export async function POST(request: NextRequest) {
       error: 'User created in Auth but profile update failed: ' + profileError.message 
     }, { status: 500 });
   }
+
+  await logAdminAction({
+    admin_id: auth.user?.id,
+    admin_name: auth.profile?.full_name,
+    admin_username: auth.profile?.username,
+    action: AuditActions.MODERATOR_CREATE,
+    target_type: 'user',
+    target_id: authUser.user.id,
+    target_name: fullName,
+    details: { username: normalizedUsername, role_id: roleId },
+    ip_address: await getClientIP(),
+  });
 
   return NextResponse.json({ 
     success: true, 

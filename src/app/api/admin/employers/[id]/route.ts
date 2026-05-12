@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdmin, adminGuard } from '@/lib/admin-auth';
 import { createAdminClient } from '@/lib/supabase-admin';
+import { logAdminAction, getClientIP, AuditActions } from '@/lib/admin-audit';
 
 export async function PATCH(
   request: NextRequest,
@@ -51,6 +52,19 @@ export async function PATCH(
   if (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
+
+  const action = verification_status === 'verified' ? AuditActions.USER_VERIFY : AuditActions.USER_REJECT;
+  await logAdminAction({
+    admin_id: auth.user?.id,
+    admin_name: auth.profile?.full_name,
+    admin_username: auth.profile?.username,
+    action,
+    target_type: 'user',
+    target_id: id,
+    target_name: data?.company_name,
+    details: { verification_status, type: 'employer' },
+    ip_address: await getClientIP(),
+  });
 
   return NextResponse.json({ success: true, data });
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdmin, adminGuard } from '@/lib/admin-auth';
 import { createClient } from '@/lib/supabase-server';
 import { getPagination, createPaginatedResponse } from '@/lib/pagination';
+import { logAdminAction, getClientIP, AuditActions } from '@/lib/admin-audit';
 
 export async function GET(request: NextRequest) {
   const auth = await verifyAdmin();
@@ -101,6 +102,18 @@ export async function POST(request: NextRequest) {
   if (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
+
+  await logAdminAction({
+    admin_id: auth.user?.id,
+    admin_name: auth.profile?.full_name,
+    admin_username: auth.profile?.username,
+    action: AuditActions.ARTICLE_CREATE,
+    target_type: 'article',
+    target_id: data?.id,
+    target_name: data?.title,
+    details: { slug: data?.slug, status: data?.status },
+    ip_address: await getClientIP(),
+  });
 
   return NextResponse.json({ success: true, data }, { status: 201 });
 }

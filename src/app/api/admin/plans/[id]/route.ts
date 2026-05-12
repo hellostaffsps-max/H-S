@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdmin, adminGuard } from '@/lib/admin-auth';
 import { createClient } from '@/lib/supabase-server';
+import { logAdminAction, getClientIP, AuditActions } from '@/lib/admin-audit';
 
 export async function PUT(
   request: NextRequest,
@@ -58,6 +59,18 @@ export async function PUT(
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 
+  await logAdminAction({
+    admin_id: auth.user?.id,
+    admin_name: auth.profile?.full_name,
+    admin_username: auth.profile?.username,
+    action: AuditActions.PLAN_UPDATE,
+    target_type: 'plan',
+    target_id: id,
+    target_name: data?.name,
+    details: { name, price },
+    ip_address: await getClientIP(),
+  });
+
   return NextResponse.json({ success: true, data });
 }
 
@@ -72,6 +85,9 @@ export async function DELETE(
   const { id } = await params;
   const supabase = await createClient();
 
+  // Fetch plan name before deactivation
+  const { data: planBefore } = await supabase.from('subscription_plans').select('name').eq('id', id).single();
+
   // Deactivate the plan instead of deleting to prevent breaking existing subscriptions
   const { error } = await supabase
     .from('subscription_plans')
@@ -81,6 +97,18 @@ export async function DELETE(
   if (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
+
+  await logAdminAction({
+    admin_id: auth.user?.id,
+    admin_name: auth.profile?.full_name,
+    admin_username: auth.profile?.username,
+    action: AuditActions.PLAN_DELETE,
+    target_type: 'plan',
+    target_id: id,
+    target_name: planBefore?.name,
+    details: {},
+    ip_address: await getClientIP(),
+  });
 
   return NextResponse.json({ success: true, message: 'Plan deactivated successfully' });
 }

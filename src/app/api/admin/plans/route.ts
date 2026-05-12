@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdmin, adminGuard } from '@/lib/admin-auth';
 import { createClient } from '@/lib/supabase-server';
+import { logAdminAction, getClientIP, AuditActions } from '@/lib/admin-audit';
 
 export async function GET() {
   const auth = await verifyAdmin();
@@ -16,6 +17,18 @@ export async function GET() {
   if (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
+
+  await logAdminAction({
+    admin_id: auth.user?.id,
+    admin_name: auth.profile?.full_name,
+    admin_username: auth.profile?.username,
+    action: AuditActions.PLAN_CREATE,
+    target_type: 'plan',
+    target_id: data?.id,
+    target_name: data?.name,
+    details: { price: data?.price, duration_days: data?.duration_days },
+    ip_address: await getClientIP(),
+  });
 
   return NextResponse.json({ success: true, data });
 }

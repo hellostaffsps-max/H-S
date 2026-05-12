@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdmin, adminGuard } from '@/lib/admin-auth';
 import { createAdminClient } from '@/lib/supabase-admin';
+import { logAdminAction, getClientIP, AuditActions } from '@/lib/admin-audit';
 
 export async function PATCH(
   request: NextRequest,
@@ -66,6 +67,18 @@ export async function PATCH(
   if (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
+
+  await logAdminAction({
+    admin_id: auth.user?.id,
+    admin_name: auth.profile?.full_name,
+    admin_username: auth.profile?.username,
+    action: AuditActions.USER_UPDATE_ROLE,
+    target_type: 'user',
+    target_id: id,
+    target_name: data?.full_name,
+    details: { new_role: role },
+    ip_address: await getClientIP(),
+  });
 
   return NextResponse.json({ success: true, data });
 }
@@ -186,6 +199,18 @@ export async function DELETE(
       { status: 500 }
     );
   }
+
+  await logAdminAction({
+    admin_id: auth.user?.id,
+    admin_name: auth.profile?.full_name,
+    admin_username: auth.profile?.username,
+    action: AuditActions.USER_DELETE,
+    target_type: 'user',
+    target_id: id,
+    target_name: existing?.full_name,
+    details: { role: existing?.role },
+    ip_address: await getClientIP(),
+  });
 
   return NextResponse.json({ success: true, message: 'User and associated files deleted permanently' });
 }

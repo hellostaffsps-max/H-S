@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase-server';
 
 export interface AdminAuthResult {
   user: { id: string; email?: string } | null;
-  profile: { role: string; full_name?: string; admin_role_id?: string | null } | null;
+  profile: { role: string; full_name?: string; username?: string; admin_role_id?: string | null } | null;
   permissions: string[];
   isAdmin: boolean;
   isSuperAdmin: boolean;
@@ -21,7 +21,7 @@ export async function verifyAdmin(): Promise<AdminAuthResult> {
 
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('role, full_name, admin_role_id')
+      .select('role, full_name, username, admin_role_id')
       .eq('id', user.id)
       .single();
 

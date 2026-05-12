@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdmin, adminGuard } from '@/lib/admin-auth';
 import { createClient } from '@/lib/supabase-server';
+import { logAdminAction, getClientIP, AuditActions } from '@/lib/admin-audit';
 
 export async function PATCH(
   request: NextRequest,
@@ -115,6 +116,18 @@ export async function PATCH(
       console.error('Failed to create notification', err);
     }
   }
+
+  await logAdminAction({
+    admin_id: auth.user?.id,
+    admin_name: auth.profile?.full_name,
+    admin_username: auth.profile?.username,
+    action: AuditActions.SUBSCRIPTION_UPDATE,
+    target_type: 'subscription',
+    target_id: id,
+    target_name: data?.plan_name,
+    details: { status: data?.status, plan_id: data?.plan_id },
+    ip_address: await getClientIP(),
+  });
 
   return NextResponse.json({ success: true, data });
 }
