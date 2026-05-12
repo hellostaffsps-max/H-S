@@ -23,7 +23,11 @@ export default async function AdminPanelLayout({
   }
 
   return (
-    <AdminLayoutClient adminName={auth.profile?.full_name || "المشرف"}>
+    <AdminLayoutClient 
+      adminName={auth.profile?.full_name || "المشرف"}
+      permissions={auth.permissions}
+      isSuperAdmin={auth.isSuperAdmin}
+    >
       {children}
     </AdminLayoutClient>
   );

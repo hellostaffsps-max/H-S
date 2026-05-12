@@ -12,21 +12,15 @@ import {
   Shield,
   User,
   Trash2,
-  XCircle,
-  UserPlus,
-  Lock,
-  ChevronDown
+  XCircle
 } from 'lucide-react';
 import Pagination from '@/components/Pagination';
 
 export default function UsersManagement() {
   const [users, setUsers] = useState<any[]>([]);
-  const [roles, setRoles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-
   // Pagination state
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
@@ -35,16 +29,8 @@ export default function UsersManagement() {
   const [hasPrev, setHasPrev] = useState(false);
   const [total, setTotal] = useState(0);
 
-  // Add Moderator Form State
-  const [newModEmail, setNewModEmail] = useState('');
-  const [newModPass, setNewModPass] = useState('');
-  const [newModName, setNewModName] = useState('');
-  const [newModRole, setNewModRole] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   useEffect(() => {
     fetchUsers();
-    fetchRoles();
   }, [page]);
 
   async function fetchUsers() {
@@ -68,14 +54,6 @@ export default function UsersManagement() {
     }
   }
 
-  async function fetchRoles() {
-    try {
-      const res = await fetch('/api/admin/roles');
-      const json = await res.json();
-      if (json.success) setRoles(json.data);
-    } catch (error) {}
-  }
-
   const handleDeleteUser = async (id: string) => {
     if (!confirm('هل أنت متأكد من حذف هذا المستخدم نهائياً؟')) return;
 
@@ -87,41 +65,6 @@ export default function UsersManagement() {
       alert(json.message || 'تم حذف المستخدم بنجاح');
     } catch (error: any) {
       alert('خطأ في الحذف: ' + error.message);
-    }
-  };
-
-  const handleCreateModerator = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      const res = await fetch('/api/admin/users/create-moderator', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: newModEmail,
-          password: newModPass,
-          fullName: newModName,
-          roleId: newModRole
-        })
-      });
-
-      const json = await res.json();
-      if (json.success) {
-        alert('تم إنشاء المشرف بنجاح');
-        setIsAddModalOpen(false);
-        setNewModEmail('');
-        setNewModPass('');
-        setNewModName('');
-        setNewModRole('');
-        fetchUsers();
-      } else {
-        alert('خطأ: ' + json.error);
-      }
-    } catch (error) {
-      alert('خطأ في الاتصال بالسيرفر');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -154,13 +97,7 @@ export default function UsersManagement() {
           <h2 className="text-2xl font-black text-slate-900">إدارة المستخدمين</h2>
           <p className="text-slate-500">تحكم في حسابات الباحثين عن عمل وأصحاب العمل والمشرفين</p>
         </div>
-        <button 
-          onClick={() => setIsAddModalOpen(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-2xl font-bold hover:bg-brand-700 transition-all shadow-lg shadow-brand-200"
-        >
-          <UserPlus className="h-5 w-5" />
-          إضافة مشرف جديد
-        </button>
+
       </div>
 
       {/* Filters & Search */}
@@ -311,107 +248,7 @@ export default function UsersManagement() {
         />
       </div>
 
-      {/* Add Moderator Modal */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
-                <UserPlus className="h-6 w-6 text-brand-600" />
-                إضافة مشرف جديد
-              </h3>
-              <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-slate-600">
-                <XCircle className="h-6 w-6" />
-              </button>
-            </div>
 
-            <form onSubmit={handleCreateModerator} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">الاسم الكامل</label>
-                <div className="relative">
-                  <User className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                  <input 
-                    type="text"
-                    required
-                    value={newModName}
-                    onChange={(e) => setNewModName(e.target.value)}
-                    placeholder="مثلاً: أحمد محمد"
-                    className="w-full pr-12 pl-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-brand-500/20 outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">البريد الإلكتروني</label>
-                <div className="relative">
-                  <Mail className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                  <input 
-                    type="email"
-                    required
-                    value={newModEmail}
-                    onChange={(e) => setNewModEmail(e.target.value)}
-                    placeholder="admin@hellostaff.ps"
-                    className="w-full pr-12 pl-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-brand-500/20 outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">كلمة المرور</label>
-                <div className="relative">
-                  <Lock className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                  <input 
-                    type="password"
-                    required
-                    minLength={6}
-                    value={newModPass}
-                    onChange={(e) => setNewModPass(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full pr-12 pl-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-brand-500/20 outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">الدور (الصلاحيات)</label>
-                <div className="relative">
-                  <Shield className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                  <select 
-                    required
-                    value={newModRole}
-                    onChange={(e) => setNewModRole(e.target.value)}
-                    className="w-full pr-12 pl-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-brand-500/20 outline-none appearance-none cursor-pointer"
-                  >
-                    <option value="">اختر دوراً...</option>
-                    <option value="super">سوبر أدمن (صلاحيات كاملة)</option>
-                    {roles.map(role => (
-                      <option key={role.id} value={role.id}>{role.name}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-                </div>
-              </div>
-
-              <div className="pt-4 flex gap-3">
-                <button 
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1 py-4 bg-brand-600 text-white rounded-xl font-bold hover:bg-brand-700 transition-all disabled:opacity-50"
-                >
-                  {isSubmitting ? 'جاري الإنشاء...' : 'إنشاء الحساب'}
-                </button>
-                <button 
-                  type="button"
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="px-6 py-4 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all"
-                >
-                  إلغاء
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

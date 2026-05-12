@@ -16,7 +16,11 @@ import {
   Bell,
   Search,
   MessageSquare,
-  Image as ImageIcon
+  Image as ImageIcon,
+  UserPlus,
+  User,
+  Lock,
+  ChevronDown
 } from 'lucide-react';
 
 const CATEGORY_ICONS: Record<string, any> = {
@@ -36,6 +40,14 @@ export default function RolesManagement() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<any>(null);
+  
+  // Add Moderator Modal State
+  const [isAddModeratorOpen, setIsAddModeratorOpen] = useState(false);
+  const [newModUsername, setNewModUsername] = useState('');
+  const [newModPass, setNewModPass] = useState('');
+  const [newModName, setNewModName] = useState('');
+  const [newModRole, setNewModRole] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Form State
   const [roleName, setRoleName] = useState('');
@@ -132,6 +144,40 @@ export default function RolesManagement() {
     }
   };
 
+  const handleCreateModerator = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const res = await fetch('/api/admin/users/create-moderator', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: newModUsername,
+          password: newModPass,
+          fullName: newModName,
+          roleId: newModRole
+        })
+      });
+
+      const json = await res.json();
+      if (json.success) {
+        alert('تم إنشاء المشرف بنجاح');
+        setIsAddModeratorOpen(false);
+        setNewModUsername('');
+        setNewModPass('');
+        setNewModName('');
+        setNewModRole('');
+      } else {
+        alert('خطأ: ' + json.error);
+      }
+    } catch (error) {
+      alert('خطأ في الاتصال بالسيرفر');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Group permissions by category
   const groupedPermissions = permissions.reduce((acc: any, perm) => {
     if (!acc[perm.category]) acc[perm.category] = [];
@@ -146,13 +192,22 @@ export default function RolesManagement() {
           <h2 className="text-2xl font-black text-slate-900">إدارة الأدوار والصلاحيات</h2>
           <p className="text-slate-500">قم بإنشاء أدوار مخصصة وتحديد ما يمكن لكل مشرف القيام به</p>
         </div>
-        <button 
-          onClick={() => handleOpenModal()}
-          className="flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-2xl font-bold hover:bg-brand-700 transition-all shadow-lg shadow-brand-200"
-        >
-          <Plus className="h-5 w-5" />
-          إضافة دور جديد
-        </button>
+        <div className="flex gap-3">
+          <button 
+            onClick={() => setIsAddModeratorOpen(true)}
+            className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-2xl font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200"
+          >
+            <UserPlus className="h-5 w-5" />
+            إضافة مشرف جديد
+          </button>
+          <button 
+            onClick={() => handleOpenModal()}
+            className="flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-2xl font-bold hover:bg-brand-700 transition-all shadow-lg shadow-brand-200"
+          >
+            <Plus className="h-5 w-5" />
+            إضافة دور جديد
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -299,6 +354,109 @@ export default function RolesManagement() {
                 إلغاء
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Moderator Modal */}
+      {isAddModeratorOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
+                <UserPlus className="h-6 w-6 text-emerald-600" />
+                إضافة مشرف جديد
+              </h3>
+              <button onClick={() => setIsAddModeratorOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <XCircle className="h-6 w-6" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateModerator} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">الاسم الكامل</label>
+                <div className="relative">
+                  <User className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <input 
+                    type="text"
+                    required
+                    value={newModName}
+                    onChange={(e) => setNewModName(e.target.value)}
+                    placeholder="مثلاً: أحمد محمد"
+                    className="w-full pr-12 pl-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-brand-500/20 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">اسم المستخدم (معرف الدخول)</label>
+                <div className="relative">
+                  <User className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <input 
+                    type="text"
+                    required
+                    value={newModUsername}
+                    onChange={(e) => setNewModUsername(e.target.value)}
+                    placeholder="مثلاً: admin_ahmad"
+                    className="w-full pr-12 pl-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-brand-500/20 outline-none"
+                  />
+                </div>
+                <p className="text-xs text-slate-400 mt-1">3-30 حرف، يمكن استخدام الأحرف والأرقام والشرطة السفلية</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">كلمة المرور</label>
+                <div className="relative">
+                  <Lock className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <input 
+                    type="password"
+                    required
+                    minLength={6}
+                    value={newModPass}
+                    onChange={(e) => setNewModPass(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full pr-12 pl-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-brand-500/20 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">الدور (الصلاحيات)</label>
+                <div className="relative">
+                  <Shield className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <select 
+                    required
+                    value={newModRole}
+                    onChange={(e) => setNewModRole(e.target.value)}
+                    className="w-full pr-12 pl-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-brand-500/20 outline-none appearance-none cursor-pointer"
+                  >
+                    <option value="">اختر دوراً...</option>
+                    <option value="super">سوبر أدمن (صلاحيات كاملة)</option>
+                    {roles.map(role => (
+                      <option key={role.id} value={role.id}>{role.name}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                </div>
+              </div>
+
+              <div className="pt-4 flex gap-3">
+                <button 
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-1 py-4 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all disabled:opacity-50"
+                >
+                  {isSubmitting ? 'جاري الإنشاء...' : 'إنشاء الحساب'}
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setIsAddModeratorOpen(false)}
+                  className="px-6 py-4 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all"
+                >
+                  إلغاء
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

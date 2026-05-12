@@ -35,37 +35,51 @@ interface NavItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   badge?: number;
+  permission?: string;
 }
 
 const navItems: NavItem[] = [
   { label: "نظرة عامة", href: "/admin", icon: LayoutDashboard },
-  { label: "إدارة المستخدمين", href: "/admin/users", icon: Users },
-  { label: "أصحاب العمل", href: "/admin/employers", icon: Building2 },
-  { label: "المرشحون", href: "/admin/candidates", icon: UserCircle },
-  { label: "الوظائف", href: "/admin/jobs", icon: Briefcase },
-  { label: "طلبات التوظيف", href: "/admin/applications", icon: ClipboardList },
-  { label: "الاشتراكات", href: "/admin/subscriptions", icon: CreditCard },
-  { label: "الدفع والفواتير", href: "/admin/payments", icon: Receipt },
-  { label: "الباقات", href: "/admin/plans", icon: Layers },
-  { label: "المقالات / المدونة", href: "/admin/articles", icon: FileText },
-  { label: "التعميمات", href: "/admin/messages", icon: Megaphone },
-  { label: "إدارة الإعلانات", href: "/admin/ads", icon: Megaphone },
-  { label: "البلاغات والدعم", href: "/admin/support", icon: Flag },
-  { label: "التقارير", href: "/admin/reports", icon: BarChart3 },
-  { label: "إعدادات المنصة", href: "/admin/settings", icon: Settings },
-  { label: "الصلاحيات والأدوار", href: "/admin/roles", icon: ShieldCheck },
+  { label: "إدارة المستخدمين", href: "/admin/users", icon: Users, permission: "users:manage" },
+  { label: "أصحاب العمل", href: "/admin/employers", icon: Building2, permission: "users:view" },
+  { label: "المرشحون", href: "/admin/candidates", icon: UserCircle, permission: "users:view" },
+  { label: "الوظائف", href: "/admin/jobs", icon: Briefcase, permission: "jobs:manage" },
+  { label: "طلبات التوظيف", href: "/admin/applications", icon: ClipboardList, permission: "jobs:manage" },
+  { label: "الاشتراكات", href: "/admin/subscriptions", icon: CreditCard, permission: "subscriptions_manage" },
+  { label: "الدفع والفواتير", href: "/admin/payments", icon: Receipt, permission: "payments:view" },
+  { label: "الباقات", href: "/admin/plans", icon: Layers, permission: "subscriptions_manage" },
+  { label: "المقالات / المدونة", href: "/admin/articles", icon: FileText, permission: "articles:manage" },
+  { label: "التعميمات", href: "/admin/messages", icon: Megaphone, permission: "broadcast:send" },
+  { label: "إدارة الإعلانات", href: "/admin/ads", icon: Megaphone, permission: "ads:manage" },
+  { label: "البلاغات والدعم", href: "/admin/support", icon: Flag, permission: "support:manage" },
+  { label: "التقارير", href: "/admin/reports", icon: BarChart3, permission: "jobs:manage" },
+  { label: "إعدادات المنصة", href: "/admin/settings", icon: Settings, permission: "settings_edit" },
+  { label: "الصلاحيات والأدوار", href: "/admin/roles", icon: ShieldCheck, permission: "roles:manage" },
 ];
+
+interface AdminLayoutClientProps {
+  children: React.ReactNode;
+  adminName: string;
+  permissions: string[];
+  isSuperAdmin: boolean;
+}
 
 export default function AdminLayoutClient({
   children,
   adminName,
-}: {
-  children: React.ReactNode;
-  adminName: string;
-}) {
+  permissions,
+  isSuperAdmin,
+}: AdminLayoutClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+
+  // Filter nav items based on permissions
+  const visibleNavItems = navItems.filter((item) => {
+    if (!item.permission) return true; // Dashboard is always visible
+    if (isSuperAdmin) return true;
+    return permissions.includes(item.permission);
+  });
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -107,7 +121,7 @@ export default function AdminLayoutClient({
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
               <Link
@@ -141,7 +155,7 @@ export default function AdminLayoutClient({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold truncate">{adminName}</p>
-              <p className="text-[10px] text-slate-400">مدير المنصة</p>
+              <p className="text-[10px] text-slate-400">{isSuperAdmin ? 'سوبر أدمن' : 'مدير المنصة'}</p>
             </div>
           </div>
           <button
