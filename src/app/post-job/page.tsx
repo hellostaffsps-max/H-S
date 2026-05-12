@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -18,11 +18,10 @@ import { createJob } from "@/app/actions/jobs";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/lib/supabase";
-import { useEffect } from "react";
 
 export default function PostJob() {
   const router = useRouter();
-  const { user, profile } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -36,11 +35,14 @@ export default function PostJob() {
   useEffect(() => {
     async function fetchEmployerData() {
       if (user && isEmployer) {
-        const { data } = await supabase
+        const { data, error: fetchErr } = await supabase
           .from("employers")
           .select("*")
           .eq("profile_id", user.id)
           .single();
+        if (fetchErr) {
+          console.error("Error fetching employer data:", fetchErr);
+        }
         setEmployerData(data || {});
       }
       setLoadingData(false);
@@ -163,7 +165,7 @@ export default function PostJob() {
     );
   }
 
-  if (loadingData || subLoading) {
+  if (authLoading || loadingData || subLoading) {
     return (
       <div className="flex justify-center items-center py-32">
         <Loader2 className="w-10 h-10 text-brand-600 animate-spin" />

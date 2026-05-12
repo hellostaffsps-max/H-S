@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   CheckCircle2,
   Save,
@@ -69,17 +69,50 @@ export default function EmployerProfile({ profile, user, employerData, onEmploye
   const [error, setError] = useState<string | null>(null);
   const topRef = useRef<HTMLDivElement>(null);
 
+  // Sync local image states when employerData changes from parent
+  useEffect(() => {
+    setLogoUrl(employerData?.logo_url || null);
+    setCoverUrl(employerData?.cover_image_url || null);
+  }, [employerData?.logo_url, employerData?.cover_image_url]);
+
   const handleLogoUpload = async (url: string) => {
     setLogoUrl(url);
     if (isSupabaseConfigured && user) {
-      await supabase.from("employers").upsert({ profile_id: user.id, logo_url: url });
+      const { error: upsertErr } = await supabase
+        .from("employers")
+        .upsert({ profile_id: user.id, logo_url: url });
+      if (upsertErr) {
+        console.error("Logo upsert error:", upsertErr);
+        setError("فشل حفظ الشعار — تأكد من حفظ بيانات المنشأة أولاً");
+        return;
+      }
+      // Refresh employer data in parent so other pages see the change
+      const { data } = await supabase
+        .from("employers")
+        .select("*")
+        .eq("profile_id", user.id)
+        .single();
+      if (data) onEmployerDataUpdate(data);
     }
   };
 
   const handleCoverUpload = async (url: string) => {
     setCoverUrl(url);
     if (isSupabaseConfigured && user) {
-      await supabase.from("employers").upsert({ profile_id: user.id, cover_image_url: url });
+      const { error: upsertErr } = await supabase
+        .from("employers")
+        .upsert({ profile_id: user.id, cover_image_url: url });
+      if (upsertErr) {
+        console.error("Cover upsert error:", upsertErr);
+        setError("فشل حفظ صورة الغلاف — تأكد من حفظ بيانات المنشأة أولاً");
+        return;
+      }
+      const { data } = await supabase
+        .from("employers")
+        .select("*")
+        .eq("profile_id", user.id)
+        .single();
+      if (data) onEmployerDataUpdate(data);
     }
   };
 
@@ -119,9 +152,9 @@ export default function EmployerProfile({ profile, user, employerData, onEmploye
       // 2. Update employers table
       const employerUpdates: Record<string, any> = {};
       const employerFields = [
-        "company_name", "description", "logo_url", "business_type", "city", "area",
+        "company_name", "description", "business_type", "city", "area",
         "whatsapp_number", "business_email", "number_of_branches", "number_of_employees",
-        "opening_hours", "cover_image_url", "application_preference", "show_whatsapp_to_candidates",
+        "opening_hours", "application_preference", "show_whatsapp_to_candidates",
       ];
       employerFields.forEach((f) => {
         const v = fd.get(f);
@@ -136,6 +169,9 @@ export default function EmployerProfile({ profile, user, employerData, onEmploye
           }
         }
       });
+      // Preserve logo and cover from local state (they are not in form inputs)
+      if (logoUrl) employerUpdates.logo_url = logoUrl;
+      if (coverUrl) employerUpdates.cover_image_url = coverUrl;
 
       if (user) {
         const { data: empData, error: empErr } = await supabase
