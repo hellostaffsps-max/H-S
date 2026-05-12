@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Building2, Search, Loader2, MapPin, Phone, Calendar, Briefcase, ExternalLink } from "lucide-react";
+import { Building2, Search, Loader2, MapPin, Phone, Calendar, Briefcase, ShieldCheck, XCircle, Clock, Eye } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import EmployerDetailModal from "@/components/admin/EmployerDetailModal";
 
 interface Employer {
   profile_id: string;
@@ -16,6 +17,10 @@ interface Employer {
   number_of_branches: number | null;
   number_of_employees: string | null;
   logo_url: string | null;
+  cover_image_url: string | null;
+  description: string | null;
+  opening_hours: string | null;
+  verification_status: string | null;
   profiles: {
     full_name: string | null;
     email: string | null;
@@ -28,6 +33,8 @@ export default function EmployersManagement() {
   const [employers, setEmployers] = useState<Employer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedEmployer, setSelectedEmployer] = useState<Employer | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchEmployers();
@@ -42,13 +49,13 @@ export default function EmployersManagement() {
         .limit(200);
 
       if (error) throw error;
-      
+
       const sorted = (data || []).sort((a, b) => {
         const d1 = new Date(a.profiles?.created_at || 0).getTime();
         const d2 = new Date(b.profiles?.created_at || 0).getTime();
         return d2 - d1;
       });
-      
+
       setEmployers(sorted);
     } catch (e: any) {
       console.error("Error fetching employers:", e.message);
@@ -56,6 +63,52 @@ export default function EmployersManagement() {
       setLoading(false);
     }
   }
+
+  async function handleUpdateVerification(id: string, status: string) {
+    try {
+      const res = await fetch(`/api/admin/employers/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ verification_status: status }),
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || "فشل التحديث");
+
+      setEmployers((prev) =>
+        prev.map((emp) =>
+          emp.profile_id === id ? { ...emp, verification_status: status } : emp
+        )
+      );
+      if (selectedEmployer?.profile_id === id) {
+        setSelectedEmployer({ ...selectedEmployer, verification_status: status });
+      }
+      alert("تم تحديث حالة التوثيق بنجاح");
+    } catch (e: any) {
+      alert("خطأ: " + e.message);
+    }
+  }
+
+  const getVerificationBadge = (status: string | null) => {
+    if (status === "verified") {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded-full text-[10px] font-bold">
+          <ShieldCheck className="h-3 w-3" /> موثق
+        </span>
+      );
+    }
+    if (status === "rejected") {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-50 text-red-700 border border-red-200 rounded-full text-[10px] font-bold">
+          <XCircle className="h-3 w-3" /> مرفوض
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full text-[10px] font-bold">
+        <Clock className="h-3 w-3" /> قيد المراجعة
+      </span>
+    );
+  };
 
   const filtered = employers.filter((emp) =>
     emp.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -100,25 +153,34 @@ export default function EmployersManagement() {
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">نوع العمل</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">الموقع</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">التواصل</th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">التوثيق</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">تاريخ التسجيل</th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-16 text-center">
+                  <td colSpan={7} className="px-6 py-16 text-center">
                     <Loader2 className="h-8 w-8 animate-spin text-brand-600 mx-auto" />
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-16 text-center text-slate-400">
+                  <td colSpan={7} className="px-6 py-16 text-center text-slate-400">
                     {searchTerm ? "لا توجد نتائج مطابقة" : "لا يوجد أصحاب عمل مسجلين بعد"}
                   </td>
                 </tr>
               ) : (
                 filtered.map((emp) => (
-                  <tr key={emp.profile_id} className="hover:bg-slate-50/50 transition-colors">
+                  <tr
+                    key={emp.profile_id}
+                    className="hover:bg-slate-50/50 transition-colors cursor-pointer"
+                    onClick={() => {
+                      setSelectedEmployer(emp);
+                      setIsModalOpen(true);
+                    }}
+                  >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="relative h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 overflow-hidden">
@@ -156,8 +218,7 @@ export default function EmployersManagement() {
                         )}
                         {emp.business_email && (
                           <div className="flex items-center gap-1 text-xs text-slate-500">
-                            <ExternalLink className="h-3 w-3" />
-                            {emp.business_email}
+                            <span>{emp.business_email}</span>
                           </div>
                         )}
                         {!emp.whatsapp_number && !emp.business_email && (
@@ -165,11 +226,26 @@ export default function EmployersManagement() {
                         )}
                       </div>
                     </td>
+                    <td className="px-6 py-4">
+                      {getVerificationBadge(emp.verification_status)}
+                    </td>
                     <td className="px-6 py-4 text-sm text-slate-500">
                       <div className="flex items-center gap-1">
                         <Calendar className="h-3.5 w-3.5 text-slate-400" />
                         {new Date(emp.profiles?.created_at || 0).toLocaleDateString("ar-EG")}
                       </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <button
+                        className="p-2 hover:bg-brand-50 text-slate-400 hover:text-brand-600 rounded-lg transition-all"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedEmployer(emp);
+                          setIsModalOpen(true);
+                        }}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -178,6 +254,18 @@ export default function EmployersManagement() {
           </table>
         </div>
       </div>
+
+      {/* Detail Modal */}
+      {isModalOpen && selectedEmployer && (
+        <EmployerDetailModal
+          employer={selectedEmployer}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedEmployer(null);
+          }}
+          onUpdateVerification={handleUpdateVerification}
+        />
+      )}
     </div>
   );
 }

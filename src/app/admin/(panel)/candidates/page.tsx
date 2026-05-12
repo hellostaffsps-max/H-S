@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { UserCircle, Search, Loader2, MapPin, Calendar, Briefcase, Star, CheckCircle, XCircle } from "lucide-react";
+import { UserCircle, Search, Loader2, MapPin, Calendar, Briefcase, Star, CheckCircle, XCircle, ShieldCheck, Clock, Eye } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import SeekerDetailModal from "@/components/admin/SeekerDetailModal";
 
 interface Seeker {
   profile_id: string;
@@ -13,6 +14,9 @@ interface Seeker {
   availability: string | null;
   bio: string | null;
   cv_url: string | null;
+  is_available: boolean | null;
+  current_employer: string | null;
+  verification_status: string | null;
   profiles: {
     full_name: string | null;
     email: string | null;
@@ -27,6 +31,8 @@ export default function CandidatesManagement() {
   const [seekers, setSeekers] = useState<Seeker[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedSeeker, setSelectedSeeker] = useState<Seeker | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchSeekers();
@@ -41,13 +47,13 @@ export default function CandidatesManagement() {
         .limit(200);
 
       if (error) throw error;
-      
+
       const sorted = (data || []).sort((a, b) => {
         const d1 = new Date(a.profiles?.created_at || 0).getTime();
         const d2 = new Date(b.profiles?.created_at || 0).getTime();
         return d2 - d1;
       });
-      
+
       setSeekers(sorted);
     } catch (e: any) {
       console.error("Error fetching seekers:", e.message);
@@ -55,6 +61,52 @@ export default function CandidatesManagement() {
       setLoading(false);
     }
   }
+
+  async function handleUpdateVerification(id: string, status: string) {
+    try {
+      const res = await fetch(`/api/admin/seekers/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ verification_status: status }),
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || "فشل التحديث");
+
+      setSeekers((prev) =>
+        prev.map((s) =>
+          s.profile_id === id ? { ...s, verification_status: status } : s
+        )
+      );
+      if (selectedSeeker?.profile_id === id) {
+        setSelectedSeeker({ ...selectedSeeker, verification_status: status });
+      }
+      alert("تم تحديث حالة التوثيق بنجاح");
+    } catch (e: any) {
+      alert("خطأ: " + e.message);
+    }
+  }
+
+  const getVerificationBadge = (status: string | null) => {
+    if (status === "verified") {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded-full text-[10px] font-bold">
+          <ShieldCheck className="h-3 w-3" /> موثق
+        </span>
+      );
+    }
+    if (status === "rejected") {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-50 text-red-700 border border-red-200 rounded-full text-[10px] font-bold">
+          <XCircle className="h-3 w-3" /> مرفوض
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full text-[10px] font-bold">
+        <Clock className="h-3 w-3" /> قيد المراجعة
+      </span>
+    );
+  };
 
   const filtered = seekers.filter((s) =>
     s.profiles?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -99,26 +151,34 @@ export default function CandidatesManagement() {
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">المسمى الوظيفي</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">الخبرة</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">المهارات</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">الحالة</th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">التوثيق</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">التسجيل</th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-16 text-center">
+                  <td colSpan={7} className="px-6 py-16 text-center">
                     <Loader2 className="h-8 w-8 animate-spin text-brand-600 mx-auto" />
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-16 text-center text-slate-400">
+                  <td colSpan={7} className="px-6 py-16 text-center text-slate-400">
                     {searchTerm ? "لا توجد نتائج مطابقة" : "لا يوجد مرشحون مسجلون بعد"}
                   </td>
                 </tr>
               ) : (
                 filtered.map((s) => (
-                  <tr key={s.profile_id} className="hover:bg-slate-50/50 transition-colors">
+                  <tr
+                    key={s.profile_id}
+                    className="hover:bg-slate-50/50 transition-colors cursor-pointer"
+                    onClick={() => {
+                      setSelectedSeeker(s);
+                      setIsModalOpen(true);
+                    }}
+                  >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="relative h-10 w-10 rounded-full bg-brand-50 flex items-center justify-center shrink-0 overflow-hidden">
@@ -172,25 +232,25 @@ export default function CandidatesManagement() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      {s.availability === "available" || s.availability === "متاح" ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-50 text-green-700 border border-green-200 rounded-full text-[10px] font-bold">
-                          <CheckCircle className="h-3 w-3" /> متاح
-                        </span>
-                      ) : s.availability === "not_available" || s.availability === "غير متاح" ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-50 text-red-700 border border-red-200 rounded-full text-[10px] font-bold">
-                          <XCircle className="h-3 w-3" /> غير متاح
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-50 text-slate-500 border border-slate-200 rounded-full text-[10px] font-bold">
-                          غير محدد
-                        </span>
-                      )}
+                      {getVerificationBadge(s.verification_status)}
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-500">
                       <div className="flex items-center gap-1">
                         <Calendar className="h-3.5 w-3.5 text-slate-400" />
                         {new Date(s.profiles?.created_at || 0).toLocaleDateString("ar-EG")}
                       </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <button
+                        className="p-2 hover:bg-brand-50 text-slate-400 hover:text-brand-600 rounded-lg transition-all"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedSeeker(s);
+                          setIsModalOpen(true);
+                        }}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -199,6 +259,18 @@ export default function CandidatesManagement() {
           </table>
         </div>
       </div>
+
+      {/* Detail Modal */}
+      {isModalOpen && selectedSeeker && (
+        <SeekerDetailModal
+          seeker={selectedSeeker}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedSeeker(null);
+          }}
+          onUpdateVerification={handleUpdateVerification}
+        />
+      )}
     </div>
   );
 }
