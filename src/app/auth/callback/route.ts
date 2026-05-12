@@ -34,10 +34,28 @@ export async function GET(request: Request) {
 
     const { data: { session }, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error && session) {
+      const userId = session.user.id;
       const role = searchParams.get('role');
-      if (role === 'employer') {
-        const userId = session.user.id;
+      
+      // Extract Google avatar if available
+      const googleAvatar = session.user.user_metadata?.picture || 
+                           session.user.user_metadata?.avatar_url || 
+                           null;
+      
+      if (googleAvatar) {
+        // Only set avatar if profile doesn't already have one
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('avatar_url')
+          .eq('id', userId)
+          .single();
         
+        if (!existingProfile?.avatar_url) {
+          await supabase.from('profiles').update({ avatar_url: googleAvatar }).eq('id', userId);
+        }
+      }
+      
+      if (role === 'employer') {
         // 1. Update profile role
         await supabase.from('profiles').update({ role: 'employer' }).eq('id', userId);
         
