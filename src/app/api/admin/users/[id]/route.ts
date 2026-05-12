@@ -107,7 +107,7 @@ export async function DELETE(
   // Check existence and fetch storage-related URLs
   const { data: existing } = await supabase
     .from('profiles')
-    .select('id, role, avatar_url')
+    .select('id, role, full_name, avatar_url')
     .eq('id', id)
     .single();
 
