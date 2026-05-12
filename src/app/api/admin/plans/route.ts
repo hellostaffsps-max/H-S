@@ -24,9 +24,9 @@ export async function GET() {
     admin_username: auth.profile?.username,
     action: AuditActions.PLAN_CREATE,
     target_type: 'plan',
-    target_id: data?.id,
-    target_name: data?.name,
-    details: { price: data?.price, duration_days: data?.duration_days },
+    target_id: (data as any)?.id,
+    target_name: (data as any)?.name,
+    details: { price: (data as any)?.price, duration_days: (data as any)?.duration_days },
     ip_address: await getClientIP(),
   });
 

@@ -109,9 +109,9 @@ export async function POST(request: NextRequest) {
     admin_username: auth.profile?.username,
     action: AuditActions.ARTICLE_CREATE,
     target_type: 'article',
-    target_id: data?.id,
-    target_name: data?.title,
-    details: { slug: data?.slug, status: data?.status },
+    target_id: (data as any)?.id,
+    target_name: (data as any)?.title,
+    details: { slug: (data as any)?.slug, status: (data as any)?.status },
     ip_address: await getClientIP(),
   });
 
