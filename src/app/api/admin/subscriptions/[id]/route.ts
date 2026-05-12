@@ -7,7 +7,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = await verifyAdmin();
-  const guard = adminGuard(auth);
+  const guard = adminGuard(auth, 'subscriptions_manage');
   if (guard) return guard;
 
   const { id } = await params;

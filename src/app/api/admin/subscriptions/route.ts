@@ -5,7 +5,7 @@ import { getPagination, createPaginatedResponse } from '@/lib/pagination';
 
 export async function GET(request: NextRequest) {
   const auth = await verifyAdmin();
-  const guard = adminGuard(auth);
+  const guard = adminGuard(auth, 'subscriptions_manage');
   if (guard) return guard;
 
   const { searchParams } = new URL(request.url);

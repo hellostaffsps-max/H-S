@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase-admin';
 
 export async function GET() {
   const auth = await verifyAdmin();
-  const guard = adminGuard(auth);
+  const guard = adminGuard(auth, 'roles:manage');
   if (guard) return guard;
 
   const supabase = createAdminClient();

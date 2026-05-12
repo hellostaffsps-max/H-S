@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase-server';
 
 export async function GET() {
   const auth = await verifyAdmin();
-  const guard = adminGuard(auth);
+  const guard = adminGuard(auth, 'subscriptions_manage');
   if (guard) return guard;
 
   const supabase = await createClient();
@@ -22,7 +22,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const auth = await verifyAdmin();
-  const guard = adminGuard(auth);
+  const guard = adminGuard(auth, 'subscriptions_manage');
   if (guard) return guard;
 
   let body;
