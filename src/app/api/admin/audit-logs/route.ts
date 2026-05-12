@@ -51,7 +51,6 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     success: true,
-    data: data || [],
     ...createPaginatedResponse(data || [], page, limit, count || 0),
   });
 }
