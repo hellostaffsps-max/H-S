@@ -118,11 +118,12 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
           <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-brand-600 to-transparent" />
         </div>
         <div className="px-4 sm:px-6 pb-6 pt-4 relative flex flex-col sm:flex-row justify-between items-end sm:items-center gap-4">
-          <div className="flex items-center gap-4 absolute -top-12 sm:static w-full sm:w-auto">
+          <div className="flex items-center gap-4 absolute -top-12 sm:static w-full sm:w-auto justify-center sm:justify-start">
             <AvatarUpload
               currentUrl={avatarUrl}
               onUpload={handleAvatarUpload}
               fallbackInitial={(profile?.full_name || "h")[0]}
+              className="sm:mr-6"
             />
             <div className="pt-12 sm:pt-0 min-w-0">
               <h1 className="text-xl sm:text-2xl font-bold text-slate-900 truncate">

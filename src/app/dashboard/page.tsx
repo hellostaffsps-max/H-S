@@ -3,6 +3,7 @@ import type { FormEvent } from "react";
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import ImageLightbox from "@/components/ImageLightbox";
 import Link from "next/link";
 import {
   Briefcase,
@@ -493,9 +494,15 @@ function ApplicantModal({
         <div className="p-5 sm:p-6 space-y-6">
           {/* Profile Header */}
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-brand-100 flex items-center justify-center text-brand-700 text-xl font-black shrink-0">
-              {initials}
-            </div>
+            <ImageLightbox src={profile?.avatar_url} alt={fullName}>
+              <div className="w-16 h-16 rounded-2xl bg-brand-100 flex items-center justify-center text-brand-700 text-xl font-black shrink-0 overflow-hidden relative">
+                {profile?.avatar_url ? (
+                  <Image src={profile.avatar_url} alt={fullName} fill className="object-cover" sizes="64px" />
+                ) : (
+                  initials
+                )}
+              </div>
+            </ImageLightbox>
             <div>
               <h3 className="text-lg font-bold text-slate-900">{fullName}</h3>
               <p className="text-sm text-slate-500">{seeker?.job_title || "—"}</p>

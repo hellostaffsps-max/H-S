@@ -2,6 +2,7 @@
 import React from 'react';
 import Image from "next/image";
 import { Mail, Phone, MapPin, CheckCircle2 } from 'lucide-react';
+import ImageLightbox from "@/components/ImageLightbox";
 
 interface Experience {
   id: string; title: string; company: string; duration: string; description: string;
@@ -43,19 +44,22 @@ export default function CVPreview({ cvData, profile, componentRef, logoUrl }: Pr
           {/* Photo & Identity */}
           <div className="p-8 text-center bg-slate-800/50 print:bg-[#1e293b]">
             <div className="relative inline-block mb-5">
-              {profile?.avatar_url ? (
-                <Image 
-                  src={profile.avatar_url} 
-                  alt={profile?.full_name} 
-                  width={128} 
-                  height={128} 
-                  className="rounded-2xl object-cover border-4 border-slate-700/50 shadow-xl" 
-                />
-              ) : (
-                <div className="w-32 h-32 rounded-2xl mx-auto bg-slate-800 flex items-center justify-center text-4xl font-bold border-4 border-slate-700/50 shadow-xl text-emerald-400">
-                  {profile?.full_name?.[0] || 'أ'}
-                </div>
-              )}
+              <ImageLightbox src={profile?.avatar_url} alt={profile?.full_name}>
+                {profile?.avatar_url ? (
+                  <Image 
+                    src={profile.avatar_url} 
+                    alt={profile?.full_name} 
+                    width={128} 
+                    height={128} 
+                    className="rounded-2xl object-cover border-4 border-slate-700/50 shadow-xl select-none" 
+                    draggable={false}
+                  />
+                ) : (
+                  <div className="w-32 h-32 rounded-2xl mx-auto bg-slate-800 flex items-center justify-center text-4xl font-bold border-4 border-slate-700/50 shadow-xl text-emerald-400 select-none">
+                    {profile?.full_name?.[0] || 'أ'}
+                  </div>
+                )}
+              </ImageLightbox>
               {/* Subtle accent dot */}
               <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-slate-900"></div>
             </div>
