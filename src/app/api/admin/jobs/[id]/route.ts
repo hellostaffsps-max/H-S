@@ -62,7 +62,7 @@ export async function PATCH(
   }
 
   // Determine action type
-  let action = AuditActions.JOB_UPDATE;
+  let action: string = AuditActions.JOB_UPDATE;
   if (status === 'approved') action = renew ? AuditActions.JOB_RENEW : AuditActions.JOB_APPROVE;
   else if (status === 'rejected') action = AuditActions.JOB_REJECT;
 
