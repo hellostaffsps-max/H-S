@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Cairo } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import LayoutBody from "./LayoutBody";
 
@@ -75,6 +76,7 @@ export default function RootLayout({
       </head>
       <body className={`${cairo.variable} antialiased font-sans`}>
         <LayoutBody>{children}</LayoutBody>
+        <Analytics />
         <script
           dangerouslySetInnerHTML={{
             __html: `if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js')})}`
