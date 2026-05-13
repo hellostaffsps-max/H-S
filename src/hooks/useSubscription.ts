@@ -48,12 +48,12 @@ export function useSubscription() {
           .eq('employer_id', user?.id)
           .neq('status', 'closed');
 
-        // 1. Try to find an ACTIVE subscription
+        // 1. Try to find an ACTIVE or FREE subscription
         const { data: activeSub } = await supabase
           .from('user_subscriptions')
           .select('*, subscription_plans(*)')
           .eq('user_id', user?.id)
-          .eq('status', 'active')
+          .in('status', ['active', 'free'])
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
@@ -64,7 +64,7 @@ export function useSubscription() {
             setSubscription({
               plan_id: plan.id,
               plan_name: plan.name,
-              status: 'active',
+              status: activeSub.status as 'active' | 'free',
               job_limit: plan.job_limit || 0,
               allow_articles: plan.allow_articles || false,
               featured_listings: plan.featured_listings || false,
@@ -79,7 +79,7 @@ export function useSubscription() {
             setSubscription({
               plan_id: 'manual_plan',
               plan_name: activeSub.plan_name || 'باقة مخصصة',
-              status: 'active',
+              status: activeSub.status as 'active' | 'free',
               job_limit: 10, // Generous default for manual activations
               allow_articles: true,
               featured_listings: true,

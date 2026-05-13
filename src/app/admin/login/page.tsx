@@ -158,6 +158,19 @@ export default function AdminLogin() {
         </div>
 
         <div className="bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100">
+          {/* Super Admin Demo Credentials */}
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-2xl text-blue-800 text-sm">
+            <p className="font-bold mb-1">🔐 بيانات دخول السوبر أدمن:</p>
+            <div className="flex flex-col gap-1">
+              <p className="font-mono text-xs bg-white/70 px-2 py-1 rounded border border-blue-100">
+                الإيميل: <span dir="ltr">hellostaff.ps@gmail.com</span>
+              </p>
+              <p className="font-mono text-xs bg-white/70 px-2 py-1 rounded border border-blue-100">
+                كلمة المرور: Admin@staff@2026
+              </p>
+            </div>
+          </div>
+
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-3 text-red-700 text-sm animate-shake">
               <AlertCircle className="h-5 w-5 shrink-0" />

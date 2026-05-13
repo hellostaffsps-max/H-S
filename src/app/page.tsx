@@ -124,7 +124,7 @@ export default async function Home() {
       .from("user_subscriptions")
       .select("status")
       .eq("user_id", user.id)
-      .in("status", ["active", "pending"])
+      .in("status", ["active", "pending", "free"])
       .limit(1);
 
     if (activeSubs && activeSubs.length > 0) {
@@ -251,70 +251,6 @@ export default async function Home() {
                   </div>
                 </div>
               </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* ===== PRICING PLANS (Employers only) ===== */}
-      {isEmployer && plans.length > 0 && (
-        <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16">
-          <div className="text-center mb-8 sm:mb-10">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 mb-2 tracking-tight flex items-center justify-center gap-2">
-              <Sparkles className="h-6 w-6 text-brand-600" />
-              باقات الاشتراك
-            </h2>
-            <p className="text-slate-500 text-sm sm:text-base max-w-lg mx-auto">
-              اختر الخطة المناسبة لشركتك ووظّف بكفاءة أكبر
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto">
-            {plans.map((plan: any) => (
-              <div
-                key={plan.id}
-                className="bg-white border border-slate-100 rounded-2xl p-5 sm:p-6 hover:border-brand-200 hover:shadow-lg transition-all relative overflow-hidden flex flex-col"
-              >
-                {plan.recommended && (
-                  <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-r from-brand-400 to-brand-600" />
-                )}
-                {plan.recommended && (
-                  <div className="absolute top-3 left-3 bg-brand-600 text-white text-[10px] font-bold px-2 py-1 rounded-full">
-                    الأكثر طلباً
-                  </div>
-                )}
-                <h3 className="text-lg font-bold text-slate-900 mb-2">
-                  {plan.name}
-                </h3>
-                <div className="flex items-baseline gap-1 mb-5">
-                  <span className="text-2xl sm:text-3xl font-black text-slate-900">
-                    ₪{plan.price}
-                  </span>
-                  <span className="text-sm font-medium text-slate-500">
-                    /شهرياً
-                  </span>
-                </div>
-
-                <ul className="space-y-3 mb-6 flex-grow">
-                  {(plan.features || []).map((feature: string, i: number) => (
-                    <li key={i} className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-brand-500 shrink-0 mt-0.5" />
-                      <span className="text-sm text-slate-600">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link
-                  href="/pricing"
-                  className={`w-full py-3 rounded-xl text-sm font-bold text-center transition-colors ${
-                    plan.recommended
-                      ? "bg-brand-600 text-white hover:bg-brand-700 shadow-lg shadow-brand-200"
-                      : "bg-slate-50 text-slate-900 hover:bg-slate-100"
-                  }`}
-                >
-                  اختر هذه الخطة
-                </Link>
-              </div>
             ))}
           </div>
         </section>
@@ -489,6 +425,70 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* ===== PRICING PLANS (Employers only) ===== */}
+      {isEmployer && plans.length > 0 && (
+        <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16">
+          <div className="text-center mb-8 sm:mb-10">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 mb-2 tracking-tight flex items-center justify-center gap-2">
+              <Sparkles className="h-6 w-6 text-brand-600" />
+              باقات الاشتراك
+            </h2>
+            <p className="text-slate-500 text-sm sm:text-base max-w-lg mx-auto">
+              اختر الخطة المناسبة لشركتك ووظّف بكفاءة أكبر
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto">
+            {plans.map((plan: any) => (
+              <div
+                key={plan.id}
+                className="bg-white border border-slate-100 rounded-2xl p-5 sm:p-6 hover:border-brand-200 hover:shadow-lg transition-all relative overflow-hidden flex flex-col"
+              >
+                {plan.recommended && (
+                  <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-r from-brand-400 to-brand-600" />
+                )}
+                {plan.recommended && (
+                  <div className="absolute top-3 left-3 bg-brand-600 text-white text-[10px] font-bold px-2 py-1 rounded-full">
+                    الأكثر طلباً
+                  </div>
+                )}
+                <h3 className="text-lg font-bold text-slate-900 mb-2">
+                  {plan.name}
+                </h3>
+                <div className="flex items-baseline gap-1 mb-5">
+                  <span className="text-2xl sm:text-3xl font-black text-slate-900">
+                    ₪{plan.price}
+                  </span>
+                  <span className="text-sm font-medium text-slate-500">
+                    /شهرياً
+                  </span>
+                </div>
+
+                <ul className="space-y-3 mb-6 flex-grow">
+                  {(plan.features || []).map((feature: string, i: number) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-brand-500 shrink-0 mt-0.5" />
+                      <span className="text-sm text-slate-600">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Link
+                  href="/pricing"
+                  className={`w-full py-3 rounded-xl text-sm font-bold text-center transition-colors ${
+                    plan.recommended
+                      ? "bg-brand-600 text-white hover:bg-brand-700 shadow-lg shadow-brand-200"
+                      : "bg-slate-50 text-slate-900 hover:bg-slate-100"
+                  }`}
+                >
+                  اختر هذه الخطة
+                </Link>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ===== RECENT JOBS ===== */}
       <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20">

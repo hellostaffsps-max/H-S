@@ -43,12 +43,14 @@ export default function CandidatesManagement() {
     try {
       const { data, error } = await supabase
         .from("seekers")
-        .select("*, profiles(full_name, email, phone, location, avatar_url, created_at)")
+        .select("*, profiles(full_name, email, phone, location, avatar_url, created_at, role)")
         .limit(200);
 
       if (error) throw error;
 
-      const sorted = (data || []).sort((a, b) => {
+      const filteredData = (data || []).filter((s) => s.profiles?.role !== 'admin');
+
+      const sorted = filteredData.sort((a, b) => {
         const d1 = new Date(a.profiles?.created_at || 0).getTime();
         const d2 = new Date(b.profiles?.created_at || 0).getTime();
         return d2 - d1;
