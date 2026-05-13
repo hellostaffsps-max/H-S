@@ -33,6 +33,7 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase-server";
 import SearchBox from "@/components/SearchBox";
 import AdsCarousel from "@/components/AdsCarousel";
+import TrustedEmployersCarousel from "@/components/TrustedEmployersCarousel";
 
 const HOSPITALITY_CATEGORIES = [
   "طاهي/ة",
@@ -255,6 +256,9 @@ export default async function Home() {
           </div>
         </section>
       )}
+
+      {/* ===== TRUSTED EMPLOYERS CAROUSEL ===== */}
+      <TrustedEmployersCarousel />
 
       {/* ===== SOFT TRUST BAR ===== */}
       <section className={`max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 relative z-10 ${user ? 'mt-8' : '-mt-10'}`}>
