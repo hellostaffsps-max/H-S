@@ -222,24 +222,24 @@ export async function updateApplicationStatus(
 
   // Send notification to seeker
   let notifTitle = 'تحديث على طلب التقديم';
-  let notifMessage = `تم تحديث حالة طلبك على وظيفة "${job.title}" إلى: ${status}`;
+  let notifMessage = `تم تحديث حالة طلبك على وظيفة "${job.title}"."`;
 
-  if (status === 'مقبول') {
-    notifTitle = 'تهانينا! تم قبول طلبك';
-    notifMessage = `تم قبول طلبك على وظيفة "${job.title}". سنتواصل معك قريباً.`;
+  if (status === 'قائمة مختصرة') {
+    notifTitle = 'تم إضافتك للقائمة المختصرة';
+    notifMessage = `تم اختيارك في القائمة المختصرة لوظيفة "${job.title}". ترقب التواصل معك قريباً.`;
+  } else if (status === 'مقابلة') {
+    notifTitle = 'دعوة لمقابلة عمل';
+    notifMessage = `تمت دعوتك لمقابلة عمل على وظيفة "${job.title}". يرجى مراجعة تفاصيل الموعد في لوحة التحكم.`;
+  } else if (status === 'مقبول') {
+    notifTitle = '🎉 تهانينا! تم قبولك للعمل';
+    notifMessage = `تم قبولك رسمياً للعمل في وظيفة "${job.title}". سنتواصل معك لإتمام الإجراءات.`;
   } else if (status === 'لم يتم التوظيف') {
     notifTitle = 'تحديث على طلب التقديم';
-    notifMessage = `لم يتم التوظيف على وظيفة "${job.title}" هذه المرة. نتمنى لك التوفيق.`;
-  } else if (status === 'مقابلة') {
-    notifTitle = 'تمت دعوتك لمقابلة عمل';
-    notifMessage = `تمت دعوتك لمقابلة عمل على وظيفة "${job.title}". يرجى مراجعة التفاصيل.`;
+    notifMessage = `عذراً، لم يتم اختيارك لوظيفة "${job.title}" هذه المرة. نتمنى لك التوفيق في فرصك القادمة.`;
   }
 
-  // Build link for the notification
-  const seekerLink = `/dashboard/applications`;
-  const notifLink = status === 'مقبول' ? `/dashboard/applications` :
-                    status === 'مقابلة' ? `/dashboard/applications` :
-                    `/dashboard/applications`;
+  // Link to dashboard where applications are shown
+  const notifLink = `/dashboard`;
 
   await createNotification(supabase, application.seeker_id, notifTitle, notifMessage, 'application', notifLink);
 

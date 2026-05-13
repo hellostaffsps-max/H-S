@@ -252,7 +252,10 @@ export default function PricingPage() {
           </p>
           <div className="flex flex-col gap-3">
             <button
-              onClick={() => router.push("/dashboard")}
+              onClick={() => {
+                router.refresh();
+                router.push("/dashboard");
+              }}
               className="w-full py-4 bg-brand-600 text-white font-black rounded-2xl hover:bg-brand-500 shadow-xl shadow-brand-200 transition-all active:scale-95 flex items-center justify-center gap-2"
             >
               الذهاب إلى لوحة التحكم

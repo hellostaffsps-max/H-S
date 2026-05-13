@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import {
   Flag, Search, Loader2, MessageSquare, CheckCircle,
   Clock, AlertCircle, Mail, Send, MessageCircle, X,
-  ChevronDown, ChevronUp, User, ShieldAlert, RefreshCw
+  ChevronDown, ChevronUp, User, ShieldAlert, RefreshCw, UserCheck
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
@@ -141,6 +141,55 @@ export default function SupportManagement() {
       fetchTickets();
     } catch (e: any) {
       alert("خطأ في تحديث الحالة: " + e.message);
+    } finally {
+      setUpdatingStatus(null);
+    }
+  }
+
+  async function acceptStatusChange(ticket: Ticket) {
+    if (!ticket.user_id) return;
+    const companyName = ticket.subject.replace("[طلب تغيير حالة]", "").trim();
+    if (!companyName) return;
+
+    setUpdatingStatus(ticket.id);
+    try {
+      // Update seeker status
+      const { error: seekerError } = await supabase
+        .from("seekers")
+        .update({ is_available: false, current_employer: companyName })
+        .eq("profile_id", ticket.user_id);
+      
+      if (seekerError) throw seekerError;
+
+      // Update ticket status to closed
+      const { error: ticketError } = await supabase
+        .from("support_tickets")
+        .update({ status: "closed" })
+        .eq("id", ticket.id);
+      
+      if (ticketError) throw ticketError;
+
+      // Add System Reply
+      await supabase.from("ticket_replies").insert({
+        ticket_id: ticket.id,
+        sender_role: "admin",
+        sender_name: "النظام",
+        content: `✅ تمت الموافقة على طلبك بنجاح. تم تحديث حالتك إلى: يعمل في ${companyName}`,
+      });
+
+      // Send Notification
+      await sendNotificationToUser(
+        ticket, 
+        `تمت الموافقة على طلب تحديث الحالة: حالتك الآن يعمل في ${companyName}`
+      );
+
+      setTickets(prev => prev.map(t =>
+        t.id === ticket.id ? { ...t, status: "closed" } : t
+      ));
+      
+      alert("تم قبول الطلب وتحديث حالة المستخدم بنجاح");
+    } catch (e: any) {
+      alert("خطأ: " + e.message);
     } finally {
       setUpdatingStatus(null);
     }
@@ -395,7 +444,17 @@ export default function SupportManagement() {
                     <div className="px-5 pb-5 pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
                       {/* Status Change */}
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-bold text-slate-500">تغيير الحالة:</span>
+                        {ticket.user_id && ticket.subject.startsWith("[طلب تغيير حالة]") && ticket.status !== "closed" && (
+                          <button
+                            onClick={() => acceptStatusChange(ticket)}
+                            disabled={updatingStatus === ticket.id}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-sm disabled:opacity-70"
+                          >
+                            {updatingStatus === ticket.id ? <Loader2 className="h-3 w-3 animate-spin inline" /> : <UserCheck className="h-3 w-3" />}
+                            قبول طلب التحديث
+                          </button>
+                        )}
+                        <span className="text-xs font-bold text-slate-500 mr-2">تغيير الحالة:</span>
                         {Object.entries(statusConfig).map(([key, val]) => (
                           <button
                             key={key}

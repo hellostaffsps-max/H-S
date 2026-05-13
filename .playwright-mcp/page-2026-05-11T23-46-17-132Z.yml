@@ -1,0 +1,506 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e5]:
+        - generic [ref=e7]:
+          - button "رجوع" [ref=e8]:
+            - img [ref=e9]
+          - link "Hello Staff Hello Staff" [ref=e11] [cursor=pointer]:
+            - /url: /
+            - img "Hello Staff" [ref=e12]
+            - generic [ref=e13]: Hello Staff
+        - navigation [ref=e14]:
+          - link "الرئيسية" [ref=e15] [cursor=pointer]:
+            - /url: /
+            - img [ref=e16]
+            - text: الرئيسية
+          - link "الوظائف" [ref=e19] [cursor=pointer]:
+            - /url: /jobs
+            - img [ref=e20]
+            - text: الوظائف
+        - generic [ref=e24]:
+          - link "تسجيل الدخول" [ref=e25] [cursor=pointer]:
+            - /url: /auth/login
+            - img [ref=e26]
+            - text: تسجيل الدخول
+          - link "إنشاء حساب" [ref=e29] [cursor=pointer]:
+            - /url: /auth/signup
+            - img [ref=e30]
+            - text: إنشاء حساب
+    - main [ref=e33]:
+      - generic [ref=e119]:
+        - generic [ref=e120]:
+          - heading "اكتشف وظيفتك المثالية" [level=1] [ref=e121]
+          - paragraph [ref=e122]: فرص عمل حصرية وموثوقة في أفضل الفنادق والمطاعم في فلسطين. انضم إلينا اليوم وابدأ مسيرتك المهنية.
+        - generic [ref=e124]:
+          - generic [ref=e125]:
+            - img [ref=e126]
+            - textbox "المسمى الوظيفي، الكلمات المفتاحية..." [ref=e129]
+          - generic [ref=e130]:
+            - img [ref=e131]
+            - combobox [ref=e134] [cursor=pointer]:
+              - option "جميع المواقع" [selected]
+              - option "رام الله"
+              - option "نابلس"
+              - option "الخليل"
+              - option "بيت لحم"
+              - option "جنين"
+              - option "طولكرم"
+              - option "قلقيلية"
+              - option "أريحا"
+              - option "سلفيت"
+              - option "طوباس"
+              - option "القدس"
+              - option "الخليل - مركز المدينة"
+              - option "بيت لحم - شارع النجمة"
+              - option "رام الله - المنطقة الصناعية"
+              - option "رام الله - شارع ركب"
+              - option "نابلس - البلدة القديمة"
+          - generic [ref=e135]:
+            - button "الفلاتر" [ref=e136]:
+              - img [ref=e137]
+              - generic [ref=e138]: الفلاتر
+            - button "بحث" [ref=e139]
+        - generic [ref=e140]:
+          - generic [ref=e141]:
+            - generic [ref=e142]:
+              - generic [ref=e143]: دوام جزئي
+              - generic "موثق من قبل فريق Hello Staff" [ref=e144]:
+                - img [ref=e145]
+                - text: موثق
+            - generic [ref=e148]:
+              - generic [ref=e149]: م
+              - generic [ref=e150]:
+                - heading "توصيل طلبات" [level=3] [ref=e151]
+                - paragraph [ref=e152]:
+                  - img [ref=e153]
+                  - text: مقهى ديوان
+            - generic [ref=e157]:
+              - generic [ref=e158]:
+                - img [ref=e159]
+                - generic [ref=e162]: الخليل - مركز المدينة
+              - generic [ref=e163]:
+                - generic [ref=e164]:
+                  - img [ref=e165]
+                  - text: توصيل
+                - generic [ref=e168]:
+                  - img [ref=e169]
+                  - text: بدون خبرة
+              - generic [ref=e172]:
+                - img [ref=e173]
+                - generic [ref=e176]: ١٬٥٠٠ - ٣٬٠٠٠ ILS
+            - generic [ref=e177]:
+              - link "عرض التفاصيل" [ref=e178] [cursor=pointer]:
+                - /url: /jobs/168c76a9-ffaa-49b6-a2e3-a712d5ba0a64
+                - text: عرض التفاصيل
+                - img [ref=e179]
+              - generic [ref=e181]: اليوم
+          - generic [ref=e182]:
+            - generic [ref=e183]:
+              - generic [ref=e184]: دوام جزئي
+              - generic "موثق من قبل فريق Hello Staff" [ref=e185]:
+                - img [ref=e186]
+                - text: موثق
+            - generic [ref=e189]:
+              - generic [ref=e190]: م
+              - generic [ref=e191]:
+                - heading "باريستا" [level=3] [ref=e192]
+                - paragraph [ref=e193]:
+                  - img [ref=e194]
+                  - text: مقهى ديوان
+            - generic [ref=e198]:
+              - generic [ref=e199]:
+                - img [ref=e200]
+                - generic [ref=e203]: الخليل - مركز المدينة
+              - generic [ref=e204]:
+                - generic [ref=e205]:
+                  - img [ref=e206]
+                  - text: باريستا
+                - generic [ref=e209]:
+                  - img [ref=e210]
+                  - text: سنة واحدة
+              - generic [ref=e213]:
+                - img [ref=e214]
+                - generic [ref=e217]: ٢٬٠٠٠ - ٢٬٥٠٠ ILS
+            - generic [ref=e218]:
+              - link "عرض التفاصيل" [ref=e219] [cursor=pointer]:
+                - /url: /jobs/5938454d-b079-4ff0-b376-eb2b83e4c673
+                - text: عرض التفاصيل
+                - img [ref=e220]
+              - generic [ref=e222]: اليوم
+          - generic [ref=e223]:
+            - generic [ref=e224]:
+              - generic [ref=e225]: دوام كامل
+              - generic "موثق من قبل فريق Hello Staff" [ref=e226]:
+                - img [ref=e227]
+                - text: موثق
+            - generic [ref=e230]:
+              - generic [ref=e231]: م
+              - generic [ref=e232]:
+                - heading "مدير مطعم" [level=3] [ref=e233]
+                - paragraph [ref=e234]:
+                  - img [ref=e235]
+                  - text: مطعم الشواية
+            - generic [ref=e239]:
+              - generic [ref=e240]:
+                - img [ref=e241]
+                - generic [ref=e244]: رام الله - المنطقة الصناعية
+              - generic [ref=e245]:
+                - generic [ref=e246]:
+                  - img [ref=e247]
+                  - text: مدير
+                - generic [ref=e250]:
+                  - img [ref=e251]
+                  - text: 3+ سنوات
+              - generic [ref=e254]:
+                - img [ref=e255]
+                - generic [ref=e258]: ٥٬٠٠٠ - ٦٬٥٠٠ ILS
+            - generic [ref=e259]:
+              - link "عرض التفاصيل" [ref=e260] [cursor=pointer]:
+                - /url: /jobs/9f1bb4eb-d24d-4706-b9e0-6e0d61e5e596
+                - text: عرض التفاصيل
+                - img [ref=e261]
+              - generic [ref=e263]: اليوم
+          - generic [ref=e264]:
+            - generic [ref=e265]:
+              - generic [ref=e266]: دوام كامل
+              - generic "موثق من قبل فريق Hello Staff" [ref=e267]:
+                - img [ref=e268]
+                - text: موثق
+            - generic [ref=e271]:
+              - generic [ref=e272]: م
+              - generic [ref=e273]:
+                - heading "مساعد مطبخ" [level=3] [ref=e274]
+                - paragraph [ref=e275]:
+                  - img [ref=e276]
+                  - text: مطعم الشواية
+            - generic [ref=e280]:
+              - generic [ref=e281]:
+                - img [ref=e282]
+                - generic [ref=e285]: رام الله - المنطقة الصناعية
+              - generic [ref=e286]:
+                - generic [ref=e287]:
+                  - img [ref=e288]
+                  - text: طاهي/ة
+                - generic [ref=e291]:
+                  - img [ref=e292]
+                  - text: بدون خبرة
+              - generic [ref=e295]:
+                - img [ref=e296]
+                - generic [ref=e299]: ٢٬٨٠٠ - ٣٬٠٠٠ ILS
+            - generic [ref=e300]:
+              - link "عرض التفاصيل" [ref=e301] [cursor=pointer]:
+                - /url: /jobs/1948016b-9825-4f95-9a60-9acd05501e73
+                - text: عرض التفاصيل
+                - img [ref=e302]
+              - generic [ref=e304]: اليوم
+          - generic [ref=e305]:
+            - generic [ref=e306]:
+              - generic [ref=e307]: دوام كامل
+              - generic "موثق من قبل فريق Hello Staff" [ref=e308]:
+                - img [ref=e309]
+                - text: موثق
+            - generic [ref=e312]:
+              - generic [ref=e313]: ف
+              - generic [ref=e314]:
+                - heading "طاهي/ة رئيسي" [level=3] [ref=e315]
+                - paragraph [ref=e316]:
+                  - img [ref=e317]
+                  - text: فندق الكرمل
+            - generic [ref=e321]:
+              - generic [ref=e322]:
+                - img [ref=e323]
+                - generic [ref=e326]: بيت لحم - شارع النجمة
+              - generic [ref=e327]:
+                - generic [ref=e328]:
+                  - img [ref=e329]
+                  - text: طاهي/ة
+                - generic [ref=e332]:
+                  - img [ref=e333]
+                  - text: 5+ سنوات
+              - generic [ref=e336]:
+                - img [ref=e337]
+                - generic [ref=e340]: ٦٬٠٠٠ - ٨٬٠٠٠ ILS
+            - generic [ref=e341]:
+              - link "عرض التفاصيل" [ref=e342] [cursor=pointer]:
+                - /url: /jobs/73fcf06f-d85f-402e-90b2-0782fd52c900
+                - text: عرض التفاصيل
+                - img [ref=e343]
+              - generic [ref=e345]: اليوم
+          - generic [ref=e346]:
+            - generic [ref=e347]:
+              - generic [ref=e348]: دوام كامل
+              - generic "موثق من قبل فريق Hello Staff" [ref=e349]:
+                - img [ref=e350]
+                - text: موثق
+            - generic [ref=e353]:
+              - generic [ref=e354]: ف
+              - generic [ref=e355]:
+                - heading "مضيف/ة استقبال" [level=3] [ref=e356]
+                - paragraph [ref=e357]:
+                  - img [ref=e358]
+                  - text: فندق الكرمل
+            - generic [ref=e362]:
+              - generic [ref=e363]:
+                - img [ref=e364]
+                - generic [ref=e367]: بيت لحم - شارع النجمة
+              - generic [ref=e368]:
+                - generic [ref=e369]:
+                  - img [ref=e370]
+                  - text: مضيف/ة
+                - generic [ref=e373]:
+                  - img [ref=e374]
+                  - text: 3+ سنوات
+              - generic [ref=e377]:
+                - img [ref=e378]
+                - generic [ref=e381]: ٤٬٥٠٠ - ٥٬٥٠٠ ILS
+            - generic [ref=e382]:
+              - link "عرض التفاصيل" [ref=e383] [cursor=pointer]:
+                - /url: /jobs/298fe82f-5af7-4d44-bebb-c00a648bdb27
+                - text: عرض التفاصيل
+                - img [ref=e384]
+              - generic [ref=e386]: اليوم
+          - generic [ref=e387]:
+            - generic [ref=e388]:
+              - generic [ref=e389]: دوام كامل
+              - generic "موثق من قبل فريق Hello Staff" [ref=e390]:
+                - img [ref=e391]
+                - text: موثق
+            - generic [ref=e394]:
+              - generic [ref=e395]: م
+              - generic [ref=e396]:
+                - heading "كاشير" [level=3] [ref=e397]
+                - paragraph [ref=e398]:
+                  - img [ref=e399]
+                  - text: مطعم زيتونة
+            - generic [ref=e403]:
+              - generic [ref=e404]:
+                - img [ref=e405]
+                - generic [ref=e408]: نابلس - البلدة القديمة
+              - generic [ref=e409]:
+                - generic [ref=e410]:
+                  - img [ref=e411]
+                  - text: كاشير
+                - generic [ref=e414]:
+                  - img [ref=e415]
+                  - text: سنة واحدة
+              - generic [ref=e418]:
+                - img [ref=e419]
+                - generic [ref=e422]: ٣٬٠٠٠ - ٣٬٢٠٠ ILS
+            - generic [ref=e423]:
+              - link "عرض التفاصيل" [ref=e424] [cursor=pointer]:
+                - /url: /jobs/3ceceab8-ee3b-48a1-a38d-0e847d6a0855
+                - text: عرض التفاصيل
+                - img [ref=e425]
+              - generic [ref=e427]: اليوم
+          - generic [ref=e428]:
+            - generic [ref=e429]:
+              - generic [ref=e430]: دوام كامل
+              - generic "موثق من قبل فريق Hello Staff" [ref=e431]:
+                - img [ref=e432]
+                - text: موثق
+            - generic [ref=e435]:
+              - generic [ref=e436]: م
+              - generic [ref=e437]:
+                - heading "طاهي/ة مساعد" [level=3] [ref=e438]
+                - paragraph [ref=e439]:
+                  - img [ref=e440]
+                  - text: مطعم زيتونة
+            - generic [ref=e444]:
+              - generic [ref=e445]:
+                - img [ref=e446]
+                - generic [ref=e449]: نابلس - البلدة القديمة
+              - generic [ref=e450]:
+                - generic [ref=e451]:
+                  - img [ref=e452]
+                  - text: طاهي/ة
+                - generic [ref=e455]:
+                  - img [ref=e456]
+                  - text: 1-3 سنوات
+              - generic [ref=e459]:
+                - img [ref=e460]
+                - generic [ref=e463]: ٤٬٠٠٠ - ٥٬٠٠٠ ILS
+            - generic [ref=e464]:
+              - link "عرض التفاصيل" [ref=e465] [cursor=pointer]:
+                - /url: /jobs/08b4ae0d-368d-418f-b807-6d74b22649b5
+                - text: عرض التفاصيل
+                - img [ref=e466]
+              - generic [ref=e468]: اليوم
+          - generic [ref=e469]:
+            - generic [ref=e470]:
+              - generic [ref=e471]: دوام جزئي
+              - generic "موثق من قبل فريق Hello Staff" [ref=e472]:
+                - img [ref=e473]
+                - text: موثق
+            - generic [ref=e476]:
+              - generic [ref=e477]: م
+              - generic [ref=e478]:
+                - heading "نادل/ة" [level=3] [ref=e479]
+                - paragraph [ref=e480]:
+                  - img [ref=e481]
+                  - text: مقهى البرج
+            - generic [ref=e485]:
+              - generic [ref=e486]:
+                - img [ref=e487]
+                - generic [ref=e490]: رام الله - شارع ركب
+              - generic [ref=e491]:
+                - generic [ref=e492]:
+                  - img [ref=e493]
+                  - text: نادل/ة
+                - generic [ref=e496]:
+                  - img [ref=e497]
+                  - text: بدون خبرة
+              - generic [ref=e500]:
+                - img [ref=e501]
+                - generic [ref=e504]: ٢٬٥٠٠ - ٢٬٥٠٠ ILS
+            - generic [ref=e505]:
+              - link "عرض التفاصيل" [ref=e506] [cursor=pointer]:
+                - /url: /jobs/8d33a4f6-15e7-40ff-9ea2-0e10042ba593
+                - text: عرض التفاصيل
+                - img [ref=e507]
+              - generic [ref=e509]: اليوم
+          - generic [ref=e510]:
+            - generic [ref=e511]:
+              - generic [ref=e512]: دوام كامل
+              - generic "موثق من قبل فريق Hello Staff" [ref=e513]:
+                - img [ref=e514]
+                - text: موثق
+            - generic [ref=e517]:
+              - generic [ref=e518]: م
+              - generic [ref=e519]:
+                - heading "باريستا خبرة" [level=3] [ref=e520]
+                - paragraph [ref=e521]:
+                  - img [ref=e522]
+                  - text: مقهى البرج
+            - generic [ref=e526]:
+              - generic [ref=e527]:
+                - img [ref=e528]
+                - generic [ref=e531]: رام الله - شارع ركب
+              - generic [ref=e532]:
+                - generic [ref=e533]:
+                  - img [ref=e534]
+                  - text: باريستا
+                - generic [ref=e537]:
+                  - img [ref=e538]
+                  - text: سنتان
+              - generic [ref=e541]:
+                - img [ref=e542]
+                - generic [ref=e545]: ٣٬٥٠٠ - ٤٬٥٠٠ ILS
+            - generic [ref=e546]:
+              - link "عرض التفاصيل" [ref=e547] [cursor=pointer]:
+                - /url: /jobs/61015b50-d96a-4bc0-9584-ae0e784faec3
+                - text: عرض التفاصيل
+                - img [ref=e548]
+              - generic [ref=e550]: اليوم
+    - contentinfo [ref=e38]:
+      - generic [ref=e39]:
+        - generic [ref=e40]:
+          - generic [ref=e41]:
+            - link "Hello Staff Hello Staff" [ref=e42] [cursor=pointer]:
+              - /url: /
+              - img "Hello Staff" [ref=e43]
+              - generic [ref=e44]: Hello Staff
+            - paragraph [ref=e45]: المنصة المتخصصة الأولى لربط الكفاءات وأصحاب العمل في قطاع الضيافة والمطاعم بفعالية وسهولة، نوفر حلول توظيف ذكية تواكب تطلعاتك.
+            - generic [ref=e46]:
+              - link [ref=e47] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e48]
+              - link [ref=e50] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e51]
+              - link [ref=e53] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e54]
+              - link [ref=e57] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e58]
+          - generic [ref=e62]:
+            - heading "الباحثين عن عمل" [level=3] [ref=e63]
+            - list [ref=e64]:
+              - listitem [ref=e65]:
+                - link "تصفح الوظائف" [ref=e66] [cursor=pointer]:
+                  - /url: /jobs
+              - listitem [ref=e67]:
+                - link "أنشئ سيرتك الذاتية" [ref=e68] [cursor=pointer]:
+                  - /url: /profile
+              - listitem [ref=e69]:
+                - link "تنبيهات الوظائف" [ref=e70] [cursor=pointer]:
+                  - /url: /job-alerts
+              - listitem [ref=e71]:
+                - link "نصائح المقابلات" [ref=e72] [cursor=pointer]:
+                  - /url: /interview-tips
+          - generic [ref=e73]:
+            - heading "أصحاب العمل" [level=3] [ref=e74]
+            - list [ref=e75]:
+              - listitem [ref=e76]:
+                - link "انشر وظيفة" [ref=e77] [cursor=pointer]:
+                  - /url: /post-job
+              - listitem [ref=e78]:
+                - link "ابحث في السير الذاتية" [ref=e79] [cursor=pointer]:
+                  - /url: /search-resumes
+              - listitem [ref=e80]:
+                - link "باقات الأسعار" [ref=e81] [cursor=pointer]:
+                  - /url: /pricing
+              - listitem [ref=e82]:
+                - link "لوحة التحكم" [ref=e83] [cursor=pointer]:
+                  - /url: /dashboard
+          - generic [ref=e84]:
+            - heading "الشركة" [level=3] [ref=e85]
+            - list [ref=e86]:
+              - listitem [ref=e87]:
+                - link "من نحن" [ref=e88] [cursor=pointer]:
+                  - /url: /about
+              - listitem [ref=e89]:
+                - link "اتصل بنا" [ref=e90] [cursor=pointer]:
+                  - /url: /contact
+              - listitem [ref=e91]:
+                - link "المدونة" [ref=e92] [cursor=pointer]:
+                  - /url: /blog
+              - listitem [ref=e93]:
+                - link "مركز المساعدة" [ref=e94] [cursor=pointer]:
+                  - /url: /help
+          - generic [ref=e95]:
+            - heading "تواصل معنا" [level=3] [ref=e96]
+            - list [ref=e97]:
+              - listitem [ref=e98]:
+                - link "support@staffps.com" [ref=e99] [cursor=pointer]:
+                  - /url: mailto:support@staffps.com
+                  - img [ref=e100]
+                  - text: support@staffps.com
+              - listitem [ref=e103]:
+                - link "+970 56 906 9686" [ref=e104] [cursor=pointer]:
+                  - /url: tel:+970569069686
+                  - img [ref=e105]
+                  - text: +970 56 906 9686
+              - listitem [ref=e107]:
+                - link "واتساب" [ref=e108] [cursor=pointer]:
+                  - /url: https://wa.me/970569069686
+                  - img [ref=e109]
+                  - text: واتساب
+        - generic [ref=e111]:
+          - paragraph [ref=e112]: © 2026 Hello Staff. جميع الحقوق محفوظة.
+          - generic [ref=e113]:
+            - link "سياسة الخصوصية" [ref=e114] [cursor=pointer]:
+              - /url: /privacy
+            - link "شروط الاستخدام" [ref=e116] [cursor=pointer]:
+              - /url: /terms
+            - link "سياسة ملفات الارتباط" [ref=e118] [cursor=pointer]:
+              - /url: /cookies
+    - generic [ref=e551]:
+      - img [ref=e552]
+      - paragraph [ref=e554]: نستخدم ملفات تعريف الارتباط لتحسين تجربتك.
+      - generic [ref=e555]:
+        - button "موافق" [ref=e556]
+        - button [ref=e557]:
+          - img [ref=e558]
+    - generic [ref=e562]:
+      - img [ref=e564]
+      - generic [ref=e566]:
+        - heading "حمّل Hello Staff كتطبيق!" [level=3] [ref=e567]
+        - paragraph [ref=e568]: وصول أسرع + إشعارات فورية + بدون متصفح
+      - button "تثبيت" [ref=e569]:
+        - img [ref=e570]
+        - text: تثبيت
+      - button [ref=e573]:
+        - img [ref=e574]
+  - alert [ref=e593]

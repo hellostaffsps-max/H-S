@@ -120,15 +120,14 @@ export default async function Home() {
   let hasActiveSubscription = false;
 
   if (isEmployer && user) {
-    const { data: activeSub } = await supabase
+    const { data: activeSubs } = await supabase
       .from("user_subscriptions")
       .select("status")
       .eq("user_id", user.id)
       .in("status", ["active", "pending"])
-      .limit(1)
-      .maybeSingle();
+      .limit(1);
 
-    if (activeSub) {
+    if (activeSubs && activeSubs.length > 0) {
       hasActiveSubscription = true;
     }
 

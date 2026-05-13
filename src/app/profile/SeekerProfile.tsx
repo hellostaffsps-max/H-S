@@ -4,6 +4,7 @@ import { Pencil, CheckCircle2, FileText, Save, Loader2, MapPin, Phone, X } from 
 import AvatarUpload from "@/components/AvatarUpload";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { updateProfile, updateSeekerProfile } from "@/app/actions/profile";
+import { submitContactForm } from "@/app/actions/contact";
 import Link from "next/link";
 import { PALESTINIAN_CITIES, getSuggestedKeywords } from "@/lib/profile-utils";
 
@@ -21,6 +22,11 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+
+  // Status Change Modal States
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [employerName, setEmployerName] = useState("");
+  const [submittingStatus, setSubmittingStatus] = useState(false);
 
   // States for new features
   const isPalestinianCity = profile?.location && PALESTINIAN_CITIES.includes(profile.location);
@@ -110,6 +116,28 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
     setLoading(false);
   }
 
+  const handleStatusChangeRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!employerName.trim()) return;
+    setSubmittingStatus(true);
+    
+    const formData = new FormData();
+    formData.append("name", profile?.full_name || "مستخدم");
+    formData.append("email", user?.email || "");
+    formData.append("subject", `[طلب تغيير حالة] ${employerName.trim()}`);
+    formData.append("message", `أرجو تغيير حالتي إلى يعمل في: ${employerName.trim()}\n\nتم إرسال هذا الطلب من الملف الشخصي.`);
+    
+    const res = await submitContactForm(formData);
+    if (res.success) {
+      alert("تم إرسال الطلب بنجاح للإدارة وسيتم مراجعته.");
+      setShowStatusModal(false);
+      setEmployerName("");
+    } else {
+      alert(res.error || "حدث خطأ أثناء الإرسال");
+    }
+    setSubmittingStatus(false);
+  };
+
   return (
     <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
       {/* Header Banner */}
@@ -134,14 +162,24 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
             </div>
           </div>
 
-          <div className={`w-full sm:w-auto ${seekerData?.is_available !== false ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-amber-50 border-amber-200 text-amber-700'} border px-3 py-1.5 rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 mt-16 sm:mt-0`}>
-            <CheckCircle2 className="w-4 h-4" />
-            {seekerData?.is_available !== false
-              ? "متاح للعمل"
-              : seekerData?.current_employer
-                ? `يعمل حالياً في ${seekerData.current_employer}`
-                : "غير متاح حالياً"
-            }
+          <div className="mt-16 sm:mt-0 flex flex-col items-center gap-2 relative z-10">
+            <div className={`w-full sm:w-auto ${seekerData?.is_available !== false ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-amber-50 border-amber-200 text-amber-700'} border px-3 py-1.5 rounded-lg text-sm font-bold flex items-center justify-center gap-1.5`}>
+              <CheckCircle2 className="w-4 h-4" />
+              {seekerData?.is_available !== false
+                ? "متاح للعمل"
+                : seekerData?.current_employer
+                  ? `يعمل حالياً في ${seekerData.current_employer}`
+                  : "غير متاح حالياً"
+              }
+            </div>
+            {seekerData?.is_available !== false && (
+              <button 
+                onClick={() => setShowStatusModal(true)} 
+                className="text-xs text-slate-500 hover:text-brand-600 underline decoration-slate-300 hover:decoration-brand-600 transition-colors bg-white/50 px-2 py-1 rounded"
+              >
+                تحديث حالة التوظيف
+              </button>
+            )}
           </div>
         </div>
 
@@ -456,6 +494,52 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
             </button>
           </div>
         </form>
+      )}
+
+      {showStatusModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-xl border border-slate-100">
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="text-xl font-bold text-slate-900">تحديث حالة التوظيف</h3>
+              <button onClick={() => setShowStatusModal(false)} className="text-slate-400 hover:text-slate-700 bg-slate-100 p-2 rounded-full">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-sm text-slate-600 mb-4 leading-relaxed">
+              تغيير الحالة إلى "يعمل في" يتطلب موافقة الإدارة، وذلك لربط التحديث بالمنشأة التي تم قبولك فيها. يرجى إدخال اسم المنشأة أدناه لتقديم الطلب.
+            </p>
+            <form onSubmit={handleStatusChangeRequest}>
+              <div className="mb-5 text-right">
+                <label className="block text-sm font-bold text-slate-700 mb-2">اسم المنشأة / مكان العمل</label>
+                <input
+                  type="text"
+                  required
+                  value={employerName}
+                  onChange={(e) => setEmployerName(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-right"
+                  placeholder="مثال: مطعم ستايل، فندق الساحل..."
+                />
+              </div>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowStatusModal(false)}
+                  className="flex-1 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingStatus}
+                  className="flex-1 py-2.5 bg-brand-600 text-white rounded-xl text-sm font-bold hover:bg-brand-700 disabled:opacity-70 flex items-center justify-center gap-2"
+                >
+                  {submittingStatus && <Loader2 className="w-4 h-4 animate-spin" />}
+                  إرسال الطلب
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
