@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import {
   Search,
   MapPin,
@@ -353,8 +354,18 @@ function JobCard({ job }: { job: any }) {
       </div>
 
       <div className="flex items-start gap-4 mb-6 relative z-10">
-        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 text-slate-600 flex items-center justify-center font-black text-xl shrink-0 group-hover:scale-110 transition-transform duration-500 shadow-sm">
-          {job.company_name ? job.company_name[0] : "؟"}
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 text-slate-600 flex items-center justify-center font-black text-xl shrink-0 group-hover:scale-110 transition-transform duration-500 shadow-sm overflow-hidden relative">
+          {job.employers?.logo_url ? (
+            <Image
+              src={job.employers.logo_url}
+              alt={job.employers?.company_name || job.company_name}
+              fill
+              className="object-cover"
+              sizes="56px"
+            />
+          ) : (
+            job.company_name ? job.company_name[0] : "؟"
+          )}
         </div>
         <div className="min-w-0 pt-1 text-right">
           <h3 className="text-base font-black text-slate-900 line-clamp-1 group-hover:text-brand-600 transition-colors mb-1">
@@ -362,7 +373,7 @@ function JobCard({ job }: { job: any }) {
           </h3>
           <p className="text-xs font-bold text-slate-500 line-clamp-1 flex items-center gap-1.5">
             <Building2 className="h-3.5 w-3.5 text-brand-600/50" />
-            {job.company_name}
+            {job.employers?.company_name || job.company_name}
           </p>
         </div>
       </div>

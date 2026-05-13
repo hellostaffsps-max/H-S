@@ -96,7 +96,7 @@ export default async function Home() {
       .in("category", HOSPITALITY_CATEGORIES),
     supabase
       .from("jobs")
-      .select("*, employers(company_name)")
+      .select("*, employers(company_name, logo_url)")
       .eq("status", "approved")
       .in("category", HOSPITALITY_CATEGORIES)
       .order("created_at", { ascending: false })
@@ -597,14 +597,24 @@ function JobCard({ job }: { job: any }) {
       </div>
 
       <div className="flex items-start gap-3 mb-4">
-        <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 flex items-center justify-center font-bold text-base shrink-0">
-          {(job.company_name || "؟")[0]}
+        <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 flex items-center justify-center font-bold text-base shrink-0 overflow-hidden relative">
+          {job.employers?.logo_url ? (
+            <Image
+              src={job.employers.logo_url}
+              alt={job.employers?.company_name || job.company_name}
+              fill
+              className="object-cover"
+              sizes="40px"
+            />
+          ) : (
+            (job.company_name || "؟")[0]
+          )}
         </div>
         <div className="min-w-0">
           <h3 className="text-sm font-bold text-slate-900 line-clamp-1">
             {job.title}
           </h3>
-          <p className="text-[13px] text-slate-500 line-clamp-1">{job.company_name}</p>
+          <p className="text-[13px] text-slate-500 line-clamp-1">{job.employers?.company_name || job.company_name}</p>
         </div>
       </div>
 
