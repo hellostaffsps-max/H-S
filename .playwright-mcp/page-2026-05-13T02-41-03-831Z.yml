@@ -1,0 +1,336 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e5]:
+        - link "Hello Staff Hello Staff" [ref=e8] [cursor=pointer]:
+          - /url: /
+          - img "Hello Staff" [ref=e9]
+          - generic [ref=e10]: Hello Staff
+        - navigation [ref=e11]:
+          - link "الرئيسية" [ref=e12] [cursor=pointer]:
+            - /url: /
+            - img [ref=e13]
+            - text: الرئيسية
+          - link "الوظائف" [ref=e16] [cursor=pointer]:
+            - /url: /jobs
+            - img [ref=e17]
+            - text: الوظائف
+        - generic [ref=e21]:
+          - link "تسجيل الدخول" [ref=e22] [cursor=pointer]:
+            - /url: /auth/login
+            - img [ref=e23]
+            - text: تسجيل الدخول
+          - link "إنشاء حساب" [ref=e26] [cursor=pointer]:
+            - /url: /auth/signup
+            - img [ref=e27]
+            - text: إنشاء حساب
+    - main [ref=e30]:
+      - generic [ref=e31]:
+        - generic [ref=e37]:
+          - generic [ref=e38]:
+            - img [ref=e39]
+            - text: منصة التوظيف المتخصصة في الضيافة الفلسطينية
+          - heading "وظّف كفاءات الضيافة أسرع — بدون دوخة الجروبات والواسطات" [level=1] [ref=e42]:
+            - text: وظّف كفاءات الضيافة أسرع
+            - text: — بدون دوخة الجروبات والواسطات
+          - paragraph [ref=e43]: Hello Staff تربط أصحاب المقاهي والمطاعم بكفاءات جاهزة للعمل في فلسطين، مع ملفات واضحة وخبرات قابلة للمراجعة قبل التواصل.
+          - generic [ref=e44]:
+            - link "أنا صاحب مطعم / مقهى" [ref=e45] [cursor=pointer]:
+              - /url: /auth/signup?role=employer
+              - img [ref=e46]
+              - text: أنا صاحب مطعم / مقهى
+            - link "أنا بدور على شغل" [ref=e50] [cursor=pointer]:
+              - /url: /auth/signup?role=seeker
+              - img [ref=e51]
+              - text: أنا بدور على شغل
+          - generic [ref=e55]:
+            - generic [ref=e56]:
+              - img [ref=e57]
+              - 'textbox "ابحث عن وظيفة (مثال: طاهي، نادل...)" [ref=e60]'
+            - generic [ref=e61]:
+              - img [ref=e62]
+              - combobox [ref=e65] [cursor=pointer]:
+                - option "التخصص" [selected]
+                - option "طاهي/ة"
+                - option "نادل/ة"
+                - option "باريستا"
+                - option "كاشير"
+                - option "مدير"
+                - option "توصيل"
+                - option "مضيف/ة"
+                - option "أخرى"
+                - option "مطبخ / شيف"
+                - option "خدمة طعام / جرسون"
+                - option "بارستا / مقهى"
+                - option "استقبال / ريسبشن"
+                - option "تدبير فندقي / تنظيف"
+                - option "إدارة فنادق"
+                - option "محاسبة مطاعم"
+                - option "أمن وحراسة"
+                - option "صيانة عامة"
+                - option "سائق / توصيل"
+                - option "Senior barista"
+            - generic [ref=e66]:
+              - img [ref=e67]
+              - combobox [ref=e68] [cursor=pointer]:
+                - option "نوع الدوام" [selected]
+                - option "دوام كامل"
+                - option "دوام جزئي"
+            - generic [ref=e69]:
+              - img [ref=e70]
+              - combobox [ref=e73] [cursor=pointer]:
+                - option "المدينة" [selected]
+                - option "رام الله"
+                - option "نابلس"
+                - option "الخليل"
+                - option "بيت لحم"
+                - option "جنين"
+                - option "طولكرم"
+                - option "قلقيلية"
+                - option "أريحا"
+                - option "سلفيت"
+                - option "طوباس"
+                - option "القدس"
+            - button "بحث" [ref=e74]:
+              - img [ref=e75]
+              - generic [ref=e78]: بحث
+        - generic [ref=e80]:
+          - paragraph [ref=e81]: نبدأ حالياً مع مجموعة مختارة من المقاهي والمطاعم في فلسطين
+          - paragraph [ref=e82]: انضم إلينا وكن من أوائل المستفيدين من المنصة
+        - generic [ref=e83]:
+          - generic [ref=e84]:
+            - heading "وظائف الضيافة بالتخصص" [level=2] [ref=e85]
+            - paragraph [ref=e86]: اختر تخصصك وابحث عن الفرصة اللي تناسبك
+          - generic [ref=e87]:
+            - link "باريستا" [ref=e88] [cursor=pointer]:
+              - /url: /jobs?cat=%D8%A8%D8%A7%D8%B1%D9%8A%D8%B3%D8%AA%D8%A7
+              - img [ref=e90]
+              - generic [ref=e92]: باريستا
+            - link "طاهي/ة" [ref=e93] [cursor=pointer]:
+              - /url: /jobs?cat=%D8%B7%D8%A7%D9%87%D9%8A%2F%D8%A9
+              - img [ref=e95]
+              - generic [ref=e97]: طاهي/ة
+            - link "نادل/ة" [ref=e98] [cursor=pointer]:
+              - /url: /jobs?cat=%D9%86%D8%A7%D8%AF%D9%84%2F%D8%A9
+              - img [ref=e100]
+              - generic [ref=e103]: نادل/ة
+            - link "كاشير" [ref=e104] [cursor=pointer]:
+              - /url: /jobs?cat=%D9%83%D8%A7%D8%B4%D9%8A%D8%B1
+              - img [ref=e106]
+              - generic [ref=e108]: كاشير
+            - link "مضيف/ة" [ref=e109] [cursor=pointer]:
+              - /url: /jobs?cat=%D9%85%D8%B6%D9%8A%D9%81%2F%D8%A9
+              - img [ref=e111]
+              - generic [ref=e116]: مضيف/ة
+            - link "مساعد مطبخ" [ref=e117] [cursor=pointer]:
+              - /url: /jobs?cat=%D9%85%D8%B3%D8%A7%D8%B9%D8%AF%20%D9%85%D8%B7%D8%A8%D8%AE
+              - img [ref=e119]
+              - generic [ref=e122]: مساعد مطبخ
+            - link "مدير مطعم" [ref=e123] [cursor=pointer]:
+              - /url: /jobs?cat=%D9%85%D8%AF%D9%8A%D8%B1
+              - img [ref=e125]
+              - generic [ref=e128]: مدير مطعم
+            - link "توصيل" [ref=e129] [cursor=pointer]:
+              - /url: /jobs?cat=%D8%AA%D9%88%D8%B5%D9%8A%D9%84
+              - img [ref=e131]
+              - generic [ref=e136]: توصيل
+        - generic [ref=e137]:
+          - generic [ref=e138]:
+            - heading "كيف يعمل Hello Staff؟" [level=2] [ref=e139]
+            - paragraph [ref=e140]: خطوات بسيطة توصلك لهدفك سواء كنت صاحب عمل أو باحث عن شغل
+          - generic [ref=e141]:
+            - generic [ref=e142]:
+              - generic [ref=e143]:
+                - img [ref=e145]
+                - heading "لأصحاب العمل" [level=3] [ref=e149]
+              - generic [ref=e150]:
+                - generic [ref=e151]:
+                  - generic [ref=e153]: "1"
+                  - generic [ref=e155]:
+                    - heading "أنشئ ملف عملك" [level=4] [ref=e156]
+                    - paragraph [ref=e157]: سجّل حساب صاحب عمل وأضف بيانات مطعمك أو مقهاك
+                - generic [ref=e158]:
+                  - generic [ref=e160]: "2"
+                  - generic [ref=e162]:
+                    - heading "انشر الوظيفة" [level=4] [ref=e163]
+                    - paragraph [ref=e164]: اكتب تفاصيل الوظيفة والمتطلبات بنقرة واحدة
+                - generic [ref=e165]:
+                  - generic [ref=e167]: "3"
+                  - generic [ref=e169]:
+                    - heading "راجح المرشحين" [level=4] [ref=e170]
+                    - paragraph [ref=e171]: شاهد ملفات الباحثين عن عمل وخبراتهم قبل التواصل
+                - generic [ref=e172]:
+                  - generic [ref=e174]: "4"
+                  - generic [ref=e175]:
+                    - heading "وظّف بسرعة" [level=4] [ref=e176]
+                    - paragraph [ref=e177]: تواصل مباشر عبر المنصة أو واتساب واختصر وقت التوظيف
+            - generic [ref=e178]:
+              - generic [ref=e179]:
+                - img [ref=e181]
+                - heading "للباحثين عن عمل" [level=3] [ref=e184]
+              - generic [ref=e185]:
+                - generic [ref=e186]:
+                  - generic [ref=e188]: "1"
+                  - generic [ref=e190]:
+                    - heading "أنشئ ملفك" [level=4] [ref=e191]
+                    - paragraph [ref=e192]: سجّل كباحث عن عمل وأضف مهاراتك وخبراتك
+                - generic [ref=e193]:
+                  - generic [ref=e195]: "2"
+                  - generic [ref=e197]:
+                    - heading "أضف مهاراتك" [level=4] [ref=e198]
+                    - paragraph [ref=e199]: حدد تخصصك في الضيافة وسنوات خبرتك
+                - generic [ref=e200]:
+                  - generic [ref=e202]: "3"
+                  - generic [ref=e204]:
+                    - heading "قدّم على الوظائف" [level=4] [ref=e205]
+                    - paragraph [ref=e206]: ابحث بوظائف قطاع الضيافة وقدّم بملفك الواضح
+                - generic [ref=e207]:
+                  - generic [ref=e209]: "4"
+                  - generic [ref=e210]:
+                    - heading "تواصل مع أصحاب العمل" [level=4] [ref=e211]
+                    - paragraph [ref=e212]: استلم ردوداً وتواصل مباشرة مع أصحاب المطاعم
+        - generic [ref=e214]:
+          - generic [ref=e215]:
+            - heading "ليش تختار Hello Staff؟" [level=2] [ref=e216]
+            - paragraph [ref=e217]: بناءً على تحديات فعلية واجهناها مع أصحاب المطاعم والمقاهي
+          - generic [ref=e218]:
+            - generic [ref=e219]:
+              - img [ref=e221]
+              - heading "مصمم خصيصاً لسوق الضيافة الفلسطيني" [level=3] [ref=e224]
+              - paragraph [ref=e225]: نركز فقط على المقاهي، المطاعم، الفنادق، وخدمات الطعام
+            - generic [ref=e226]:
+              - img [ref=e228]
+              - heading "ملفات مرشحين واضحة" [level=3] [ref=e232]
+              - paragraph [ref=e233]: شاهد الخبرات والمهارات قبل حتى ما تتواصل مع المرشح
+            - generic [ref=e234]:
+              - img [ref=e236]
+              - heading "تواصل أسرع بدون واسطات" [level=3] [ref=e238]
+              - paragraph [ref=e239]: راسل صاحب العمل أو المرشح مباشرة عبر المنصة أو واتساب
+            - generic [ref=e240]:
+              - img [ref=e242]
+              - heading "تخصصات ضيافة فقط" [level=3] [ref=e244]
+              - paragraph [ref=e245]: ما فيش وظائف برّة القطاع — كل إعلان موجه لأهل الضيافة
+        - generic [ref=e246]:
+          - generic [ref=e247]:
+            - generic [ref=e248]:
+              - heading "أحدث الوظائف" [level=2] [ref=e249]
+              - paragraph [ref=e250]: فرص جديدة في قطاع الضيافة
+            - link "عرض الكل" [ref=e251] [cursor=pointer]:
+              - /url: /jobs
+              - text: عرض الكل
+              - img [ref=e252]
+          - generic [ref=e254]:
+            - img [ref=e255]
+            - paragraph [ref=e258]: لا توجد وظائف منشورة حالياً
+            - paragraph [ref=e259]: كن أول من ينشر وظيفة على المنصة
+            - link "انشر وظيفة" [ref=e260] [cursor=pointer]:
+              - /url: /post-job
+              - img [ref=e261]
+              - text: انشر وظيفة
+        - generic [ref=e267]:
+          - heading "جاهز توظّف كفاءات لمطعمك؟" [level=2] [ref=e268]
+          - paragraph [ref=e269]: أنشئ حسابك كصاحب عمل مجاناً وانشر أول وظيفة في دقائق. لا رسوم خفية، ولا تعقيدات.
+          - generic [ref=e270]:
+            - link "أنشئ حساب صاحب عمل" [ref=e271] [cursor=pointer]:
+              - /url: /auth/signup?role=employer
+              - img [ref=e272]
+              - text: أنشئ حساب صاحب عمل
+            - link "أنشئ حساب باحث عن عمل" [ref=e276] [cursor=pointer]:
+              - /url: /auth/signup?role=seeker
+              - img [ref=e277]
+              - text: أنشئ حساب باحث عن عمل
+    - contentinfo [ref=e280]:
+      - generic [ref=e281]:
+        - generic [ref=e282]:
+          - generic [ref=e283]:
+            - link "Hello Staff Hello Staff" [ref=e284] [cursor=pointer]:
+              - /url: /
+              - img "Hello Staff" [ref=e285]
+              - generic [ref=e286]: Hello Staff
+            - paragraph [ref=e287]: المنصة المتخصصة الأولى لربط الكفاءات وأصحاب العمل في قطاع الضيافة والمطاعم بفعالية وسهولة، نوفر حلول توظيف ذكية تواكب تطلعاتك.
+            - generic [ref=e288]:
+              - link [ref=e289] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e290]
+              - link [ref=e292] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e293]
+              - link [ref=e295] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e296]
+              - link [ref=e299] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e300]
+          - generic [ref=e304]:
+            - heading "الباحثين عن عمل" [level=3] [ref=e305]
+            - list [ref=e306]:
+              - listitem [ref=e307]:
+                - link "تصفح الوظائف" [ref=e308] [cursor=pointer]:
+                  - /url: /jobs
+              - listitem [ref=e309]:
+                - link "أنشئ سيرتك الذاتية" [ref=e310] [cursor=pointer]:
+                  - /url: /profile
+              - listitem [ref=e311]:
+                - link "تنبيهات الوظائف" [ref=e312] [cursor=pointer]:
+                  - /url: /job-alerts
+              - listitem [ref=e313]:
+                - link "نصائح المقابلات" [ref=e314] [cursor=pointer]:
+                  - /url: /interview-tips
+          - generic [ref=e315]:
+            - heading "أصحاب العمل" [level=3] [ref=e316]
+            - list [ref=e317]:
+              - listitem [ref=e318]:
+                - link "انشر وظيفة" [ref=e319] [cursor=pointer]:
+                  - /url: /post-job
+              - listitem [ref=e320]:
+                - link "ابحث في السير الذاتية" [ref=e321] [cursor=pointer]:
+                  - /url: /search-resumes
+              - listitem [ref=e322]:
+                - link "باقات الأسعار" [ref=e323] [cursor=pointer]:
+                  - /url: /pricing
+              - listitem [ref=e324]:
+                - link "لوحة التحكم" [ref=e325] [cursor=pointer]:
+                  - /url: /dashboard
+          - generic [ref=e326]:
+            - heading "الشركة" [level=3] [ref=e327]
+            - list [ref=e328]:
+              - listitem [ref=e329]:
+                - link "من نحن" [ref=e330] [cursor=pointer]:
+                  - /url: /about
+              - listitem [ref=e331]:
+                - link "اتصل بنا" [ref=e332] [cursor=pointer]:
+                  - /url: /contact
+              - listitem [ref=e333]:
+                - link "المدونة" [ref=e334] [cursor=pointer]:
+                  - /url: /blog
+              - listitem [ref=e335]:
+                - link "مركز المساعدة" [ref=e336] [cursor=pointer]:
+                  - /url: /help
+          - generic [ref=e337]:
+            - heading "تواصل معنا" [level=3] [ref=e338]
+            - list [ref=e339]:
+              - listitem [ref=e340]:
+                - link "support@staffps.com" [ref=e341] [cursor=pointer]:
+                  - /url: mailto:support@staffps.com
+                  - img [ref=e342]
+                  - text: support@staffps.com
+              - listitem [ref=e345]:
+                - link "+970 56 906 9686" [ref=e346] [cursor=pointer]:
+                  - /url: tel:+970569069686
+                  - img [ref=e347]
+                  - text: +970 56 906 9686
+              - listitem [ref=e349]:
+                - link "واتساب" [ref=e350] [cursor=pointer]:
+                  - /url: https://wa.me/970569069686
+                  - img [ref=e351]
+                  - text: واتساب
+        - generic [ref=e353]:
+          - paragraph [ref=e354]: © 2026 Hello Staff. جميع الحقوق محفوظة.
+          - generic [ref=e355]:
+            - link "سياسة الخصوصية" [ref=e356] [cursor=pointer]:
+              - /url: /privacy
+            - link "شروط الاستخدام" [ref=e358] [cursor=pointer]:
+              - /url: /terms
+            - link "سياسة ملفات الارتباط" [ref=e360] [cursor=pointer]:
+              - /url: /cookies
+  - alert [ref=e361]
