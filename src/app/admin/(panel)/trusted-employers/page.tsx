@@ -42,6 +42,9 @@ export default function TrustedEmployersPage() {
   const [displayOrder, setDisplayOrder] = useState(0);
   const [submitting, setSubmitting] = useState(false);
 
+  const [employerList, setEmployerList] = useState<{ profile_id: string; company_name: string; logo_url: string | null }[]>([]);
+  const [selectedEmployerId, setSelectedEmployerId] = useState("");
+
   const fetchEmployers = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -62,8 +65,19 @@ export default function TrustedEmployersPage() {
     fetchEmployers();
   }, [fetchEmployers]);
 
+  async function fetchEmployerList() {
+    const { data, error } = await supabase
+      .from("employers")
+      .select("profile_id, company_name, logo_url")
+      .order("company_name", { ascending: true });
+    if (!error && data) {
+      setEmployerList(data);
+    }
+  }
+
   function openModal(emp?: TrustedEmployer) {
     setFormError(null);
+    setSelectedEmployerId("");
     if (emp) {
       setEditing(emp);
       setName(emp.name);
@@ -78,6 +92,7 @@ export default function TrustedEmployersPage() {
       setIsVerified(false);
       setIsActive(true);
       setDisplayOrder(employers.length);
+      fetchEmployerList();
     }
     setModalOpen(true);
   }
@@ -318,6 +333,34 @@ export default function TrustedEmployersPage() {
                 <div className="p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-2 text-red-700 text-sm">
                   <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                   <p>{formError}</p>
+                </div>
+              )}
+
+              {!editing && employerList.length > 0 && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1.5">
+                    اختر منشأة من قائمة أصحاب العمل
+                  </label>
+                  <select
+                    value={selectedEmployerId}
+                    onChange={(e) => {
+                      const id = e.target.value;
+                      setSelectedEmployerId(id);
+                      const emp = employerList.find((x) => x.profile_id === id);
+                      if (emp) {
+                        setName(emp.company_name || "");
+                        setLogoUrl(emp.logo_url || "");
+                      }
+                    }}
+                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent appearance-none"
+                  >
+                    <option value="">— اختر منشأة —</option>
+                    {employerList.map((emp) => (
+                      <option key={emp.profile_id} value={emp.profile_id}>
+                        {emp.company_name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               )}
 
