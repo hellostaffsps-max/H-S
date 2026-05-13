@@ -38,7 +38,7 @@ export default function TrustedEmployersCarousel() {
 
   const scroll = (direction: "left" | "right") => {
     if (!scrollRef.current) return;
-    const scrollAmount = 280;
+    const scrollAmount = 300;
     scrollRef.current.scrollBy({
       left: direction === "left" ? -scrollAmount : scrollAmount,
       behavior: "smooth",
@@ -47,14 +47,13 @@ export default function TrustedEmployersCarousel() {
 
   if (loading) {
     return (
-      <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-10 pb-4">
-        <div className="flex gap-4 overflow-hidden">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div
-              key={i}
-              className="min-w-[200px] h-24 bg-slate-100 rounded-2xl animate-pulse"
-            />
-          ))}
+      <section className="w-full bg-white border-y border-slate-100 py-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex gap-4 overflow-hidden">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="min-w-[220px] h-28 bg-slate-100 rounded-2xl animate-pulse" />
+            ))}
+          </div>
         </div>
       </section>
     );
@@ -63,39 +62,39 @@ export default function TrustedEmployersCarousel() {
   if (employers.length === 0) return null;
 
   return (
-    <section className="w-full bg-white/60 backdrop-blur-sm border-y border-slate-100 py-8 sm:py-10">
+    <section className="w-full bg-gradient-to-b from-slate-50/50 to-white border-y border-slate-100 py-10 sm:py-14">
       <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center">
-              <Building2 className="w-5 h-5 text-brand-600" />
+            <div className="w-11 h-11 rounded-2xl bg-brand-600 flex items-center justify-center shadow-lg shadow-brand-200">
+              <Building2 className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-black text-slate-900">
+              <h3 className="text-lg sm:text-xl font-black text-slate-900">
                 منشآت تثق بـ Hello Staff
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs sm:text-sm text-slate-500">
                 شركاؤنا في قطاع الضيافة والمطاعم
               </p>
             </div>
           </div>
 
-          {/* Arrows (desktop only) */}
-          <div className="hidden sm:flex items-center gap-2">
+          {/* Arrows */}
+          <div className="flex items-center gap-2">
             <button
               onClick={() => scroll("left")}
-              className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-brand-600 hover:border-brand-200 transition-all shadow-sm"
+              className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-brand-600 hover:border-brand-300 hover:shadow-md transition-all shadow-sm"
               aria-label="السابق"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-5 h-5" />
             </button>
             <button
               onClick={() => scroll("right")}
-              className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-brand-600 hover:border-brand-200 transition-all shadow-sm"
+              className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-brand-600 hover:border-brand-300 hover:shadow-md transition-all shadow-sm"
               aria-label="التالي"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -104,39 +103,39 @@ export default function TrustedEmployersCarousel() {
         <div className="relative">
           <div
             ref={scrollRef}
-            className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 scroll-smooth"
+            className="flex gap-4 overflow-x-auto pb-3 scroll-smooth"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {employers.map((emp) => (
               <div
                 key={emp.id}
-                className="group relative min-w-[180px] sm:min-w-[200px] bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center gap-3 hover:border-brand-200 hover:shadow-lg transition-all cursor-default select-none"
+                className="group relative min-w-[220px] sm:min-w-[240px] bg-white border border-slate-100 rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-brand-200 hover:shadow-xl hover:shadow-brand-500/5 hover:-translate-y-1 transition-all duration-300 cursor-default select-none"
               >
                 {/* Verified badge */}
                 {emp.is_verified && (
-                  <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-amber-400 text-white text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-0.5 shadow-sm z-10">
+                  <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-amber-400 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md z-10">
                     <Star className="w-3 h-3 fill-white" />
                     موثق
                   </div>
                 )}
 
                 {/* Logo */}
-                <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform p-1.5">
+                <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-300 p-2">
                   {emp.logo_url ? (
                     <Image
                       src={emp.logo_url}
                       alt={emp.name}
                       fill
                       className="object-contain"
-                      sizes="64px"
+                      sizes="80px"
                     />
                   ) : (
-                    <Building2 className="w-6 h-6 text-slate-300" />
+                    <Building2 className="w-8 h-8 text-slate-300" />
                   )}
                 </div>
 
                 {/* Name */}
-                <p className="text-xs sm:text-sm font-bold text-slate-700 text-center line-clamp-1">
+                <p className="text-sm font-bold text-slate-800 text-center line-clamp-1">
                   {emp.name}
                 </p>
               </div>
