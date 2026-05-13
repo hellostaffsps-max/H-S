@@ -236,13 +236,13 @@ export default function TrustedEmployersPage() {
                       </p>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="relative w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden">
+                      <div className="relative w-10 h-10 rounded-lg bg-white border border-slate-100 flex items-center justify-center overflow-hidden p-0.5">
                         {emp.logo_url ? (
                           <Image
                             src={emp.logo_url}
                             alt={emp.name}
                             fill
-                            className="object-cover"
+                            className="object-contain"
                             sizes="40px"
                           />
                         ) : (

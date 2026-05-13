@@ -110,13 +110,13 @@ export default async function JobDetailPage({ params }: Props) {
 
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
             <div className="flex items-start gap-6">
-              <div className="w-20 h-20 rounded-[28px] bg-gradient-to-br from-brand-500 to-brand-700 shadow-xl shadow-brand-500/20 flex items-center justify-center text-white text-3xl font-black shrink-0 border-4 border-white overflow-hidden relative">
+              <div className="w-20 h-20 rounded-[28px] bg-white shadow-xl shadow-brand-500/20 flex items-center justify-center text-white text-3xl font-black shrink-0 border-4 border-white overflow-hidden relative p-1">
                 {job.employers?.logo_url ? (
                   <Image
                     src={job.employers.logo_url}
                     alt={job.employers?.company_name || job.company_name}
                     fill
-                    className="object-cover"
+                    className="object-contain"
                     sizes="80px"
                   />
                 ) : (

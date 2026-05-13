@@ -121,13 +121,13 @@ export default function TrustedEmployersCarousel() {
                 )}
 
                 {/* Logo */}
-                <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform">
+                <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform p-1.5">
                   {emp.logo_url ? (
                     <Image
                       src={emp.logo_url}
                       alt={emp.name}
                       fill
-                      className="object-cover"
+                      className="object-contain"
                       sizes="64px"
                     />
                   ) : (

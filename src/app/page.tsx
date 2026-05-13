@@ -597,13 +597,13 @@ function JobCard({ job }: { job: any }) {
       </div>
 
       <div className="flex items-start gap-3 mb-4">
-        <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 flex items-center justify-center font-bold text-base shrink-0 overflow-hidden relative">
+        <div className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center font-bold text-base shrink-0 overflow-hidden relative p-0.5">
           {job.employers?.logo_url ? (
             <Image
               src={job.employers.logo_url}
               alt={job.employers?.company_name || job.company_name}
               fill
-              className="object-cover"
+              className="object-contain"
               sizes="40px"
             />
           ) : (
