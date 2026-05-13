@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 export interface SubscriptionFeatures {
   plan_id: string;
   plan_name: string;
-  status: 'active' | 'pending' | 'none';
+  status: 'active' | 'pending' | 'free' | 'none';
   job_limit: number;
   allow_articles: boolean;
   featured_listings: boolean;

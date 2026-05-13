@@ -195,7 +195,7 @@ export default function PricingPage() {
         user_id: profile.id,
         plan_name: plan.name || plan.plan_name || "باقة مخصصة",
         payment_receipt_url: isFree ? null : receiptUrl,
-        status: isFree ? "active" : "pending",
+        status: isFree ? "free" : "pending",
       };
 
       // Only include plan_id if it's a valid UUID (not a fallback string like 'pro')

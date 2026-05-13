@@ -57,7 +57,7 @@ export default function EmployerArticles() {
         .from('user_subscriptions')
         .select('*, subscription_plans(max_articles_per_month)')
         .eq('user_id', profile.id)
-        .eq('status', 'active')
+        .in('status', ['active', 'free'])
         .limit(1)
         .single();
         

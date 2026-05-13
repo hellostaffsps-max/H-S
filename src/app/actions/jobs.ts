@@ -149,7 +149,7 @@ export async function createJob(formData: FormData) {
     .from('user_subscriptions')
     .select('*, subscription_plans(*)')
     .eq('user_id', user.id)
-    .eq('status', 'active')
+    .in('status', ['active', 'free'])
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();

@@ -19,7 +19,6 @@ interface SeekerProfile {
     full_name: string;
     avatar_url: string | null;
     location: string | null;
-    phone: string | null;
   } | null;
 }
 
@@ -47,32 +46,48 @@ export default function SearchResumes() {
 
   async function fetchSeekers() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("seekers")
-      .select(`
-        profile_id,
-        job_title,
-        bio,
-        experience_years,
-        skills,
-        is_available,
-        current_employer,
-        profiles(full_name, avatar_url, location, phone)
-      `)
-      .eq("is_available", true);
+    const [{ data: seekersData, error: seekersError }, { data: profilesData, error: profilesError }] = await Promise.all([
+      supabase
+        .from("seekers")
+        .select(`
+          profile_id,
+          job_title,
+          bio,
+          experience_years,
+          skills,
+          is_available,
+          current_employer
+        `)
+        .eq("is_available", true),
+      supabase
+        .from("public_profiles")
+        .select("id, full_name, avatar_url, location"),
+    ]);
 
-    if (error) {
-      console.error("Error fetching seekers:", error);
-    } else {
-      const normalized = (data || []).map((item: any) => {
-        const prof = Array.isArray(item.profiles) ? item.profiles[0] : item.profiles;
-        return {
-          ...item,
-          profiles: prof || null,
-        };
-      });
-      setSeekers(normalized as SeekerProfile[]);
+    if (seekersError) {
+      console.error("Error fetching seekers:", seekersError);
     }
+    if (profilesError) {
+      console.error("Error fetching profiles:", profilesError);
+    }
+
+    const profileMap = new Map((profilesData || []).map((p: any) => [p.id, p]));
+
+    const normalized = (seekersData || []).map((item: any) => {
+      const prof = profileMap.get(item.profile_id);
+      return {
+        ...item,
+        profiles: prof
+          ? {
+              full_name: prof.full_name,
+              avatar_url: prof.avatar_url,
+              location: prof.location,
+            }
+          : null,
+      };
+    });
+
+    setSeekers(normalized as SeekerProfile[]);
     setLoading(false);
   }
 

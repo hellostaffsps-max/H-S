@@ -62,7 +62,7 @@ export default function CVBuilder() {
       if (viewId) {
         const [viewSeeker, viewProf] = await Promise.all([
           supabase.from('seekers').select('resume_data').eq('profile_id', viewId).single(),
-          supabase.from('profiles').select('full_name, avatar_url, phone, email, location').eq('id', viewId).single(),
+          supabase.from('public_profiles').select('full_name, avatar_url').eq('id', viewId).single(),
         ]);
         if (viewSeeker.data?.resume_data && Object.keys(viewSeeker.data.resume_data).length > 0) {
           const d = viewSeeker.data.resume_data as any;

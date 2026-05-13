@@ -41,9 +41,15 @@ export async function proxy(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  // Protected admin routes
-  if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
+  // Protected admin routes (pages + API)
+  const isAdminRoute = pathname.startsWith('/admin') && pathname !== '/admin/login';
+  const isAdminApiRoute = pathname.startsWith('/api/admin');
+
+  if (isAdminRoute || isAdminApiRoute) {
     if (!user) {
+      if (isAdminApiRoute) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = '/admin/login';
       return NextResponse.redirect(redirectUrl);
@@ -57,6 +63,9 @@ export async function proxy(request: NextRequest) {
       .single();
 
     if (!profile || profile.role !== 'admin') {
+      if (isAdminApiRoute) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
       await supabase.auth.signOut();
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = '/admin/login';
@@ -76,6 +85,26 @@ export async function proxy(request: NextRequest) {
 
   // Protected profile routes
   if (pathname.startsWith('/profile')) {
+    if (!user) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/auth/login';
+      redirectUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
+  // Protected messages routes
+  if (pathname.startsWith('/messages')) {
+    if (!user) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/auth/login';
+      redirectUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
+  // Protected job alerts routes
+  if (pathname.startsWith('/job-alerts')) {
     if (!user) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = '/auth/login';
