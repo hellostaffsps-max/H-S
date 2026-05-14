@@ -94,12 +94,15 @@ export function useAuth() {
     }
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, captchaToken?: string) => {
     setError(null);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
+        options: {
+          captchaToken: captchaToken || undefined,
+        }
       });
 
       if (error) throw error;

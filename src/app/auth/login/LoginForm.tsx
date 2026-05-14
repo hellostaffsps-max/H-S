@@ -7,6 +7,7 @@ import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
 import { Lock, Mail, AlertCircle, Loader2 } from "lucide-react";
+import { Turnstile } from "@marsidev/react-turnstile";
 
 interface LoginFormProps {
   redirect?: string;
@@ -15,6 +16,7 @@ interface LoginFormProps {
 export default function LoginForm({ redirect = "/dashboard" }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
@@ -44,6 +46,9 @@ export default function LoginForm({ redirect = "/dashboard" }: LoginFormProps) {
       const { error: loginError } = await supabase.auth.signInWithPassword({
         email,
         password,
+        options: {
+          captchaToken: captchaToken || undefined,
+        }
       });
 
       if (loginError) throw loginError;
@@ -149,9 +154,16 @@ export default function LoginForm({ redirect = "/dashboard" }: LoginFormProps) {
             </div>
           </div>
 
+          <div className="flex justify-center py-2">
+            <Turnstile 
+              siteKey="0x4AAAAAADO2aIuCx4SlQRvd" 
+              onSuccess={(token) => setCaptchaToken(token)}
+            />
+          </div>
+
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !captchaToken}
             className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 sm:py-4 rounded-2xl shadow-lg shadow-brand-200 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mt-4"
           >
             {loading ? (

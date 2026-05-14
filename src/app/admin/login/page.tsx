@@ -5,10 +5,12 @@ import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { ChefHat, Lock, User, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import Image from 'next/image';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 export default function AdminLogin() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -38,6 +40,9 @@ export default function AdminLogin() {
           const { error: directLoginError } = await supabase.auth.signInWithPassword({
             email: input,
             password,
+            options: {
+              captchaToken: captchaToken || undefined,
+            }
           });
           if (directLoginError) throw new Error('اسم المستخدم أو كلمة المرور غير صحيحة');
 
@@ -88,6 +93,9 @@ export default function AdminLogin() {
       const { error: loginError } = await supabase.auth.signInWithPassword({
         email: emailToLogin!,
         password,
+        options: {
+          captchaToken: captchaToken || undefined,
+        }
       });
 
       if (loginError) throw new Error('اسم المستخدم أو كلمة المرور غير صحيحة');
@@ -209,9 +217,16 @@ export default function AdminLogin() {
               </div>
             </div>
 
+            <div className="flex justify-center py-2">
+              <Turnstile 
+                siteKey="0x4AAAAAADO2aIuCx4SlQRvd" 
+                onSuccess={(token) => setCaptchaToken(token)}
+              />
+            </div>
+
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !captchaToken}
               className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-brand-200 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mt-4"
             >
               {loading ? (
