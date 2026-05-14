@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
       return new NextResponse("Missing path parameter", { status: 400 });
     }
 
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Generate a signed URL valid for 1 hour (3600 seconds)
     const { data, error } = await supabase.storage
