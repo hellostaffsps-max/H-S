@@ -1,15 +1,11 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
   const url = request.nextUrl.clone();
 
-  // Domain Redirect: staffps.com -> www.staffps.com
-  if (hostname === 'staffps.com') {
-    url.hostname = 'www.staffps.com';
-    return NextResponse.redirect(url, 301);
-  }
+  // Removed domain redirect to prevent infinite loops with Vercel edge configs
 
   let supabaseResponse = NextResponse.next({ request });
 

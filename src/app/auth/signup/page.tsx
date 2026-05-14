@@ -69,8 +69,7 @@ function SignupForm() {
         setLoading(false);
         return;
       }
-      router.push(role === 'employer' ? '/pricing' : '/dashboard');
-      router.refresh();
+      window.location.href = role === 'employer' ? '/pricing' : '/dashboard';
     } else {
       setError(result.error || 'حدث خطأ أثناء إنشاء الحساب');
       setLoading(false);

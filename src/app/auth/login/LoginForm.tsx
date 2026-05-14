@@ -53,8 +53,7 @@ export default function LoginForm({ redirect = "/dashboard" }: LoginFormProps) {
       });
 
       if (loginError) throw loginError;
-      router.push(redirect);
-      router.refresh();
+      window.location.href = redirect;
     } catch (err: any) {
       // Use a generic error message for all login failures to prevent email enumeration (Fix 6)
       setError("بيانات الدخول غير صحيحة، أو لم تقم بتفعيل حسابك بعد.");
