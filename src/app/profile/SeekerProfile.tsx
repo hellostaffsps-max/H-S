@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Pencil, CheckCircle2, FileText, Save, Loader2, MapPin, Phone, X } from "lucide-react";
+import { Pencil, CheckCircle2, FileText, Save, Loader2, MapPin, Phone, X, Trophy } from "lucide-react";
 import AvatarUpload from "@/components/AvatarUpload";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { updateProfile, updateSeekerProfile } from "@/app/actions/profile";
@@ -160,6 +160,12 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
               <h1 className="text-xl sm:text-2xl font-bold text-slate-900 truncate">
                 {profile?.full_name || "مرحباً"}
               </h1>
+              {seekerData?.is_featured && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-amber-100 to-yellow-50 text-amber-800 border border-amber-300 rounded-full text-xs font-bold shadow-sm w-fit">
+                  <Trophy className="h-3.5 w-3.5 text-amber-600" />
+                  {"موظف مميز"}
+                </span>
+              )}
               <p className="text-slate-500 text-sm">
                 {seekerData?.job_title || "أضف مسماك الوظيفي"}
               </p>

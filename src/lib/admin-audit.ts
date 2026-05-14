@@ -69,6 +69,8 @@ export const AuditActions = {
   USER_UPDATE_ROLE: 'user.update_role',
   USER_VERIFY: 'user.verify',
   USER_REJECT: 'user.reject',
+  USER_FEATURE: 'user.feature',
+  USER_UNFEATURE: 'user.unfeature',
 
   MODERATOR_CREATE: 'moderator.create',
 

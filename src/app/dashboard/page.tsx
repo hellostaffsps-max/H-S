@@ -34,7 +34,8 @@ import {
   Mail,
   Download,
   User,
-  Megaphone
+  Megaphone,
+  Trophy
 } from "lucide-react";
 import { calculateProfileCompletion } from "@/lib/profile-utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -994,8 +995,20 @@ function EmployerDashboard({
                         )}
                       </div>
                       <div>
-                        <h3 className="font-bold text-slate-900 group-hover:text-brand-700 transition-colors line-clamp-1">{app.seekers?.profiles?.full_name || "مستخدم"}</h3>
-                        <p className="text-[11px] text-slate-500 font-bold">{app.seekers?.job_title || "باحث عن عمل"}</p>
+                        <h3 className="font-bold text-slate-900 group-hover:text-brand-700 transition-colors line-clamp-1 flex items-center gap-1.5">
+                          {app.seekers?.profiles?.full_name || "مستخدم"}
+                          {app.seekers?.is_featured && (
+                            <Trophy className="h-3.5 w-3.5 text-amber-500" />
+                          )}
+                        </h3>
+                        <div className="flex items-center gap-2">
+                          <p className="text-[11px] text-slate-500 font-bold">{app.seekers?.job_title || "باحث عن عمل"}</p>
+                          {app.seekers?.is_featured && (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-amber-100 to-yellow-50 text-amber-800 border border-amber-300 rounded text-[9px] font-bold shadow-sm">
+                              موظف مميز
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <StatusDropdown

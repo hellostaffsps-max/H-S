@@ -44,7 +44,7 @@ export async function getTeamMembers() {
         skills,
         is_available,
         current_employer,
-        profiles(full_name, avatar_url, location, phone, email)
+        profiles!seekers_profile_id_fkey(full_name, avatar_url, location, phone, email)
       )
     `)
     .in('job_id', jobIds)
