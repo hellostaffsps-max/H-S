@@ -14,6 +14,7 @@ interface Props {
 export default function PaymentModal({ isOpen, onClose, userId }: Props) {
   const [settings, setSettings] = useState<any>(null);
   const [receiptUrl, setReceiptUrl] = useState('');
+  const [receiptPath, setReceiptPath] = useState('');
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -35,8 +36,12 @@ export default function PaymentModal({ isOpen, onClose, userId }: Props) {
       const fileName = `${userId}/${Date.now()}.${file.name.split('.').pop()}`;
       const { error } = await supabase.storage.from('payment_receipts').upload(fileName, file);
       if (error) throw error;
-      const { data: { publicUrl } } = supabase.storage.from('payment_receipts').getPublicUrl(fileName);
-      setReceiptUrl(publicUrl);
+      const { data: signedData, error: signedError } = await supabase.storage
+        .from('payment_receipts')
+        .createSignedUrl(fileName, 3600);
+      if (signedError || !signedData) throw signedError ?? new Error('فشل إنشاء رابط الإيصال');
+      setReceiptPath(fileName);
+      setReceiptUrl(signedData.signedUrl);
     } catch {
       setError('حدث خطأ أثناء رفع الوصل');
     } finally {
@@ -45,10 +50,10 @@ export default function PaymentModal({ isOpen, onClose, userId }: Props) {
   };
 
   const handleSubmit = async () => {
-    if (!receiptUrl) return;
+    if (!receiptPath) return;
     setSubmitting(true);
     setError('');
-    const result = await requestCVDownload(receiptUrl);
+    const result = await requestCVDownload(receiptPath);
     if (result.success) {
       setSuccess(true);
     } else {
@@ -108,7 +113,7 @@ export default function PaymentModal({ isOpen, onClose, userId }: Props) {
               <div className="space-y-3">
                 <div className="relative rounded-xl overflow-hidden border h-32 bg-slate-50">
                   <Image src={receiptUrl} alt="Receipt" fill className="object-contain p-2" sizes="(max-width: 768px) 100vw, 512px" />
-                  <button onClick={() => setReceiptUrl('')} className="absolute top-2 left-2 bg-white/90 text-red-600 px-2 py-1 rounded text-xs font-bold">تغيير</button>
+                  <button onClick={() => { setReceiptUrl(''); setReceiptPath(''); }} className="absolute top-2 left-2 bg-white/90 text-red-600 px-2 py-1 rounded text-xs font-bold">تغيير</button>
                 </div>
                 <button onClick={handleSubmit} disabled={submitting} className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 flex items-center justify-center gap-2">
                   {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}

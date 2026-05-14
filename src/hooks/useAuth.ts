@@ -69,7 +69,7 @@ export function useAuth() {
     };
   }, [fetchProfile]);
 
-  const signUp = async (email: string, password: string, role: AppRole, fullName: string) => {
+  const signUp = async (email: string, password: string, role: AppRole, fullName: string, captchaToken?: string) => {
     setError(null);
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -77,6 +77,7 @@ export function useAuth() {
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/auth/callback`,
+          captchaToken,
           data: {
             full_name: fullName,
             role,

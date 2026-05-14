@@ -50,11 +50,8 @@ export default function LoginForm({ redirect = "/dashboard" }: LoginFormProps) {
       router.push(redirect);
       router.refresh();
     } catch (err: any) {
-      let errorMessage = err.message || "حدث خطأ أثناء تسجيل الدخول";
-      if (errorMessage === "Invalid login credentials") {
-        errorMessage = "بيانات الدخول غير صحيحة، أو لم تقم بتفعيل حسابك بعد (يرجى مراجعة بريدك الإلكتروني).";
-      }
-      setError(errorMessage);
+      // Use a generic error message for all login failures to prevent email enumeration (Fix 6)
+      setError("بيانات الدخول غير صحيحة، أو لم تقم بتفعيل حسابك بعد.");
       setLoading(false);
     }
   };

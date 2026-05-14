@@ -106,6 +106,7 @@ export default function PricingPage() {
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [receiptPath, setReceiptPath] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -162,11 +163,15 @@ export default function PricingPage() {
 
       if (uploadError) throw uploadError;
 
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("payment_receipts").getPublicUrl(fileName);
+      // payment_receipts is private — use signed URL (1 hour) for UI preview only
+      const { data: signedData, error: signedError } = await supabase.storage
+        .from("payment_receipts")
+        .createSignedUrl(fileName, 3600);
 
-      setReceiptUrl(publicUrl);
+      if (signedError || !signedData) throw signedError ?? new Error("فشل إنشاء رابط الإيصال");
+
+      setReceiptPath(fileName); // Store relative path in state to save to DB
+      setReceiptUrl(signedData.signedUrl); // Use temporary signed URL for UI preview
     } catch (error: any) {
       console.error("Upload error:", error.message);
       alert("حدث خطأ أثناء رفع الوصل. المرجو المحاولة مرة أخرى.");
@@ -194,7 +199,7 @@ export default function PricingPage() {
       const subData: any = {
         user_id: profile.id,
         plan_name: plan.name || plan.plan_name || "باقة مخصصة",
-        payment_receipt_url: isFree ? null : receiptUrl,
+        payment_receipt_url: isFree ? null : receiptPath,
         status: isFree ? "free" : "pending",
       };
 
@@ -470,7 +475,10 @@ export default function PricingPage() {
                       className="w-full h-full object-contain p-2"
                     />
                     <button
-                      onClick={() => setReceiptUrl("")}
+                      onClick={() => {
+                        setReceiptUrl("");
+                        setReceiptPath("");
+                      }}
                       className="absolute top-2 left-2 bg-white/90 text-red-600 px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-50"
                     >
                       تغيير

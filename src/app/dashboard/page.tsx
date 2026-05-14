@@ -619,7 +619,7 @@ function ApplicantModal({
                   </a>
                 )}
                 {seeker?.cv_url && (
-                  <a href={seeker.cv_url} target="_blank" rel="noopener noreferrer"
+                  <a href={seeker.cv_url.startsWith('http') ? seeker.cv_url : `/api/cv?path=${encodeURIComponent(seeker.cv_url)}`} target="_blank" rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 bg-slate-900 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-800 transition-colors">
                     <Download className="w-4 h-4" />تحميل ملف CV
                   </a>

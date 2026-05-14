@@ -1,0 +1,258 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - main [ref=e3]:
+      - generic [ref=e47]:
+        - complementary [ref=e48]:
+          - link "Hello Staff لوحة الإدارة Hello Staff" [ref=e50] [cursor=pointer]:
+            - /url: /admin
+            - img "Hello Staff" [ref=e51]
+            - generic [ref=e52]:
+              - heading "لوحة الإدارة" [level=1] [ref=e53]
+              - paragraph [ref=e54]: Hello Staff
+          - navigation [ref=e55]:
+            - link "نظرة عامة" [ref=e56] [cursor=pointer]:
+              - /url: /admin
+              - img [ref=e57]
+              - generic [ref=e62]: نظرة عامة
+              - img [ref=e63]
+            - link "إدارة المستخدمين" [ref=e65] [cursor=pointer]:
+              - /url: /admin/users
+              - img [ref=e66]
+              - generic [ref=e71]: إدارة المستخدمين
+            - link "أصحاب العمل" [ref=e72] [cursor=pointer]:
+              - /url: /admin/employers
+              - img [ref=e73]
+              - generic [ref=e77]: أصحاب العمل
+            - link "المرشحون" [ref=e78] [cursor=pointer]:
+              - /url: /admin/candidates
+              - img [ref=e79]
+              - generic [ref=e83]: المرشحون
+            - link "الوظائف" [ref=e84] [cursor=pointer]:
+              - /url: /admin/jobs
+              - img [ref=e85]
+              - generic [ref=e88]: الوظائف
+            - link "طلبات التوظيف" [ref=e89] [cursor=pointer]:
+              - /url: /admin/applications
+              - img [ref=e90]
+              - generic [ref=e93]: طلبات التوظيف
+            - link "الاشتراكات" [ref=e94] [cursor=pointer]:
+              - /url: /admin/subscriptions
+              - img [ref=e95]
+              - generic [ref=e97]: الاشتراكات
+            - link "الدفع والفواتير" [ref=e98] [cursor=pointer]:
+              - /url: /admin/payments
+              - img [ref=e99]
+              - generic [ref=e102]: الدفع والفواتير
+            - link "الباقات" [ref=e103] [cursor=pointer]:
+              - /url: /admin/plans
+              - img [ref=e104]
+              - generic [ref=e108]: الباقات
+            - link "المقالات / المدونة" [ref=e109] [cursor=pointer]:
+              - /url: /admin/articles
+              - img [ref=e110]
+              - generic [ref=e113]: المقالات / المدونة
+            - link "التعميمات" [ref=e114] [cursor=pointer]:
+              - /url: /admin/messages
+              - img [ref=e115]
+              - generic [ref=e118]: التعميمات
+            - link "إدارة الإعلانات" [ref=e119] [cursor=pointer]:
+              - /url: /admin/ads
+              - img [ref=e120]
+              - generic [ref=e123]: إدارة الإعلانات
+            - link "البلاغات والدعم" [ref=e124] [cursor=pointer]:
+              - /url: /admin/support
+              - img [ref=e125]
+              - generic [ref=e127]: البلاغات والدعم
+            - link "التقارير" [ref=e128] [cursor=pointer]:
+              - /url: /admin/reports
+              - img [ref=e129]
+              - generic [ref=e131]: التقارير
+            - link "إعدادات المنصة" [ref=e132] [cursor=pointer]:
+              - /url: /admin/settings
+              - img [ref=e133]
+              - generic [ref=e136]: إعدادات المنصة
+            - link "الصلاحيات والأدوار" [ref=e137] [cursor=pointer]:
+              - /url: /admin/roles
+              - img [ref=e138]
+              - generic [ref=e141]: الصلاحيات والأدوار
+            - link "سجل النشاطات" [ref=e142] [cursor=pointer]:
+              - /url: /admin/audit-logs
+              - img [ref=e143]
+              - generic [ref=e146]: سجل النشاطات
+          - generic [ref=e147]:
+            - generic [ref=e148]:
+              - generic [ref=e149]: S
+              - generic [ref=e150]:
+                - paragraph [ref=e151]: Super Admin
+                - paragraph [ref=e152]: سوبر أدمن
+            - button "تسجيل الخروج" [ref=e153]:
+              - img [ref=e154]
+              - text: تسجيل الخروج
+        - generic [ref=e157]:
+          - generic [ref=e159]:
+            - button "الإشعارات" [ref=e161]:
+              - generic [ref=e162]: الإشعارات
+              - img [ref=e163]
+            - link "الموقع" [ref=e166] [cursor=pointer]:
+              - /url: /
+              - generic [ref=e167]: الموقع
+              - img [ref=e168]
+          - main [ref=e170]:
+            - generic [ref=e171]:
+              - generic [ref=e172]:
+                - generic [ref=e175]:
+                  - heading "نظرة عامة على المنصة" [level=2] [ref=e176]
+                  - paragraph [ref=e177]: مرحباً بك في لوحة الإدارة العليا. إليك ملخص الأداء والنشاط.
+                - button "تحديث البيانات" [ref=e179]:
+                  - img [ref=e180]
+                  - text: تحديث البيانات
+              - generic [ref=e182]:
+                - link "إجمالي المستخدمين 3" [ref=e184] [cursor=pointer]:
+                  - /url: /admin/users
+                  - img [ref=e186]
+                  - generic [ref=e191]:
+                    - generic [ref=e192]:
+                      - img [ref=e194]
+                      - img [ref=e199]
+                    - paragraph [ref=e202]: إجمالي المستخدمين
+                    - heading "3" [level=3] [ref=e203]
+                - link "أصحاب العمل 1" [ref=e205] [cursor=pointer]:
+                  - /url: /admin/users
+                  - img [ref=e207]
+                  - generic [ref=e211]:
+                    - generic [ref=e212]:
+                      - img [ref=e214]
+                      - img [ref=e218]
+                    - paragraph [ref=e221]: أصحاب العمل
+                    - heading "1" [level=3] [ref=e222]
+                - link "الوظائف النشطة 0" [ref=e224] [cursor=pointer]:
+                  - /url: /admin/jobs
+                  - img [ref=e226]
+                  - generic [ref=e229]:
+                    - generic [ref=e230]:
+                      - img [ref=e232]
+                      - img [ref=e235]
+                    - paragraph [ref=e238]: الوظائف النشطة
+                    - heading "0" [level=3] [ref=e239]
+                - link "وظائف بانتظار الموافقة 1" [ref=e241] [cursor=pointer]:
+                  - /url: /admin/jobs
+                  - img [ref=e243]
+                  - generic [ref=e246]:
+                    - generic [ref=e247]:
+                      - img [ref=e249]
+                      - img [ref=e252]
+                    - paragraph [ref=e255]: وظائف بانتظار الموافقة
+                    - heading "1" [level=3] [ref=e256]
+                - link "اشتراكات فعالة 0" [ref=e258] [cursor=pointer]:
+                  - /url: /admin/subscriptions
+                  - img [ref=e260]
+                  - generic [ref=e263]:
+                    - generic [ref=e264]:
+                      - img [ref=e266]
+                      - img [ref=e269]
+                    - paragraph [ref=e272]: اشتراكات فعالة
+                    - heading "0" [level=3] [ref=e273]
+                - link "اشتراكات معلقة 0" [ref=e275] [cursor=pointer]:
+                  - /url: /admin/subscriptions
+                  - img [ref=e277]
+                  - generic [ref=e280]:
+                    - generic [ref=e281]:
+                      - img [ref=e283]
+                      - img [ref=e286]
+                    - paragraph [ref=e289]: اشتراكات معلقة
+                    - heading "0" [level=3] [ref=e290]
+                - link "مرشحون 1" [ref=e292] [cursor=pointer]:
+                  - /url: /admin/users
+                  - img [ref=e294]
+                  - generic [ref=e298]:
+                    - generic [ref=e299]:
+                      - img [ref=e301]
+                      - img [ref=e305]
+                    - paragraph [ref=e308]: مرشحون
+                    - heading "1" [level=3] [ref=e309]
+                - link "مقالات للمراجعة 0" [ref=e311] [cursor=pointer]:
+                  - /url: /admin/articles
+                  - img [ref=e313]
+                  - generic [ref=e316]:
+                    - generic [ref=e317]:
+                      - img [ref=e319]
+                      - img [ref=e322]
+                    - paragraph [ref=e325]: مقالات للمراجعة
+                    - heading "0" [level=3] [ref=e326]
+              - generic [ref=e327]:
+                - generic [ref=e328]:
+                  - generic [ref=e329]:
+                    - heading "آخر النشاطات" [level=3] [ref=e330]:
+                      - img [ref=e331]
+                      - text: آخر النشاطات
+                    - generic [ref=e334]:
+                      - button "المستخدمين3" [ref=e335]
+                      - button "الوظائف1" [ref=e336]
+                      - button "طلبات التوظيف" [ref=e337]
+                      - button "الاشتراكات" [ref=e338]
+                      - button "المقالات1" [ref=e339]
+                  - generic [ref=e341]:
+                    - generic [ref=e343]:
+                      - generic [ref=e344]:
+                        - generic [ref=e345]: S
+                        - generic [ref=e346]:
+                          - paragraph [ref=e347]: Super Admin
+                          - paragraph [ref=e348]: مدير
+                      - generic [ref=e349]: ١٣‏/٥‏/٢٠٢٦
+                    - generic [ref=e351]:
+                      - generic [ref=e352]:
+                        - generic [ref=e353]: W
+                        - generic [ref=e354]:
+                          - paragraph [ref=e355]: Wael Khatib
+                          - paragraph [ref=e356]: صاحب عمل
+                      - generic [ref=e357]: ١٣‏/٥‏/٢٠٢٦
+                    - generic [ref=e359]:
+                      - generic [ref=e360]:
+                        - generic [ref=e361]: M
+                        - generic [ref=e362]:
+                          - paragraph [ref=e363]: Mohammad Ghadban
+                          - paragraph [ref=e364]: باحث عن عمل · Ramallah
+                      - generic [ref=e365]: ٩‏/٥‏/٢٠٢٦
+                - generic [ref=e366]:
+                  - heading "إجراءات سريعة" [level=3] [ref=e368]:
+                    - img [ref=e369]
+                    - text: إجراءات سريعة
+                  - generic [ref=e371]:
+                    - link "إرسال تعميم إرسال رسالة لجميع المستخدمين" [ref=e372] [cursor=pointer]:
+                      - /url: /admin/messages
+                      - img [ref=e374]
+                      - generic [ref=e376]:
+                        - paragraph [ref=e377]: إرسال تعميم
+                        - paragraph [ref=e378]: إرسال رسالة لجميع المستخدمين
+                      - img [ref=e379]
+                    - link "نشر مقال جديد إضافة محتوى لمدونة المنصة" [ref=e381] [cursor=pointer]:
+                      - /url: /admin/articles
+                      - img [ref=e383]
+                      - generic [ref=e386]:
+                        - paragraph [ref=e387]: نشر مقال جديد
+                        - paragraph [ref=e388]: إضافة محتوى لمدونة المنصة
+                      - img [ref=e389]
+                    - link "مراجعة الوظائف اعتماد أو رفض الوظائف المعلقة" [ref=e391] [cursor=pointer]:
+                      - /url: /admin/jobs
+                      - img [ref=e393]
+                      - generic [ref=e396]:
+                        - paragraph [ref=e397]: مراجعة الوظائف
+                        - paragraph [ref=e398]: اعتماد أو رفض الوظائف المعلقة
+                      - img [ref=e399]
+                    - link "إدارة المستخدمين تعديل أدوار وحذف حسابات" [ref=e401] [cursor=pointer]:
+                      - /url: /admin/users
+                      - img [ref=e403]
+                      - generic [ref=e408]:
+                        - paragraph [ref=e409]: إدارة المستخدمين
+                        - paragraph [ref=e410]: تعديل أدوار وحذف حسابات
+    - generic [ref=e32]:
+      - img [ref=e34]
+      - generic [ref=e36]:
+        - heading "حمّل Hello Staff كتطبيق!" [level=3] [ref=e37]
+        - paragraph [ref=e38]: وصول أسرع + إشعارات فورية + بدون متصفح
+      - button "تثبيت" [ref=e39]:
+        - img [ref=e40]
+        - text: تثبيت
+      - button [ref=e43]:
+        - img [ref=e44]
+  - alert [ref=e30]: لوحة الإدارة | لوحة الإدارة

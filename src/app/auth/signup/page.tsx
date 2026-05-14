@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { Lock, Mail, User, AlertCircle, Loader2, Building2, Search, CheckCircle } from 'lucide-react';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 function SignupForm() {
   const searchParams = useSearchParams();
@@ -18,6 +19,7 @@ function SignupForm() {
   const [loading, setLoading] = useState(false);
   const [needsConfirmation, setNeedsConfirmation] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const router = useRouter();
   const { signUp, user, loading: authLoading } = useAuth();
 
@@ -52,7 +54,13 @@ function SignupForm() {
       return;
     }
 
-    const result = await signUp(email, password, role, fullName);
+    if (!captchaToken) {
+      setError('الرجاء تأكيد أنك لست روبوتاً للتمكن من إنشاء الحساب');
+      setLoading(false);
+      return;
+    }
+
+    const result = await signUp(email, password, role, fullName, captchaToken);
 
     if (result.success) {
       // If no session returned, email confirmation is required
@@ -230,9 +238,17 @@ function SignupForm() {
             </label>
           </div>
 
+          <div className="flex justify-center my-4" dir="ltr">
+            <Turnstile 
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '0x4AAAAAADO2aIuCx4SlQRvd'} 
+              onSuccess={(token) => setCaptchaToken(token)}
+              onError={() => setError('حدث خطأ في التحقق من الكابتشا. حاول مرة أخرى.')}
+            />
+          </div>
+
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !captchaToken}
             className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 sm:py-4 rounded-2xl shadow-lg shadow-brand-200 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mt-4"
           >
             {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'إنشاء الحساب'}

@@ -135,6 +135,7 @@ export async function DELETE(
 
   function extractStoragePath(url: string | null | undefined, bucket: string): string | null {
     if (!url) return null;
+    if (!url.startsWith('http')) return url;
     const marker = `/storage/v1/object/public/${bucket}/`;
     const idx = url.indexOf(marker);
     if (idx !== -1) return url.substring(idx + marker.length);

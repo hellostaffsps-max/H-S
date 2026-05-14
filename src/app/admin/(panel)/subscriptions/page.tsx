@@ -342,7 +342,7 @@ export default function AdminSubscriptions() {
 
                         {sub.payment_receipt_url && (
                           <a 
-                            href={sub.payment_receipt_url} 
+                            href={sub.payment_receipt_url.startsWith('http') ? sub.payment_receipt_url : `/api/admin/receipt?path=${encodeURIComponent(sub.payment_receipt_url)}`} 
                             target="_blank" 
                             rel="noreferrer"
                             className="w-10 h-10 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl flex items-center justify-center transition-all group/receipt"

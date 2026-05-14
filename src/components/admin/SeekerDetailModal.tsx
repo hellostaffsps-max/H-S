@@ -186,7 +186,7 @@ export default function SeekerDetailModal({ seeker, onClose, onUpdateVerificatio
             <div>
               <p className="text-xs font-bold text-slate-400 uppercase mb-2">السيرة الذاتية</p>
               <a
-                href={seeker.cv_url}
+                href={seeker.cv_url.startsWith('http') ? seeker.cv_url : `/api/cv?path=${encodeURIComponent(seeker.cv_url)}`}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl text-sm font-bold border border-indigo-100 hover:bg-indigo-100 transition-colors"

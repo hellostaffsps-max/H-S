@@ -60,11 +60,15 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
       
       if (uploadError) throw uploadError;
       
-      const { data: { publicUrl } } = supabase.storage.from('resumes').getPublicUrl(filePath);
+      const { data: signedData, error: signedError } = await supabase.storage
+        .from('resumes')
+        .createSignedUrl(filePath, 3600);
       
-      setCvUrl(publicUrl);
-      await supabase.from("seekers").update({ cv_url: publicUrl }).eq("profile_id", user.id);
-      onSeekerDataUpdate({ ...seekerData, cv_url: publicUrl });
+      if (signedError || !signedData) throw signedError;
+      
+      setCvUrl(signedData.signedUrl);
+      await supabase.from("seekers").update({ cv_url: filePath }).eq("profile_id", user.id);
+      onSeekerDataUpdate({ ...seekerData, cv_url: filePath });
       alert("تم رفع السيرة الذاتية بنجاح!");
     } catch (err) {
       console.error("Error uploading CV:", err);
@@ -207,7 +211,7 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
               {cvUrl ? "تحديث الـ CV (PDF)" : "رفع الـ CV (PDF)"}
             </label>
             {cvUrl && (
-              <a href={cvUrl} target="_blank" rel="noreferrer" className="text-xs text-indigo-600 font-bold hover:underline">
+              <a href={cvUrl.startsWith('http') ? cvUrl : `/api/cv?path=${encodeURIComponent(cvUrl)}`} target="_blank" rel="noreferrer" className="text-xs text-indigo-600 font-bold hover:underline">
                 عرض الـ CV المرفوع
               </a>
             )}
