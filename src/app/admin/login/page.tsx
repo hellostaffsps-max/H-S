@@ -11,6 +11,7 @@ export default function AdminLogin() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [turnstileKey, setTurnstileKey] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -44,7 +45,7 @@ export default function AdminLogin() {
               captchaToken: captchaToken || undefined,
             }
           });
-          if (directLoginError) throw new Error('اسم المستخدم أو كلمة المرور غير صحيحة');
+          if (directLoginError) throw new Error(directLoginError.message);
 
           // After direct login, verify admin role
           const { data: { user } } = await supabase.auth.getUser();
@@ -98,12 +99,14 @@ export default function AdminLogin() {
         }
       });
 
-      if (loginError) throw new Error('اسم المستخدم أو كلمة المرور غير صحيحة');
+      if (loginError) throw new Error(loginError.message);
 
       router.push('/admin');
     } catch (err: any) {
       setError(err.message || 'حدث خطأ أثناء تسجيل الدخول');
       setLoading(false);
+      setCaptchaToken(null);
+      setTurnstileKey(prev => prev + 1);
     }
   };
 
@@ -219,8 +222,11 @@ export default function AdminLogin() {
 
             <div className="flex justify-center py-2">
               <Turnstile 
+                key={turnstileKey}
                 siteKey="0x4AAAAAADO2aIuCx4SlQRvd" 
                 onSuccess={(token) => setCaptchaToken(token)}
+                onExpire={() => setCaptchaToken(null)}
+                onError={() => setCaptchaToken(null)}
               />
             </div>
 

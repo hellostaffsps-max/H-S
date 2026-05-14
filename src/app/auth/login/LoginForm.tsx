@@ -17,6 +17,7 @@ export default function LoginForm({ redirect = "/dashboard" }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [turnstileKey, setTurnstileKey] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
@@ -58,6 +59,8 @@ export default function LoginForm({ redirect = "/dashboard" }: LoginFormProps) {
       // Use a generic error message for all login failures to prevent email enumeration (Fix 6)
       setError("بيانات الدخول غير صحيحة، أو لم تقم بتفعيل حسابك بعد.");
       setLoading(false);
+      setCaptchaToken(null);
+      setTurnstileKey(prev => prev + 1);
     }
   };
 
@@ -156,8 +159,11 @@ export default function LoginForm({ redirect = "/dashboard" }: LoginFormProps) {
 
           <div className="flex justify-center py-2">
             <Turnstile 
+              key={turnstileKey}
               siteKey="0x4AAAAAADO2aIuCx4SlQRvd" 
               onSuccess={(token) => setCaptchaToken(token)}
+              onExpire={() => setCaptchaToken(null)}
+              onError={() => setCaptchaToken(null)}
             />
           </div>
 
