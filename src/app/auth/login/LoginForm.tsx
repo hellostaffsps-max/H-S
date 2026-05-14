@@ -74,11 +74,14 @@ export default function LoginForm({ redirect = "/dashboard" }: LoginFormProps) {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/callback`,
+        captchaToken: captchaToken || undefined,
       });
       if (error) throw error;
       setResetSent(true);
     } catch (err: any) {
       setError(err.message || "فشل إرسال رابط إعادة التعيين");
+      setCaptchaToken(null);
+      setTurnstileKey(prev => prev + 1);
     }
     setLoading(false);
   };

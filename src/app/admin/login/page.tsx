@@ -147,11 +147,14 @@ export default function AdminLogin() {
 
       const { error } = await supabase.auth.resetPasswordForEmail(targetEmail, {
         redirectTo: `${window.location.origin}/admin/login`,
+        captchaToken: captchaToken || undefined,
       });
       if (error) throw error;
       setSuccess('تم إرسال رابط إعادة تعيين كلمة المرور إلى البريد المرتبط');
     } catch (err: any) {
       setError(err.message || 'حدث خطأ أثناء إرسال رابط إعادة التعيين');
+      setCaptchaToken(null);
+      setTurnstileKey(prev => prev + 1);
     } finally {
       setResetLoading(false);
     }
