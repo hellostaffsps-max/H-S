@@ -79,8 +79,23 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
           filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
-          setNotifications((prev) => [payload.new as Notification, ...prev]);
+          const newNotif = payload.new as Notification;
+          setNotifications((prev) => [newNotif, ...prev]);
           setUnreadCount((prev) => prev + 1);
+
+          // Trigger OS-level Push Notification if permission is granted
+          if ("Notification" in window && Notification.permission === "granted") {
+            navigator.serviceWorker.ready.then((reg) => {
+              reg.showNotification(newNotif.title, {
+                body: newNotif.message,
+                icon: "/icons/icon-192.png",
+                badge: "/icons/icon-72.png",
+                dir: "rtl",
+                lang: "ar",
+                data: { url: newNotif.link || "/" },
+              });
+            }).catch(err => console.error("SW Notification Error:", err));
+          }
         }
       )
       .subscribe();
