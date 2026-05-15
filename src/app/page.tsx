@@ -285,11 +285,11 @@ export default async function Home() {
 
 
 
-      {/* ===== ADS CAROUSEL ===== */}
-      <AdsCarousel />
-
       {/* ===== TRUSTED EMPLOYERS CAROUSEL (Guest and Seekers) ===== */}
       {(!user || isSeeker) && <TrustedEmployersCarousel />}
+
+      {/* ===== ADS CAROUSEL ===== */}
+      <AdsCarousel />
 
       {/* ===== CATEGORIES ===== */}
       {!isEmployer && (
