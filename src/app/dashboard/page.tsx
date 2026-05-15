@@ -149,9 +149,8 @@ export default function Dashboard() {
         badge: "/icons/icon-72.png",
         dir: "rtl",
         lang: "ar",
-        vibrate: [200, 100, 200],
         tag: "test-notification",
-      });
+      } as any);
       setSuccess("تم إرسال إشعار تجريبي بنجاح!");
       setTimeout(() => setSuccess(null), 3000);
     } else {
