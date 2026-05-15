@@ -164,42 +164,51 @@ export default function Dashboard() {
           console.log("Waiting for serviceWorker.ready...");
           reg = await Promise.race([
             navigator.serviceWorker.ready,
-            new Promise<any>((_, reject) => setTimeout(() => reject(new Error("SW Ready Timeout")), 3000))
+            new Promise<any>((_, reject) => setTimeout(() => reject(new Error("SW Ready Timeout")), 10000))
           ]);
         }
 
         if (reg && reg.showNotification) {
           console.log("Using reg.showNotification");
-          await reg.showNotification("Hello Staff 🎉", {
-            body: "هذا إشعار تجريبي حقيقي! هكذا ستصلك التحديثات مستقبلاً.",
-            icon: "/icons/icon-192.png",
-            badge: "/icons/icon-72.png",
-            dir: "rtl",
-            lang: "ar",
-            tag: "test-notification",
-            renotify: true
-          } as any);
-          setSuccess("تم إرسال إشعار تجريبي بنجاح!");
-          setTimeout(() => { setSuccess(null); setError(null); }, 4000);
-          return;
+          try {
+            await reg.showNotification("Hello Staff 🎉", {
+              body: "هذا إشعار تجريبي حقيقي! هكذا ستصلك التحديثات مستقبلاً.",
+              icon: "/icons/icon-192.png",
+              badge: "/icons/icon-72.png",
+              dir: "rtl",
+              lang: "ar",
+              tag: "test-notification",
+              renotify: true
+            } as any);
+            setSuccess("تم إرسال إشعار تجريبي بنجاح!");
+            setTimeout(() => { setSuccess(null); setError(null); }, 4000);
+            return;
+          } catch (showErr: any) {
+            console.error("showNotification failed:", showErr);
+            throw new Error(`فشل إظهار الإشعار: ${showErr.message || showErr}`);
+          }
         }
       }
 
       // Fallback for Desktop or if SW fails
       console.log("Falling back to new Notification()");
-      new Notification("Hello Staff 🎉", {
-        body: "هذا إشعار تجريبي حقيقي! (عبر المتصفح المباشر)",
-        icon: "/icons/icon-192.png",
-        dir: "rtl",
-        lang: "ar",
-        tag: "test-notification",
-      });
-      setSuccess("تم إرسال إشعار تجريبي (مباشر)!");
-      setTimeout(() => { setSuccess(null); setError(null); }, 4000);
+      try {
+        new Notification("Hello Staff 🎉", {
+          body: "هذا إشعار تجريبي حقيقي! (عبر المتصفح المباشر)",
+          icon: "/icons/icon-192.png",
+          dir: "rtl",
+          lang: "ar",
+          tag: "test-notification",
+        });
+        setSuccess("تم إرسال إشعار تجريبي (مباشر)!");
+        setTimeout(() => { setSuccess(null); setError(null); }, 4000);
+      } catch (fallbackErr: any) {
+        throw new Error(`فشل الإشعار المباشر: ${fallbackErr.message || fallbackErr}`);
+      }
       
-    } catch (err) {
+    } catch (err: any) {
       console.error("Notification Error Details:", err);
-      setError("حدث خطأ أثناء محاولة إرسال الإشعار. تأكد من إغلاق النوافذ المنبثقة.");
+      setError(`خطأ تقني: ${err.message || "عطل غير معروف"}`);
     }
   };
 
