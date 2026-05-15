@@ -177,6 +177,31 @@ export async function sendMessage(formData: FormData) {
     return { success: false, error: toArabicError(error.message) };
   }
 
+  // Insert notification for the receiver
+  try {
+    const { createAdminClient } = await import('@/lib/supabase-admin');
+    const adminClient = createAdminClient();
+    
+    // Get sender's name
+    const { data: senderData } = await adminClient
+      .from('profiles')
+      .select('full_name')
+      .eq('id', user.id)
+      .single();
+      
+    const senderName = senderData?.full_name || 'مستخدم';
+    
+    await adminClient.from('notifications').insert({
+      user_id: receiverId,
+      type: 'new_message',
+      title: 'رسالة جديدة',
+      message: `لديك رسالة جديدة من ${senderName}`,
+      link: `/messages?with=${user.id}`,
+    });
+  } catch (notifError) {
+    console.error('Failed to create notification for message:', notifError);
+  }
+
   revalidatePath('/messages');
   return { success: true, data };
 }
@@ -212,6 +237,31 @@ export async function sendMessageToUser(receiverId: string, content: string, tit
 
   if (error) {
     return { success: false, error: error.message };
+  }
+
+  // Insert notification for the receiver
+  try {
+    const { createAdminClient } = await import('@/lib/supabase-admin');
+    const adminClient = createAdminClient();
+    
+    // Get sender's name
+    const { data: senderData } = await adminClient
+      .from('profiles')
+      .select('full_name')
+      .eq('id', user.id)
+      .single();
+      
+    const senderName = senderData?.full_name || 'مستخدم';
+    
+    await adminClient.from('notifications').insert({
+      user_id: receiverId,
+      type: 'new_message',
+      title: 'رسالة جديدة',
+      message: `لديك رسالة جديدة من ${senderName}`,
+      link: `/messages?with=${user.id}`,
+    });
+  } catch (notifError) {
+    console.error('Failed to create notification for message:', notifError);
   }
 
   revalidatePath('/messages');

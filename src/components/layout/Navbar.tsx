@@ -74,6 +74,11 @@ export default function Navbar() {
                   <ArrowLeft className="h-5 w-5" />
                 </button>
               )}
+              {isLoggedIn && (
+                <div className="md:hidden relative">
+                  <NotificationsDropdown />
+                </div>
+              )}
               <button 
                 className="md:hidden text-slate-500 hover:text-slate-700 p-2 rounded-lg hover:bg-slate-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
