@@ -103,7 +103,7 @@ function MessagesPage() {
   const [selectedPartnerId, setSelectedPartnerId] = useState<string | null>(initialPartner);
   const [partnerInfo, setPartnerInfo] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [canReply, setCanReply] = useState(false); // seeker reply permission
+  const [canReply, setCanReply] = useState(true); // default to allowed; only seekers get restricted
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
 
@@ -158,16 +158,17 @@ function MessagesPage() {
 
   // ── Check seeker reply permission when messages load ─────────────────────
   useEffect(() => {
-    if (!myId || !myRole) return;
-    if (myRole !== "seeker") {
+    if (!myId) return;
+    // Only restrict seekers — employers/admins/unknown roles can always send
+    if (myRole === "seeker") {
+      const hasReceivedMessage = messages.some(
+        (m) => m.sender_id === selectedPartnerId && m.receiver_id === myId
+      );
+      setCanReply(hasReceivedMessage);
+    } else {
+      // employer, admin, or still loading (null) → allow sending
       setCanReply(true);
-      return;
     }
-    // Seeker can reply only if employer/admin sent them a message first
-    const hasReceivedMessage = messages.some(
-      (m) => m.sender_id === selectedPartnerId && m.receiver_id === myId
-    );
-    setCanReply(hasReceivedMessage);
   }, [messages, myId, myRole, selectedPartnerId]);
 
   // ── Real-time subscription ────────────────────────────────────────────────
