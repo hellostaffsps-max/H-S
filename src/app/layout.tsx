@@ -80,7 +80,20 @@ export default function RootLayout({
         <Analytics />
         <script
           dangerouslySetInnerHTML={{
-            __html: `if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js')})}`
+            __html: `
+              if ('serviceWorker' in navigator) {
+                const register = () => {
+                  navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('SW Registered:', reg.scope))
+                    .catch(err => console.error('SW Registration Error:', err));
+                };
+                if (document.readyState === 'complete') {
+                  register();
+                } else {
+                  window.addEventListener('load', register);
+                }
+              }
+            `
           }}
         />
       </body>

@@ -162,10 +162,14 @@ export default function Dashboard() {
 
         if (!reg) {
           console.log("Waiting for serviceWorker.ready...");
-          reg = await Promise.race([
-            navigator.serviceWorker.ready,
-            new Promise<any>((_, reject) => setTimeout(() => reject(new Error("SW Ready Timeout")), 10000))
-          ]);
+          try {
+            reg = await Promise.race([
+              navigator.serviceWorker.ready,
+              new Promise<any>((_, reject) => setTimeout(() => reject(new Error("Timeout")), 2000))
+            ]);
+          } catch (e) {
+            console.log("SW not ready, moving to fallback");
+          }
         }
 
         if (reg && reg.showNotification) {
