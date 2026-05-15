@@ -37,12 +37,12 @@ export default function TrustedEmployersCarousel() {
 
   if (loading || employers.length === 0) return null;
 
-  // Duplicate items to ensure smooth infinite scrolling
-  const scrollItems = [...employers, ...employers, ...employers, ...employers, ...employers];
+  // Duplicate items to ensure smooth infinite scrolling - more duplicates for wider screens
+  const scrollItems = [...employers, ...employers, ...employers, ...employers, ...employers, ...employers];
 
   return (
-    <section className="w-full py-10 sm:py-12 overflow-hidden bg-white mt-8 sm:mt-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+    <section className="w-full py-8 sm:py-10 overflow-hidden bg-white border-y border-slate-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
         <div className="flex items-center justify-center gap-3">
           <h3 className="text-lg sm:text-xl font-black text-slate-800">
             منشآت تثق بـ Hello Staff
@@ -57,7 +57,7 @@ export default function TrustedEmployersCarousel() {
             100% { transform: translateX(-50%); }
           }
           .animate-marquee {
-            animation: marquee 35s linear infinite;
+            animation: marquee 60s linear infinite;
           }
           .group:hover .animate-marquee {
             animation-play-state: paused;

@@ -10,6 +10,7 @@ import Link from "next/link";
 import CookieConsent from "../components/CookieConsent";
 import PWAInstallPrompt from "../components/PWAInstallPrompt";
 import PushNotificationPrompt from "../components/PushNotificationPrompt";
+import TrustedEmployersCarousel from "../components/TrustedEmployersCarousel";
 
 export default function LayoutBody({ children, preFooter }: { children: React.ReactNode; preFooter?: React.ReactNode }) {
   const pathname = usePathname();
@@ -32,6 +33,7 @@ export default function LayoutBody({ children, preFooter }: { children: React.Re
         <main className={`flex-grow w-full overflow-x-hidden ${isDashboardPage ? 'bg-slate-50' : ''}`}>
           {children}
         </main>
+        {!isAdminPage && <TrustedEmployersCarousel />}
         {!hideFooter && preFooter}
         {!hideFooter && <Footer />}
       </UnreadMessagesProvider>
