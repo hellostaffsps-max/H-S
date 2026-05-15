@@ -33,7 +33,7 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
   useEffect(() => {
     fetchInteractions();
     checkUserVerification();
-  }, [articleId, user?.id]);
+  }, [articleId, user?.id, profile?.role]);
 
   async function checkUserVerification() {
     if (!user || !profile) {
@@ -49,7 +49,7 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
         .eq('profile_id', user.id)
         .single();
 
-      if (data?.verification_status === 'verified') {
+      if (profile.role === 'admin' || data?.verification_status === 'verified') {
         setIsVerified(true);
       }
     } catch (err) {

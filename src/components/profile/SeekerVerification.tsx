@@ -69,7 +69,7 @@ export default function SeekerVerification({ seekerData }: { seekerData: any }) 
       // Upload receipt
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}_${Date.now()}.${fileExt}`;
-      const filePath = `receipts/${fileName}`;
+      const filePath = `${user.id}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('payment_receipts')
