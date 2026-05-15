@@ -209,10 +209,10 @@ export default function Dashboard() {
             ? {
                 ...a,
                 status: newStatus,
-                interview_date: interviewDate || a.interview_date,
-                interview_location: interviewLocation || a.interview_location,
-                interview_notes: interviewNotes || a.interview_notes,
-                rejection_reason: rejectionReason || a.rejection_reason,
+                interview_date: interviewDate !== undefined ? interviewDate : a.interview_date,
+                interview_location: interviewLocation !== undefined ? interviewLocation : a.interview_location,
+                interview_notes: interviewNotes !== undefined ? interviewNotes : a.interview_notes,
+                rejection_reason: rejectionReason !== undefined ? rejectionReason : a.rejection_reason,
               }
             : a
         )
