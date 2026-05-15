@@ -132,30 +132,53 @@ export default function Dashboard() {
   }, [user, profile]);
 
   const sendTestNotification = async () => {
-    if (!("Notification" in window)) {
-      setError("هذا المتصفح لا يدعم الإشعارات");
-      return;
-    }
+    try {
+      if (!("Notification" in window)) {
+        setError("هذا المتصفح لا يدعم الإشعارات");
+        return;
+      }
 
-    let perm = Notification.permission;
-    if (perm === "default") {
-      perm = await Notification.requestPermission();
-    }
+      let perm = Notification.permission;
+      if (perm === "default") {
+        perm = await Notification.requestPermission();
+      }
 
-    if (perm === "granted" && "serviceWorker" in navigator) {
-      const reg = await navigator.serviceWorker.ready;
-      reg.showNotification("Hello Staff 🎉", {
-        body: "هذا إشعار تجريبي حقيقي! هكذا ستصلك التحديثات مستقبلاً.",
-        icon: "/icons/icon-192.png",
-        badge: "/icons/icon-72.png",
-        dir: "rtl",
-        lang: "ar",
-        tag: "test-notification",
-      } as any);
-      setSuccess("تم إرسال إشعار تجريبي بنجاح!");
-      setTimeout(() => setSuccess(null), 3000);
-    } else {
-      setError("يرجى تفعيل الإشعارات من إعدادات المتصفح لرؤية الإشعار");
+      if (perm !== "granted") {
+        setError("يرجى تفعيل صلاحية الإشعارات من إعدادات المتصفح");
+        return;
+      }
+
+      if (!("serviceWorker" in navigator)) {
+        setError("المتصفح لا يدعم تقنية الإشعارات المطلوبة");
+        return;
+      }
+
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      let reg = registrations[0];
+
+      if (!reg) {
+        reg = await navigator.serviceWorker.ready;
+      }
+
+      if (reg) {
+        await reg.showNotification("Hello Staff 🎉", {
+          body: "هذا إشعار تجريبي حقيقي! هكذا ستصلك التحديثات مستقبلاً.",
+          icon: "/icons/icon-192.png",
+          badge: "/icons/icon-72.png",
+          dir: "rtl",
+          lang: "ar",
+          tag: "test-notification",
+          renotify: true
+        } as any);
+        setSuccess("تم إرسال إشعار تجريبي بنجاح!");
+      } else {
+        setError("لم يتم العثور على مشغل إشعارات نشط. حاول تحديث الصفحة.");
+      }
+
+      setTimeout(() => { setSuccess(null); setError(null); }, 4000);
+    } catch (err) {
+      console.error("Notification Error:", err);
+      setError("حدث خطأ أثناء محاولة إرسال الإشعار");
     }
   };
 
