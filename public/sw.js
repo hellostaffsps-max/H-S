@@ -1,5 +1,5 @@
 const CACHE_NAME = "hello-staff-v1";
-const STATIC_ASSETS = ["/", "/offline"];
+const STATIC_ASSETS = ["/"];
 
 // Install - cache static assets
 self.addEventListener("install", (event) => {

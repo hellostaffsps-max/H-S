@@ -132,20 +132,16 @@ export default function Dashboard() {
   }, [user, profile]);
 
   const sendTestNotification = async () => {
-    alert("بدء تشغيل وظيفة الإشعارات...");
     console.log("sendTestNotification triggered");
     try {
       if (!("Notification" in window)) {
-        console.warn("Notifications not supported");
         setError("هذا المتصفح لا يدعم الإشعارات");
         return;
       }
 
       let perm = Notification.permission;
-      console.log("Current permission:", perm);
       if (perm === "default") {
         perm = await Notification.requestPermission();
-        console.log("Permission after request:", perm);
       }
 
       if (perm !== "granted") {
@@ -153,25 +149,19 @@ export default function Dashboard() {
         return;
       }
 
-      // Try Service Worker approach (Required for Mobile Chrome)
+      // Try Service Worker approach
       if ("serviceWorker" in navigator) {
-        console.log("Service Worker supported, checking registrations...");
-        let registrations = await navigator.serviceWorker.getRegistrations();
-        let reg = registrations.find(r => r.active) || registrations[0];
-
+        let reg = await navigator.serviceWorker.getRegistration();
+        
         if (!reg) {
-          console.log("No registration found, registering now...");
-          try {
-            reg = await navigator.serviceWorker.register('/sw.js');
-            // Give it a moment to initialize
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          } catch (regErr) {
-            console.error("Manual registration failed:", regErr);
-          }
+          reg = await navigator.serviceWorker.register('/sw.js');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        } else {
+          // Force update to get the latest fix
+          await reg.update();
         }
 
         if (reg) {
-          console.log("Using reg.showNotification");
           try {
             await reg.showNotification("Hello Staff 🎉", {
               body: "هذا إشعار تجريبي حقيقي! هكذا ستصلك التحديثات مستقبلاً.",
@@ -185,29 +175,26 @@ export default function Dashboard() {
             setSuccess("تم إرسال إشعار تجريبي بنجاح!");
             setTimeout(() => { setSuccess(null); setError(null); }, 4000);
             return;
-          } catch (showErr: any) {
-            console.error("showNotification failed:", showErr);
-            // If it fails, we still have the fallback below
+          } catch (e) {
+            console.error("SW showNotification failed", e);
           }
         }
       }
 
-      // Fallback for Desktop (May fail on Mobile Chrome with 'Illegal constructor')
-      console.log("Falling back to new Notification()");
-      try {
-        new Notification("Hello Staff 🎉", {
-          body: "هذا إشعار تجريبي حقيقي! (عبر المتصفح المباشر)",
-          icon: "/icons/icon-192.png",
-          dir: "rtl",
-          lang: "ar",
-          tag: "test-notification",
-        });
-        setSuccess("تم إرسال إشعار تجريبي!");
-        setTimeout(() => { setSuccess(null); setError(null); }, 4000);
-      } catch (fallbackErr: any) {
-        console.error("Fallback failed:", fallbackErr);
-        throw new Error("يجب تفعيل الإشعارات من إعدادات الموقع في المتصفح أولاً، أو استخدام تطبيق الويب (PWA).");
-      }
+      // Fallback
+      new Notification("Hello Staff 🎉", {
+        body: "هذا إشعار تجريبي حقيقي!",
+        icon: "/icons/icon-192.png",
+        dir: "rtl",
+        lang: "ar",
+      });
+      setSuccess("تم إرسال إشعار تجريبي!");
+      setTimeout(() => { setSuccess(null); setError(null); }, 4000);
+      
+    } catch (err: any) {
+      setError(`تعذر إرسال الإشعار: ${err.message || "تأكد من تفعيل الصلاحيات"}`);
+    }
+  };
       
     } catch (err: any) {
       console.error("Notification Error Details:", err);
