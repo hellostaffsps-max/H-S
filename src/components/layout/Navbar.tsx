@@ -140,8 +140,18 @@ export default function Navbar() {
                   <span className="text-sm font-medium text-slate-700">
                     {profile?.full_name || 'User'}
                   </span>
-                  <div className="h-8 w-8 rounded-full bg-brand-600 text-white flex items-center justify-center font-semibold text-sm">
-                    {(profile?.full_name || 'U')[0].toUpperCase()}
+                  <div className="h-8 w-8 rounded-full bg-brand-600 text-white flex items-center justify-center font-semibold text-sm overflow-hidden border border-slate-200">
+                    {profile?.avatar_url ? (
+                      <Image 
+                        src={profile.avatar_url} 
+                        alt={profile.full_name || "User"} 
+                        width={32} 
+                        height={32} 
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      (profile?.full_name || 'U')[0].toUpperCase()
+                    )}
                   </div>
                 </div>
 
@@ -214,7 +224,19 @@ export default function Navbar() {
                   pathname === '/profile' ? "bg-brand-50 text-brand-700" : "text-slate-600 hover:bg-slate-50"
                 )}
               >
-                <User className="h-5 w-5" />
+                {profile?.avatar_url ? (
+                  <div className="h-6 w-6 rounded-full overflow-hidden border border-slate-200 shrink-0">
+                    <Image 
+                      src={profile.avatar_url} 
+                      alt="" 
+                      width={24} 
+                      height={24} 
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <User className="h-5 w-5" />
+                )}
                 ملفي الشخصي
               </Link>
               <button
