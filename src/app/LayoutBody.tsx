@@ -9,6 +9,7 @@ import { isSupabaseConfigured } from "../lib/supabase";
 import Link from "next/link";
 import CookieConsent from "../components/CookieConsent";
 import PWAInstallPrompt from "../components/PWAInstallPrompt";
+import SEOLinksSection from "../components/layout/SEOLinksSection";
 import PushNotificationPrompt from "../components/PushNotificationPrompt";
 
 export default function LayoutBody({ children }: { children: React.ReactNode }) {
@@ -32,6 +33,7 @@ export default function LayoutBody({ children }: { children: React.ReactNode }) 
         <main className={`flex-grow w-full overflow-x-hidden ${isDashboardPage ? 'bg-slate-50' : ''}`}>
           {children}
         </main>
+        {!hideFooter && <SEOLinksSection />}
         {!hideFooter && <Footer />}
       </UnreadMessagesProvider>
       </NotificationsProvider>
