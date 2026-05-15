@@ -130,6 +130,35 @@ export default function Dashboard() {
     }
   }, [user, profile]);
 
+  const sendTestNotification = async () => {
+    if (!("Notification" in window)) {
+      setError("هذا المتصفح لا يدعم الإشعارات");
+      return;
+    }
+
+    let perm = Notification.permission;
+    if (perm === "default") {
+      perm = await Notification.requestPermission();
+    }
+
+    if (perm === "granted" && "serviceWorker" in navigator) {
+      const reg = await navigator.serviceWorker.ready;
+      reg.showNotification("Hello Staff 🎉", {
+        body: "هذا إشعار تجريبي حقيقي! هكذا ستصلك التحديثات مستقبلاً.",
+        icon: "/icons/icon-192.png",
+        badge: "/icons/icon-72.png",
+        dir: "rtl",
+        lang: "ar",
+        vibrate: [200, 100, 200],
+        tag: "test-notification",
+      });
+      setSuccess("تم إرسال إشعار تجريبي بنجاح!");
+      setTimeout(() => setSuccess(null), 3000);
+    } else {
+      setError("يرجى تفعيل الإشعارات من إعدادات المتصفح لرؤية الإشعار");
+    }
+  };
+
   useEffect(() => {
     if (isAdmin) {
       window.location.href = "/admin";
@@ -294,6 +323,7 @@ export default function Dashboard() {
               jobsRef={jobsRef}
               applicantsRef={applicantsRef}
               onSelectApplicant={setSelectedApplicant}
+              onTestNotification={sendTestNotification}
             />
           ) : (
             <SeekerDashboard
@@ -301,6 +331,7 @@ export default function Dashboard() {
               seekerProfile={seekerProfile}
               profile={profile}
               recommendedJobs={recommendedJobs}
+              onTestNotification={sendTestNotification}
             />
           )}
         </>
@@ -800,6 +831,7 @@ function EmployerDashboard({
   jobsRef: React.RefObject<HTMLDivElement | null>;
   applicantsRef: React.RefObject<HTMLDivElement | null>;
   onSelectApplicant: (applicant: any) => void;
+  onTestNotification: () => void;
 }) {
   const businessName = employerData?.company_name || "صاحب العمل";
   const isLimitReached = subscription.current_job_count >= subscription.job_limit;
@@ -932,7 +964,7 @@ function EmployerDashboard({
       </div>
 
       {/* Quick Access Actions */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
         {quickActions.map((action, i) => (
           <Link
             key={i}
@@ -948,6 +980,18 @@ function EmployerDashboard({
             </div>
           </Link>
         ))}
+        <button
+          onClick={onTestNotification}
+          className="flex flex-col items-center gap-3 p-6 bg-white border border-slate-100 rounded-3xl hover:border-indigo-200 hover:shadow-xl transition-all group text-center"
+        >
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 bg-indigo-50 text-indigo-600 shadow-indigo-100/50 shadow-lg transition-transform group-hover:scale-110">
+            <Bell className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-slate-900 group-hover:text-indigo-700 transition-colors">تجربة الإشعارات</h3>
+            <p className="text-[10px] text-slate-500 font-medium mt-1 leading-tight">اختبر جودة التنبيهات على هاتفك</p>
+          </div>
+        </button>
       </div>
 
       {/* Main Content Area */}
@@ -1145,6 +1189,7 @@ function SeekerDashboard({
   seekerProfile: any;
   profile: any;
   recommendedJobs: any[];
+  onTestNotification: () => void;
 }) {
   const [selectedApp, setSelectedApp] = useState<any>(null);
   
@@ -1174,9 +1219,21 @@ function SeekerDashboard({
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <QuickActionCard icon={Search} title="تصفح الوظائف" desc="اكتشف فرص جديدة في قطاع الضيافة" href="/jobs" color="bg-brand-50 text-brand-600" />
         <QuickActionCard icon={FileText} title="منشئ السيرة الذاتية" desc="أنشئ سيرة ذاتية احترافية" href="/cv-builder" color="bg-sky-50 text-sky-600" />
+        <button
+          onClick={onTestNotification}
+          className="flex items-center gap-4 p-4 bg-white border border-slate-100 rounded-2xl hover:border-indigo-200 hover:shadow-md transition-all group"
+        >
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-indigo-50 text-indigo-600">
+            <Bell className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-slate-900 group-hover:text-indigo-700 transition-colors text-right">تجربة الإشعارات</h3>
+            <p className="text-xs text-slate-500 text-right">اختبر التنبيهات على هاتفك</p>
+          </div>
+        </button>
       </div>
 
       {/* Recommended Jobs */}
