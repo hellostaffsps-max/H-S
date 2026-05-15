@@ -136,7 +136,7 @@ export async function createJob(formData: FormData) {
     salary_min: formData.get('salary_min') ? parseInt(formData.get('salary_min') as string) : null,
     salary_max: formData.get('salary_max') ? parseInt(formData.get('salary_max') as string) : null,
     whatsapp_number: formData.get('whatsapp_number') as string,
-    status: 'pending' as const,
+    status: 'approved' as const, // Auto-approve jobs
   };
 
   if (!job.title || !job.category || !job.type || !job.location || !job.company_name || !job.description) {
@@ -188,6 +188,19 @@ export async function createJob(formData: FormData) {
 
   if (error) {
     return { success: false, error: toArabicError(error.message) };
+  }
+
+  // Notify admins about the new job
+  const { data: admins } = await supabase.from('profiles').select('id').eq('role', 'admin');
+  if (admins && admins.length > 0) {
+    const notifications = admins.map((admin) => ({
+      user_id: admin.id,
+      title: 'تم نشر وظيفة جديدة',
+      message: `قامت منشأة (${job.company_name}) للتو بنشر وظيفة: ${job.title}`,
+      type: 'job_posted',
+      link: `/admin/jobs`,
+    }));
+    await supabase.from('notifications').insert(notifications);
   }
 
   revalidatePath('/jobs');
