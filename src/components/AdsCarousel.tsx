@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Megaphone } from 'lucide-react';
 
 type Ad = {
   id: string;
@@ -63,7 +63,15 @@ export default function AdsCarousel() {
   const currentAd = ads[currentIndex];
 
   return (
-    <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 mt-8">
+    <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 mt-16 sm:mt-20">
+      <div className="flex items-center gap-2 mb-6 sm:mb-8 justify-center sm:justify-start">
+        <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+          <Megaphone className="w-5 h-5 text-amber-600" />
+        </div>
+        <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+          لوحة الإعلانات
+        </h2>
+      </div>
       <div className="relative aspect-[21/9] sm:aspect-[21/7] w-full rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.1)] group border border-white/20 bg-slate-100 flex items-center justify-center">
         <AnimatePresence mode="wait">
           <motion.div

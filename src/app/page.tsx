@@ -257,8 +257,6 @@ export default async function Home() {
         </section>
       )}
 
-      {/* ===== TRUSTED EMPLOYERS CAROUSEL ===== */}
-      <TrustedEmployersCarousel />
 
       {/* ===== SOFT TRUST BAR ===== */}
       <section className={`max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 relative z-10 ${user ? 'mt-8' : '-mt-10'}`}>
@@ -285,6 +283,9 @@ export default async function Home() {
 
       {/* ===== ADS CAROUSEL ===== */}
       <AdsCarousel />
+
+      {/* ===== TRUSTED EMPLOYERS CAROUSEL ===== */}
+      <TrustedEmployersCarousel />
 
       {/* ===== CATEGORIES ===== */}
       {!isEmployer && (
