@@ -115,7 +115,7 @@ export async function createJob(formData: FormData) {
   // Get employer record
   const { data: employer } = await supabase
     .from('employers')
-    .select('profile_id')
+    .select('profile_id, is_verified')
     .eq('profile_id', user.id)
     .single();
 
@@ -136,7 +136,7 @@ export async function createJob(formData: FormData) {
     salary_min: formData.get('salary_min') ? parseInt(formData.get('salary_min') as string) : null,
     salary_max: formData.get('salary_max') ? parseInt(formData.get('salary_max') as string) : null,
     whatsapp_number: formData.get('whatsapp_number') as string,
-    status: 'approved' as const, // Auto-approve jobs
+    status: employer.is_verified ? ('approved' as const) : ('pending' as const),
   };
 
   if (!job.title || !job.category || !job.type || !job.location || !job.company_name || !job.description) {
@@ -195,8 +195,10 @@ export async function createJob(formData: FormData) {
   if (admins && admins.length > 0) {
     const notifications = admins.map((admin) => ({
       user_id: admin.id,
-      title: 'تم نشر وظيفة جديدة',
-      message: `قامت منشأة (${job.company_name}) للتو بنشر وظيفة: ${job.title}`,
+      title: employer.is_verified ? 'تم نشر وظيفة جديدة' : 'طلب نشر وظيفة',
+      message: employer.is_verified 
+        ? `قامت منشأة (${job.company_name}) الموثقة للتو بنشر وظيفة: ${job.title}`
+        : `قامت منشأة (${job.company_name}) بطلب نشر وظيفة بانتظار المراجعة: ${job.title}`,
       type: 'job_posted',
       link: `/admin/jobs`,
     }));
