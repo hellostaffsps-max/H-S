@@ -194,6 +194,32 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* ===== SOFT TRUST BAR ===== */}
+      <section className={`max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 relative z-10 ${user ? 'mt-8' : '-mt-10'}`}>
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-lg shadow-slate-200/50 p-6 sm:p-8 text-center">
+          <p className="text-sm sm:text-base text-slate-600 font-medium">
+            نبدأ حالياً مع مجموعة مختارة من المقاهي والمطاعم في فلسطين
+          </p>
+          <p className="text-xs text-slate-400 mt-2 mb-4">
+            انضم إلينا وكن من أوائل المستفيدين من المنصة
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {(!isEmployer || (isEmployer && employersCount && employersCount > 0)) && employersCount !== null && employersCount > 0 && (
+              <div className="inline-flex items-center gap-2 bg-brand-50 text-brand-700 px-4 py-2 rounded-xl text-sm font-bold">
+                <Building2 className="h-4 w-4" />
+                {employersCount} منشأة مسجلة في المنصة
+              </div>
+            )}
+            {!isEmployer && jobsCount !== null && jobsCount > 0 && (
+              <div className="inline-flex items-center gap-2 bg-sky-50 text-sky-700 px-4 py-2 rounded-xl text-sm font-bold">
+                <Briefcase className="h-4 w-4" />
+                {jobsCount} وظيفة متاحة حالياً
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
       {/* ===== ARTICLES (Guest and Seekers) ===== */}
       {(!user || isSeeker) && recentArticles && recentArticles.length > 0 && (
         <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16">
@@ -258,28 +284,6 @@ export default async function Home() {
       )}
 
 
-      {/* ===== SOFT TRUST BAR ===== */}
-      <section className={`max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 relative z-10 ${user ? 'mt-8' : '-mt-10'}`}>
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-lg shadow-slate-200/50 p-6 sm:p-8 text-center">
-          <p className="text-sm sm:text-base text-slate-600 font-medium">
-            نبدأ حالياً مع مجموعة مختارة من المقاهي والمطاعم في فلسطين
-          </p>
-          <p className="text-xs text-slate-400 mt-2">
-            انضم إلينا وكن من أوائل المستفيدين من المنصة
-          </p>
-          {isEmployer && employersCount && employersCount > 0 ? (
-            <div className="mt-4 inline-flex items-center gap-2 bg-brand-50 text-brand-700 px-4 py-2 rounded-xl text-sm font-bold">
-              <Building2 className="h-4 w-4" />
-              {employersCount} منشأة مسجلة في المنصة
-            </div>
-          ) : !isEmployer && jobsCount && jobsCount > 0 ? (
-            <div className="mt-4 inline-flex items-center gap-2 bg-brand-50 text-brand-700 px-4 py-2 rounded-xl text-sm font-bold">
-              <Briefcase className="h-4 w-4" />
-              {jobsCount} وظيفة متاحة حالياً
-            </div>
-          ) : null}
-        </div>
-      </section>
 
       {/* ===== ADS CAROUSEL ===== */}
       <AdsCarousel />
