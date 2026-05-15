@@ -5,6 +5,7 @@ import { ArrowLeft, Calendar, User, Share2 } from "lucide-react";
 import { createClient } from "@/lib/supabase-server";
 import ShareButton from "@/components/blog/ShareButton";
 import SafeHTML from "@/components/blog/SafeHTML";
+import ArticleInteractions from "@/components/blog/ArticleInteractions";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -78,6 +79,9 @@ export default async function ArticlePage({ params }: Props) {
       <article className="prose prose-slate prose-base sm:prose-lg max-w-none text-slate-700 leading-relaxed sm:leading-loose">
         <SafeHTML html={article.content} />
       </article>
+
+      {/* Interactions Section */}
+      <ArticleInteractions articleId={article.id} />
 
       {/* Share */}
       <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
