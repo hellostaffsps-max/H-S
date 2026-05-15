@@ -35,7 +35,8 @@ import {
   Download,
   User,
   Megaphone,
-  Trophy
+  Trophy,
+  Bell
 } from "lucide-react";
 import { calculateProfileCompletion } from "@/lib/profile-utils";
 import { useAuth } from "@/hooks/useAuth";
