@@ -83,7 +83,7 @@ function MessagesPage() {
   const [showConvMenu, setShowConvMenu] = useState(false);
   const [deletingConv, setDeletingConv] = useState(false);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const selectedPartnerRef = useRef(selectedPartnerId);
   useEffect(() => { selectedPartnerRef.current = selectedPartnerId; }, [selectedPartnerId]);
@@ -168,7 +168,8 @@ function MessagesPage() {
   }
 
   function scrollToBottom() {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    const el = chatAreaRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }
 
   // ── Send message
@@ -335,7 +336,9 @@ function MessagesPage() {
             </div>
 
             {/* Messages area */}
-            <div className="flex-1 overflow-y-auto px-4 py-4"
+            <div
+              ref={chatAreaRef}
+              className="flex-1 overflow-y-auto px-4 py-4"
               style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e2e8f0' fill-opacity='0.35'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")", backgroundColor: "#E5DDD5" }}
               onClick={() => { if (showConvMenu) setShowConvMenu(false); }}>
               {loadingMsgs ? (
@@ -384,7 +387,6 @@ function MessagesPage() {
                   </div>
                 ))
               )}
-              <div ref={messagesEndRef} className="h-2" />
             </div>
 
             {/* Input */}
