@@ -9,7 +9,6 @@ interface TrustedEmployer {
   id: string;
   name: string;
   logo_url: string | null;
-  is_verified: boolean;
 }
 
 export default function TrustedEmployersCarousel() {
@@ -22,15 +21,20 @@ export default function TrustedEmployersCarousel() {
 
   async function fetchEmployers() {
     const { data, error } = await supabase
-      .from("trusted_employers")
-      .select("id, name, logo_url, is_verified")
-      .eq("is_active", true)
-      .order("display_order", { ascending: true });
+      .from("employers")
+      .select("profile_id, company_name, logo_url")
+      .eq("verification_status", "verified")
+      .not("logo_url", "is", null);
 
     if (error) {
       console.error("Error fetching trusted employers:", error.message);
     } else {
-      setEmployers(data || []);
+      const mapped = (data || []).map(emp => ({
+        id: emp.profile_id,
+        name: emp.company_name,
+        logo_url: emp.logo_url
+      }));
+      setEmployers(mapped);
     }
     setLoading(false);
   }
@@ -57,7 +61,7 @@ export default function TrustedEmployersCarousel() {
             100% { transform: translateX(-50%); }
           }
           .animate-marquee {
-            animation: marquee 60s linear infinite;
+            animation: marquee 100s linear infinite;
           }
           .group:hover .animate-marquee {
             animation-play-state: paused;
@@ -85,12 +89,10 @@ export default function TrustedEmployersCarousel() {
                 <span className="text-sm font-bold text-slate-600 whitespace-nowrap">
                   {emp.name}
                 </span>
-                {emp.is_verified && (
-                  <div className="flex items-center gap-1 bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded-md border border-amber-200">
-                    <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
-                    <span className="text-[9px] font-bold">موثق</span>
-                  </div>
-                )}
+                <div className="flex items-center gap-1 bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded-md border border-amber-200">
+                  <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                  <span className="text-[9px] font-bold">موثق</span>
+                </div>
               </div>
             </div>
           ))}
