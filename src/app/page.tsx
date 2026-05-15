@@ -194,8 +194,8 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ===== ARTICLES (Seekers only) ===== */}
-      {isSeeker && recentArticles && recentArticles.length > 0 && (
+      {/* ===== ARTICLES (Guest and Seekers) ===== */}
+      {(!user || isSeeker) && recentArticles && recentArticles.length > 0 && (
         <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16">
           <div className="flex items-center justify-between mb-6 sm:mb-8">
             <div>
@@ -284,8 +284,8 @@ export default async function Home() {
       {/* ===== ADS CAROUSEL ===== */}
       <AdsCarousel />
 
-      {/* ===== TRUSTED EMPLOYERS CAROUSEL ===== */}
-      <TrustedEmployersCarousel />
+      {/* ===== TRUSTED EMPLOYERS CAROUSEL (Guest and Seekers) ===== */}
+      {(!user || isSeeker) && <TrustedEmployersCarousel />}
 
       {/* ===== CATEGORIES ===== */}
       {!isEmployer && (
@@ -395,7 +395,8 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ===== TRUST SIGNALS ===== */}
+      {/* ===== TRUST SIGNALS (Guest and Employers) ===== */}
+      {!isSeeker && (
       <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24">
         <div className="bg-slate-50 rounded-3xl p-6 sm:p-10 lg:p-14 border border-slate-100">
           <div className="text-center mb-10 sm:mb-12">
@@ -430,6 +431,7 @@ export default async function Home() {
           </div>
         </div>
       </section>
+      )}
 
       {/* ===== PRICING PLANS (Employers only) ===== */}
       {isEmployer && plans.length > 0 && (
@@ -495,8 +497,9 @@ export default async function Home() {
         </section>
       )}
 
-      {/* ===== RECENT JOBS ===== */}
-      <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20">
+      {/* ===== RECENT JOBS (Guest and Seekers) ===== */}
+      {!isEmployer && (
+        <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20">
         <div className="flex justify-between items-end mb-6 sm:mb-8">
           <div>
             <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 mb-1 tracking-tight">
@@ -536,6 +539,7 @@ export default async function Home() {
           </div>
         )}
       </section>
+      )}
 
       {/* ===== FINAL CTA ===== */}
       {!user && (
