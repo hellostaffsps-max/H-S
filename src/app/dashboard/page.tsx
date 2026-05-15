@@ -1185,6 +1185,7 @@ function SeekerDashboard({
   seekerProfile,
   profile,
   recommendedJobs,
+  onTestNotification,
 }: {
   applications: any[];
   seekerProfile: any;
