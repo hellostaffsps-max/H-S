@@ -69,7 +69,13 @@ function MessagesPage() {
   const [newMessage, setNewMessage] = useState("");
   const [myId, setMyId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  
+  const selectedPartnerRef = useRef(selectedPartner);
+  useEffect(() => {
+    selectedPartnerRef.current = selectedPartner;
+  }, [selectedPartner]);
 
   useEffect(() => {
     loadConversations();
@@ -157,7 +163,7 @@ function MessagesPage() {
     if (!myId) return;
 
     const channel = supabase
-      .channel("realtime_messages")
+      .channel(`realtime_messages_${myId}`)
       .on(
         "postgres_changes",
         {
@@ -169,7 +175,7 @@ function MessagesPage() {
         (payload) => {
           const newMsg = payload.new as Message;
           // If the message is from the currently selected partner, add it to messages
-          if (newMsg.sender_id === selectedPartner) {
+          if (newMsg.sender_id === selectedPartnerRef.current) {
             setMessages((prev) => {
               // Avoid duplicates
               if (prev.find((m) => m.id === newMsg.id)) return prev;
@@ -190,9 +196,7 @@ function MessagesPage() {
         },
         (payload) => {
           const newMsg = payload.new as Message;
-          // If we sent the message to the current partner, it's already added by handleSend locally,
-          // but we sync it here just in case or for multi-tab sync.
-          if (newMsg.receiver_id === selectedPartner) {
+          if (newMsg.receiver_id === selectedPartnerRef.current) {
             setMessages((prev) => {
               if (prev.find((m) => m.id === newMsg.id)) return prev;
               return [...prev, newMsg];
@@ -212,7 +216,7 @@ function MessagesPage() {
         (payload) => {
           const newMsg = payload.new as Message;
           // If broadcast chat is currently selected, add the message
-          if (selectedPartner === 'system-broadcasts') {
+          if (selectedPartnerRef.current === 'system-broadcasts') {
             setMessages((prev) => {
               if (prev.find((m) => m.id === newMsg.id)) return prev;
               return [...prev, newMsg];
@@ -227,7 +231,7 @@ function MessagesPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [myId, selectedPartner]);
+  }, [myId]);
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
@@ -265,6 +269,7 @@ function MessagesPage() {
           sender: { full_name: "أنا", avatar_url: null },
         };
         setMessages((prev) => [...prev, optimisticMsg]);
+        scrollToBottom();
       }
       await loadConversations();
     }
@@ -272,7 +277,9 @@ function MessagesPage() {
   }
 
   function scrollToBottom() {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
   }
 
   const selectedConversation =
@@ -401,7 +408,7 @@ function MessagesPage() {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-3">
                 {loadingMessages ? (
                   <div className="flex justify-center py-8">
                     <Loader2 className="h-5 w-5 animate-spin text-brand-600" />
