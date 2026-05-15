@@ -153,26 +153,24 @@ export default function Dashboard() {
         return;
       }
 
-      // Try Service Worker approach first (Better for PWA/Mobile)
+      // Try Service Worker approach (Required for Mobile Chrome)
       if ("serviceWorker" in navigator) {
         console.log("Service Worker supported, checking registrations...");
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        console.log("Registrations found:", registrations.length);
+        let registrations = await navigator.serviceWorker.getRegistrations();
         let reg = registrations.find(r => r.active) || registrations[0];
 
         if (!reg) {
-          console.log("Waiting for serviceWorker.ready...");
+          console.log("No registration found, registering now...");
           try {
-            reg = await Promise.race([
-              navigator.serviceWorker.ready,
-              new Promise<any>((_, reject) => setTimeout(() => reject(new Error("Timeout")), 2000))
-            ]);
-          } catch (e) {
-            console.log("SW not ready, moving to fallback");
+            reg = await navigator.serviceWorker.register('/sw.js');
+            // Give it a moment to initialize
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          } catch (regErr) {
+            console.error("Manual registration failed:", regErr);
           }
         }
 
-        if (reg && reg.showNotification) {
+        if (reg) {
           console.log("Using reg.showNotification");
           try {
             await reg.showNotification("Hello Staff 🎉", {
@@ -189,12 +187,12 @@ export default function Dashboard() {
             return;
           } catch (showErr: any) {
             console.error("showNotification failed:", showErr);
-            throw new Error(`فشل إظهار الإشعار: ${showErr.message || showErr}`);
+            // If it fails, we still have the fallback below
           }
         }
       }
 
-      // Fallback for Desktop or if SW fails
+      // Fallback for Desktop (May fail on Mobile Chrome with 'Illegal constructor')
       console.log("Falling back to new Notification()");
       try {
         new Notification("Hello Staff 🎉", {
@@ -204,10 +202,11 @@ export default function Dashboard() {
           lang: "ar",
           tag: "test-notification",
         });
-        setSuccess("تم إرسال إشعار تجريبي (مباشر)!");
+        setSuccess("تم إرسال إشعار تجريبي!");
         setTimeout(() => { setSuccess(null); setError(null); }, 4000);
       } catch (fallbackErr: any) {
-        throw new Error(`فشل الإشعار المباشر: ${fallbackErr.message || fallbackErr}`);
+        console.error("Fallback failed:", fallbackErr);
+        throw new Error("يجب تفعيل الإشعارات من إعدادات الموقع في المتصفح أولاً، أو استخدام تطبيق الويب (PWA).");
       }
       
     } catch (err: any) {
