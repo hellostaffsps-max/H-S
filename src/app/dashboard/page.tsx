@@ -820,6 +820,7 @@ function EmployerDashboard({
   applicantsRef,
   onSelectApplicant,
   subscription,
+  onTestNotification,
 }: {
   jobs: any[];
   applications: any[];
