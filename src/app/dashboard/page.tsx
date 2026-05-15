@@ -132,15 +132,19 @@ export default function Dashboard() {
   }, [user, profile]);
 
   const sendTestNotification = async () => {
+    console.log("sendTestNotification triggered");
     try {
       if (!("Notification" in window)) {
+        console.warn("Notifications not supported");
         setError("هذا المتصفح لا يدعم الإشعارات");
         return;
       }
 
       let perm = Notification.permission;
+      console.log("Current permission:", perm);
       if (perm === "default") {
         perm = await Notification.requestPermission();
+        console.log("Permission after request:", perm);
       }
 
       if (perm !== "granted") {
@@ -148,37 +152,53 @@ export default function Dashboard() {
         return;
       }
 
-      if (!("serviceWorker" in navigator)) {
-        setError("المتصفح لا يدعم تقنية الإشعارات المطلوبة");
-        return;
+      // Try Service Worker approach first (Better for PWA/Mobile)
+      if ("serviceWorker" in navigator) {
+        console.log("Service Worker supported, checking registrations...");
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        console.log("Registrations found:", registrations.length);
+        let reg = registrations.find(r => r.active) || registrations[0];
+
+        if (!reg) {
+          console.log("Waiting for serviceWorker.ready...");
+          reg = await Promise.race([
+            navigator.serviceWorker.ready,
+            new Promise<any>((_, reject) => setTimeout(() => reject(new Error("SW Ready Timeout")), 3000))
+          ]);
+        }
+
+        if (reg && reg.showNotification) {
+          console.log("Using reg.showNotification");
+          await reg.showNotification("Hello Staff 🎉", {
+            body: "هذا إشعار تجريبي حقيقي! هكذا ستصلك التحديثات مستقبلاً.",
+            icon: "/icons/icon-192.png",
+            badge: "/icons/icon-72.png",
+            dir: "rtl",
+            lang: "ar",
+            tag: "test-notification",
+            renotify: true
+          } as any);
+          setSuccess("تم إرسال إشعار تجريبي بنجاح!");
+          setTimeout(() => { setSuccess(null); setError(null); }, 4000);
+          return;
+        }
       }
 
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      let reg = registrations[0];
-
-      if (!reg) {
-        reg = await navigator.serviceWorker.ready;
-      }
-
-      if (reg) {
-        await reg.showNotification("Hello Staff 🎉", {
-          body: "هذا إشعار تجريبي حقيقي! هكذا ستصلك التحديثات مستقبلاً.",
-          icon: "/icons/icon-192.png",
-          badge: "/icons/icon-72.png",
-          dir: "rtl",
-          lang: "ar",
-          tag: "test-notification",
-          renotify: true
-        } as any);
-        setSuccess("تم إرسال إشعار تجريبي بنجاح!");
-      } else {
-        setError("لم يتم العثور على مشغل إشعارات نشط. حاول تحديث الصفحة.");
-      }
-
+      // Fallback for Desktop or if SW fails
+      console.log("Falling back to new Notification()");
+      new Notification("Hello Staff 🎉", {
+        body: "هذا إشعار تجريبي حقيقي! (عبر المتصفح المباشر)",
+        icon: "/icons/icon-192.png",
+        dir: "rtl",
+        lang: "ar",
+        tag: "test-notification",
+      });
+      setSuccess("تم إرسال إشعار تجريبي (مباشر)!");
       setTimeout(() => { setSuccess(null); setError(null); }, 4000);
+      
     } catch (err) {
-      console.error("Notification Error:", err);
-      setError("حدث خطأ أثناء محاولة إرسال الإشعار");
+      console.error("Notification Error Details:", err);
+      setError("حدث خطأ أثناء محاولة إرسال الإشعار. تأكد من إغلاق النوافذ المنبثقة.");
     }
   };
 
