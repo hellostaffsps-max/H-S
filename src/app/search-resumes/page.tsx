@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Search, MapPin, Briefcase, Star, Filter, Loader2, MessageCircle, Trophy } from "lucide-react";
+import { Search, MapPin, Briefcase, Star, Filter, Loader2, MessageCircle, Trophy, ShieldCheck } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getSearchFilters } from "@/app/actions/search-filters";
 import Image from "next/image";
@@ -16,6 +16,7 @@ interface SeekerProfile {
   is_available: boolean;
   current_employer: string | null;
   is_featured: boolean | null;
+  verification_status: string | null;
   profiles: {
     full_name: string;
     avatar_url: string | null;
@@ -58,7 +59,8 @@ export default function SearchResumes() {
           skills,
           is_available,
           current_employer,
-          is_featured
+          is_featured,
+          verification_status
         `)
         .eq("is_available", true),
       supabase
@@ -220,13 +222,21 @@ export default function SearchResumes() {
                   : 'border-slate-100 hover:border-brand-200'
               }`}
             >
-              {/* Featured Banner */}
-              {candidate.is_featured && (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-100 to-yellow-50 text-amber-800 rounded-xl text-xs font-bold mb-3 border border-amber-200">
-                  <Trophy className="h-3.5 w-3.5 text-amber-600" />
-                  {"\u0645\u0648\u0638\u0641 \u0645\u0645\u064a\u0632"}
-                </div>
-              )}
+              {/* Featured & Verification Banners */}
+              <div className="flex flex-wrap gap-2 mb-3">
+                {candidate.is_featured && (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-100 to-yellow-50 text-amber-800 rounded-xl text-xs font-bold border border-amber-200">
+                    <Trophy className="h-3.5 w-3.5 text-amber-600" />
+                    {"\u0645\u0648\u0638\u0641 \u0645\u0645\u064a\u0632"}
+                  </div>
+                )}
+                {candidate.verification_status === 'verified' && (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-brand-100 to-emerald-50 text-brand-800 rounded-xl text-xs font-bold border border-brand-200">
+                    <ShieldCheck className="h-3.5 w-3.5 text-brand-600" />
+                    {"\u0645\u0648\u062b\u0642"}
+                  </div>
+                )}
+              </div>
 
               <div className="flex items-start gap-4 mb-4">
                 <div className={`w-14 h-14 rounded-full flex items-center justify-center font-bold text-xl shrink-0 shadow-sm overflow-hidden relative ${

@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Bell, Home, Briefcase, PlusCircle, LayoutDashboard, MessageSquare, User, Menu, X, LogIn, LogOut, UserPlus, ArrowLeft } from 'lucide-react';
+import { Bell, Home, Briefcase, PlusCircle, LayoutDashboard, MessageSquare, User, Menu, X, LogIn, LogOut, UserPlus, ArrowLeft, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
@@ -26,13 +26,20 @@ export default function Navbar() {
 
   const authNavItems = [
     { name: 'نشر وظيفة', path: '/post-job', icon: PlusCircle, employerOnly: true },
+    { name: 'الأكاديمية', path: '/academy', icon: BookOpen, seekerOnly: true },
     { name: 'لوحة التحكم', path: '/dashboard', icon: LayoutDashboard },
     { name: 'الرسائل', path: '/messages', icon: MessageSquare },
   ];
 
   const navItems = [
     ...publicNavItems,
-    ...(isLoggedIn ? authNavItems.filter(item => !item.employerOnly || isEmployer) : []),
+    ...(isLoggedIn 
+      ? authNavItems.filter(item => 
+          (!item.employerOnly && !item.seekerOnly) || 
+          (item.employerOnly && isEmployer) || 
+          (item.seekerOnly && !isEmployer)
+        ) 
+      : []),
   ];
 
   const closeMenu = () => setIsMobileMenuOpen(false);

@@ -46,7 +46,7 @@ export default function CVBuilder() {
     async function load() {
       if (!isSupabaseConfigured || !user) { setLoading(false); return; }
       const [seekerRes, statusRes, settingsRes] = await Promise.all([
-        supabase.from('seekers').select('resume_data').eq('profile_id', user.id).single(),
+        supabase.from('seekers').select('resume_data, verification_status').eq('profile_id', user.id).single(),
         checkCVDownloadStatus(),
         supabase.from('platform_settings').select('logo_url').limit(1).single(),
       ]);
@@ -54,7 +54,11 @@ export default function CVBuilder() {
         const d = seekerRes.data.resume_data as any;
         setCvData({ ...defaultCVData, ...d, achievements: d.achievements || [] });
       }
-      setCanDownload(statusRes.canDownload);
+      if (seekerRes.data?.verification_status === 'verified') {
+        setCanDownload(true);
+      } else {
+        setCanDownload(statusRes.canDownload);
+      }
       setDownloadStatus(statusRes.status);
       if (settingsRes.data?.logo_url) setLogoUrl(settingsRes.data.logo_url);
 

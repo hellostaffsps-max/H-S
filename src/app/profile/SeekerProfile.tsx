@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Pencil, CheckCircle2, FileText, Save, Loader2, MapPin, Phone, X, Trophy } from "lucide-react";
 import AvatarUpload from "@/components/AvatarUpload";
+import SeekerVerification from "@/components/profile/SeekerVerification";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { updateProfile, updateSeekerProfile } from "@/app/actions/profile";
 import { submitContactForm } from "@/app/actions/contact";
@@ -222,81 +223,78 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
               </a>
             )}
           </div>
-          <Link
-            href={`/messages?with=${user.id}`}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-sm hover:bg-slate-100 transition-colors font-bold"
-          >
-            <MessageIcon /> الرسائل
-          </Link>
         </div>
       </div>
 
       {/* Content Form / View */}
       {!isEditing ? (
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3 w-full justify-between">
-              <h2 className="text-lg font-black text-slate-900 text-right">البيانات الشخصية</h2>
-              <div className="flex items-center gap-3">
-                {success && (
-                  <span className="text-green-600 text-sm font-bold flex items-center gap-1 shrink-0">
-                    <CheckCircle2 className="w-4 h-4" /> تم الحفظ
-                  </span>
-                )}
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-100 transition-colors"
-                >
-                  <Pencil className="w-4 h-4" />
-                  تعديل
-                </button>
+        <div className="space-y-6">
+          <SeekerVerification seekerData={seekerData} />
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3 w-full justify-between">
+                <h2 className="text-lg font-black text-slate-900 text-right">البيانات الشخصية</h2>
+                <div className="flex items-center gap-3">
+                  {success && (
+                    <span className="text-green-600 text-sm font-bold flex items-center gap-1 shrink-0">
+                      <CheckCircle2 className="w-4 h-4" /> تم الحفظ
+                    </span>
+                  )}
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-100 transition-colors"
+                  >
+                    <Pencil className="w-4 h-4" />
+                    تعديل
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="grid sm:grid-cols-2 gap-6 text-right">
-            <div className="space-y-1">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">الاسم الكامل</p>
-              <p className="font-semibold text-slate-900">{profile?.full_name || "غير محدد"}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">رقم الهاتف</p>
-              <p className="font-semibold text-slate-900" dir="ltr">{profile?.phone || "غير محدد"}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">البريد الإلكتروني</p>
-              <p className="font-semibold text-slate-900 break-all" dir="ltr">{user?.email || "غير محدد"}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">الموقع</p>
-              <p className="font-semibold text-slate-900">{profile?.location || "غير محدد"}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">المسمى الوظيفي</p>
-              <p className="font-semibold text-slate-900">{seekerData?.job_title || "غير محدد"}</p>
-            </div>
-            <div className="space-y-1 sm:col-span-2">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">سنوات الخبرة</p>
-              <p className="font-semibold text-slate-900">{seekerData?.experience_years ?? 0} سنوات</p>
-            </div>
-            <div className="space-y-2 sm:col-span-2">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">المهارات</p>
-              <div className="flex flex-wrap gap-2">
-                {(seekerData?.skills || []).map((skill: string, idx: number) => (
-                  <span key={idx} className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-bold">
-                    {skill}
-                  </span>
-                ))}
-                {(!seekerData?.skills || seekerData.skills.length === 0) && (
-                  <p className="text-sm text-slate-400">لم يتم تحديد مهارات بعد.</p>
-                )}
+            <div className="grid sm:grid-cols-2 gap-6 text-right">
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">الاسم الكامل</p>
+                <p className="font-semibold text-slate-900">{profile?.full_name || "غير محدد"}</p>
               </div>
-            </div>
-            <div className="space-y-1 sm:col-span-2">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">نبذة عنك</p>
-              <p className="font-medium text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100">
-                {seekerData?.bio || "لا توجد نبذة حالياً."}
-              </p>
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">رقم الهاتف</p>
+                <p className="font-semibold text-slate-900" dir="ltr">{profile?.phone || "غير محدد"}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">البريد الإلكتروني</p>
+                <p className="font-semibold text-slate-900 break-all" dir="ltr">{user?.email || "غير محدد"}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">الموقع</p>
+                <p className="font-semibold text-slate-900">{profile?.location || "غير محدد"}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">المسمى الوظيفي</p>
+                <p className="font-semibold text-slate-900">{seekerData?.job_title || "غير محدد"}</p>
+              </div>
+              <div className="space-y-1 sm:col-span-2">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">سنوات الخبرة</p>
+                <p className="font-semibold text-slate-900">{seekerData?.experience_years ?? 0} سنوات</p>
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">المهارات</p>
+                <div className="flex flex-wrap gap-2">
+                  {(seekerData?.skills || []).map((skill: string, idx: number) => (
+                    <span key={idx} className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-bold">
+                      {skill}
+                    </span>
+                  ))}
+                  {(!seekerData?.skills || seekerData.skills.length === 0) && (
+                    <p className="text-sm text-slate-400">لم يتم تحديد مهارات بعد.</p>
+                  )}
+                </div>
+              </div>
+              <div className="space-y-1 sm:col-span-2">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">نبذة عنك</p>
+                <p className="font-medium text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100">
+                  {seekerData?.bio || "لا توجد نبذة حالياً."}
+                </p>
+              </div>
             </div>
           </div>
         </div>

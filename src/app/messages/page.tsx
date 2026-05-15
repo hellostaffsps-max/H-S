@@ -68,6 +68,7 @@ function MessagesPage() {
 
   const [myId, setMyId] = useState<string | null>(null);
   const [myRole, setMyRole] = useState<string | null>(null);
+  const [isVerified, setIsVerified] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedPartnerId, setSelectedPartnerId] = useState<string | null>(initialPartner);
   const [partnerInfo, setPartnerInfo] = useState<Conversation | null>(null);
@@ -88,9 +89,9 @@ function MessagesPage() {
   const selectedPartnerRef = useRef(selectedPartnerId);
   useEffect(() => { selectedPartnerRef.current = selectedPartnerId; }, [selectedPartnerId]);
 
-  // ── Seeker reply permission: true by default, only false when confirmed seeker with no received messages
+  // ── Seeker reply permission: true by default, only false when confirmed seeker with no received messages (and not verified)
   const isSeeker = myRole === "seeker";
-  const canReply = !isSeeker || messages.some((m) => m.sender_id === selectedPartnerId && m.receiver_id === myId);
+  const canReply = !isSeeker || isVerified || messages.some((m) => m.sender_id === selectedPartnerId && m.receiver_id === myId);
   const isBroadcast = selectedPartnerId === "system-broadcasts";
 
   // ── Boot
@@ -99,7 +100,15 @@ function MessagesPage() {
       try {
         const res = await fetch("/api/auth/user");
         const data = await res.json();
-        if (data?.id) { setMyId(data.id); setMyRole(data.role ?? null); }
+        if (data?.id) { 
+          setMyId(data.id); 
+          setMyRole(data.role ?? null); 
+          
+          if (data.role === 'seeker') {
+            const { data: seeker } = await supabase.from('seekers').select('verification_status').eq('profile_id', data.id).single();
+            if (seeker?.verification_status === 'verified') setIsVerified(true);
+          }
+        }
       } catch {}
     })();
     loadConversations();

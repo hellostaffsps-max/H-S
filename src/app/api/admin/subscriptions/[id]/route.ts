@@ -112,8 +112,16 @@ export async function PATCH(
         type,
         link: '/dashboard',
       });
+      // If active, also check if user is a seeker, and update verification_status
+      if (status === 'active') {
+        const { error: seekerErr } = await adminClient
+          .from('seekers')
+          .update({ verification_status: 'verified' })
+          .eq('profile_id', subWithUser.user_id);
+        if (seekerErr) console.error('Failed to verify seeker', seekerErr);
+      }
     } catch (err) {
-      console.error('Failed to create notification', err);
+      console.error('Failed to create notification or verify', err);
     }
   }
 
