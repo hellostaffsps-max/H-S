@@ -132,6 +132,7 @@ export default function Dashboard() {
   }, [user, profile]);
 
   const sendTestNotification = async () => {
+    alert("بدء تشغيل وظيفة الإشعارات...");
     console.log("sendTestNotification triggered");
     try {
       if (!("Notification" in window)) {
