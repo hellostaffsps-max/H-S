@@ -20,6 +20,10 @@ interface Subscription {
     email: string | null;
     avatar_url: string | null;
   } | null;
+  subscription_plans: {
+    target_role: string;
+    price: number;
+  } | null;
 }
 
 const statusConfig: Record<string, { label: string; style: string; icon: typeof CheckCircle }> = {
@@ -33,6 +37,7 @@ export default function PaymentsManagement() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState<"all" | "employer" | "seeker">("all");
 
   useEffect(() => {
     fetchSubscriptions();
@@ -43,7 +48,7 @@ export default function PaymentsManagement() {
     try {
       const { data, error } = await supabase
         .from("user_subscriptions")
-        .select("*, profiles(full_name, email, avatar_url)")
+        .select("*, profiles(full_name, email, avatar_url), subscription_plans(target_role, price)")
         .order("created_at", { ascending: false })
         .limit(200);
 
@@ -56,15 +61,30 @@ export default function PaymentsManagement() {
     }
   }
 
-  const filtered = subscriptions.filter((sub) =>
-    sub.profiles?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    sub.plan_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    sub.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filtered = subscriptions.filter((sub) => {
+    const matchesSearch = 
+      sub.profiles?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      sub.plan_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      sub.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesRole = 
+      filterType === "all" || 
+      sub.subscription_plans?.target_role === filterType;
+
+    return matchesSearch && matchesRole;
+  });
 
   const totalRevenue = subscriptions
     .filter((s) => s.status === "active")
-    .reduce((sum, s) => sum + (s.amount || 0), 0);
+    .reduce((sum, s) => sum + (s.amount || s.subscription_plans?.price || 0), 0);
+
+  const employerRevenue = subscriptions
+    .filter((s) => s.status === "active" && s.subscription_plans?.target_role === "employer")
+    .reduce((sum, s) => sum + (s.amount || s.subscription_plans?.price || 0), 0);
+
+  const seekerRevenue = subscriptions
+    .filter((s) => s.status === "active" && s.subscription_plans?.target_role === "seeker")
+    .reduce((sum, s) => sum + (s.amount || s.subscription_plans?.price || 0), 0);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -76,31 +96,66 @@ export default function PaymentsManagement() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-          <p className="text-xs font-bold text-slate-500 mb-1">إجمالي الاشتراكات</p>
-          <p className="text-2xl font-black text-slate-900">{subscriptions.length}</p>
+          <p className="text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">إجمالي الإيرادات</p>
+          <p className="text-2xl font-black text-slate-900">{totalRevenue.toLocaleString()} ₪</p>
+          <div className="mt-2 text-[10px] text-slate-400 font-bold">الاشتراكات الفعالة فقط</div>
         </div>
         <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-          <p className="text-xs font-bold text-slate-500 mb-1">الاشتراكات الفعالة</p>
-          <p className="text-2xl font-black text-green-600">{subscriptions.filter(s => s.status === "active").length}</p>
+          <p className="text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">إيرادات الشركات</p>
+          <p className="text-2xl font-black text-brand-600">{employerRevenue.toLocaleString()} ₪</p>
+          <div className="mt-2 text-[10px] text-brand-400 font-bold">
+            {subscriptions.filter(s => s.status === "active" && s.subscription_plans?.target_role === "employer").length} اشتراك فعال
+          </div>
         </div>
         <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-          <p className="text-xs font-bold text-slate-500 mb-1">الإيرادات (الفعالة)</p>
-          <p className="text-2xl font-black text-brand-600">{totalRevenue > 0 ? `${totalRevenue} ₪` : "—"}</p>
+          <p className="text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">إيرادات الموظفين</p>
+          <p className="text-2xl font-black text-indigo-600">{seekerRevenue.toLocaleString()} ₪</p>
+          <div className="mt-2 text-[10px] text-indigo-400 font-bold">
+            {subscriptions.filter(s => s.status === "active" && s.subscription_plans?.target_role === "seeker").length} اشتراك فعال
+          </div>
+        </div>
+        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+          <p className="text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">بانتظار المراجعة</p>
+          <p className="text-2xl font-black text-amber-600">
+            {subscriptions.filter(s => s.status === "pending").length}
+          </p>
+          <div className="mt-2 text-[10px] text-amber-400 font-bold">تحتاج تأكيد الدفع</div>
         </div>
       </div>
 
-      {/* Search */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-        <div className="relative">
-          <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+      {/* Filter & Search */}
+      <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4">
+        <div className="flex bg-slate-100 p-1 rounded-xl shrink-0">
+          <button 
+            onClick={() => setFilterType("all")}
+            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${filterType === "all" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+          >
+            الكل
+          </button>
+          <button 
+            onClick={() => setFilterType("employer")}
+            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${filterType === "employer" ? "bg-white text-brand-600 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+          >
+            الشركات
+          </button>
+          <button 
+            onClick={() => setFilterType("seeker")}
+            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${filterType === "seeker" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+          >
+            الموظفين
+          </button>
+        </div>
+        <div className="relative flex-1">
+          <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input
             type="text"
             placeholder="البحث بالعميل أو الباقة أو الإيميل..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pr-12 pl-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-brand-500/20 outline-none"
+            className="w-full pr-11 pl-4 py-2.5 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-brand-500/20 outline-none"
           />
         </div>
       </div>
@@ -156,13 +211,20 @@ export default function PaymentsManagement() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-brand-50 text-brand-700 rounded-lg text-xs font-bold">
-                          <CreditCard className="h-3 w-3" />
-                          {sub.plan_name}
-                        </span>
+                        <div className="flex flex-col gap-1">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-brand-50 text-brand-700 rounded-lg text-[11px] font-bold">
+                            <CreditCard className="h-3 w-3" />
+                            {sub.plan_name}
+                          </span>
+                          {sub.subscription_plans?.target_role === "seeker" ? (
+                            <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md w-fit">موظف (أكاديمية)</span>
+                          ) : (
+                            <span className="text-[10px] font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-md w-fit">صاحب عمل</span>
+                          )}
+                        </div>
                       </td>
-                      <td className="px-6 py-4 text-sm font-bold text-slate-800">
-                        {sub.amount ? `${sub.amount} ₪` : "—"}
+                      <td className="px-6 py-4 text-sm font-black text-slate-900">
+                        {sub.amount || sub.subscription_plans?.price ? `${(sub.amount || sub.subscription_plans?.price)?.toLocaleString()} ₪` : "—"}
                       </td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border ${config.style}`}>
