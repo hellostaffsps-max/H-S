@@ -192,11 +192,6 @@ export default function Dashboard() {
       setTimeout(() => { setSuccess(null); setError(null); }, 4000);
       
     } catch (err: any) {
-      setError(`تعذر إرسال الإشعار: ${err.message || "تأكد من تفعيل الصلاحيات"}`);
-    }
-  };
-      
-    } catch (err: any) {
       console.error("Notification Error Details:", err);
       setError(`خطأ تقني: ${err.message || "عطل غير معروف"}`);
     }
