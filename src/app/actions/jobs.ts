@@ -205,7 +205,7 @@ export async function getEmployerJobs() {
 
   const { data, error } = await supabase
     .from('jobs')
-    .select('*')
+    .select('id, employer_id, title, category, type, location, company_name, status, salary_min, salary_max, currency, experience_level, created_at, expires_at, whatsapp_number')
     .eq('employer_id', user.id)
     .order('created_at', { ascending: false });
 

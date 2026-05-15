@@ -14,7 +14,7 @@ export async function getJobAlerts() {
 
   const { data, error } = await supabase
     .from('job_alerts')
-    .select('*')
+    .select('id, user_id, keyword, category, location, type, is_active, created_at')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });
 
