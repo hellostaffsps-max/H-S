@@ -1,22 +1,19 @@
+// Server Component — fetches real data from DB
 import Link from 'next/link';
 import { BookOpen, HelpCircle, Briefcase, ArrowLeft } from 'lucide-react';
+import { createClient } from '@/lib/supabase-server';
 
-const blogLinks = [
-  { href: '/blog', label: 'كيف تكتب سيرة ذاتية احترافية في قطاع الضيافة؟', tag: 'نصائح' },
-  { href: '/blog', label: 'أفضل المهارات المطلوبة في مجال المطاعم والفنادق', tag: 'مهارات' },
-  { href: '/blog', label: 'كيف تتفوق في مقابلة العمل مع أصحاب العمل؟', tag: 'مقابلات' },
-  { href: '/blog', label: 'دليل التوظيف الشامل في قطاع الضيافة بالشرق الأوسط', tag: 'دليل' },
-];
-
+// Static FAQ — content-based, doesn't need DB
 const faqItems = [
   { q: 'كيف أسجل في منصة Hello Staff؟', href: '/help' },
   { q: 'هل التسجيل مجاني للباحثين عن عمل؟', href: '/help' },
   { q: 'كيف أنشر وظيفة كصاحب عمل؟', href: '/pricing' },
   { q: 'كيف أفعّل تنبيهات الوظائف الجديدة؟', href: '/job-alerts' },
-  { q: 'ما هي التخصصات الوظيفية المتاحة على المنصة؟', href: '/jobs' },
+  { q: 'ما هي التخصصات الوظيفية المتاحة؟', href: '/jobs' },
   { q: 'كيف أتواصل مع صاحب العمل بعد التقديم؟', href: '/help' },
 ];
 
+// Static job categories — platform-defined, not from DB (jobs table may be empty)
 const jobCategories = [
   { label: 'وظائف الطهاة والطبخ', href: '/jobs?category=cooking' },
   { label: 'وظائف خدمة العملاء', href: '/jobs?category=customer-service' },
@@ -26,7 +23,37 @@ const jobCategories = [
   { label: 'وظائف بارتيندر وبار', href: '/jobs?category=bartender' },
 ];
 
-export default function SEOLinksSection() {
+// Fallback blog links shown when DB has no published articles yet
+const fallbackBlogLinks = [
+  { href: '/blog', title: 'كيف تكتب سيرة ذاتية احترافية في قطاع الضيافة؟' },
+  { href: '/blog', title: 'أفضل المهارات المطلوبة في مجال المطاعم والفنادق' },
+  { href: '/blog', title: 'كيف تتفوق في مقابلة العمل مع أصحاب العمل؟' },
+  { href: '/blog', title: 'دليل التوظيف الشامل في قطاع الضيافة بالشرق الأوسط' },
+];
+
+export default async function SEOLinksSection() {
+  // Fetch real published articles from DB
+  let blogLinks = fallbackBlogLinks;
+
+  try {
+    const supabase = await createClient();
+    const { data: articles } = await supabase
+      .from('articles')
+      .select('id, title, slug, excerpt')
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+      .limit(4);
+
+    if (articles && articles.length > 0) {
+      blogLinks = articles.map((a) => ({
+        href: `/blog/${a.slug}`,
+        title: a.title,
+      }));
+    }
+  } catch {
+    // Silently fallback to static links on error
+  }
+
   return (
     <section
       aria-label="مركز المعرفة والروابط المفيدة"
@@ -35,7 +62,7 @@ export default function SEOLinksSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
 
-          {/* ── Blog Articles ── */}
+          {/* ── Blog Articles (from DB) ── */}
           <div>
             <div className="flex items-center gap-2 mb-5">
               <span className="w-8 h-8 rounded-lg bg-brand-100 flex items-center justify-center">
@@ -51,7 +78,7 @@ export default function SEOLinksSection() {
                     className="group flex items-start gap-2 text-sm text-slate-600 hover:text-brand-600 transition-colors"
                   >
                     <ArrowLeft className="w-3.5 h-3.5 mt-0.5 shrink-0 text-slate-400 group-hover:text-brand-500 transition-colors" />
-                    <span className="leading-snug">{item.label}</span>
+                    <span className="leading-snug">{item.title}</span>
                   </Link>
                 </li>
               ))}
@@ -65,7 +92,7 @@ export default function SEOLinksSection() {
             </Link>
           </div>
 
-          {/* ── FAQ ── */}
+          {/* ── FAQ (static) ── */}
           <div>
             <div className="flex items-center gap-2 mb-5">
               <span className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
@@ -95,7 +122,7 @@ export default function SEOLinksSection() {
             </Link>
           </div>
 
-          {/* ── Job Categories ── */}
+          {/* ── Job Categories (static platform-defined) ── */}
           <div>
             <div className="flex items-center gap-2 mb-5">
               <span className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">

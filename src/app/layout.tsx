@@ -3,6 +3,7 @@ import { Cairo } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import LayoutBody from "./LayoutBody";
+import SEOLinksSection from "@/components/layout/SEOLinksSection";
 
 const cairo = Cairo({
   subsets: ["arabic", "latin"],
@@ -75,7 +76,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
       <body className={`${cairo.variable} antialiased font-sans`}>
-        <LayoutBody>{children}</LayoutBody>
+        <LayoutBody preFooter={<SEOLinksSection />}>{children}</LayoutBody>
         <Analytics />
         <script
           dangerouslySetInnerHTML={{
