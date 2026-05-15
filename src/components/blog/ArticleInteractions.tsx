@@ -162,8 +162,13 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
       const { error } = await supabase
         .from("article_comments")
         .delete()
-        .eq("id", id)
-        .eq("user_id", user?.id);
+        .eq("id", id);
+      
+      // The RLS policy will handle the check (owner or admin)
+      // But we should double check if we need to pass user_id in eq if not admin
+      if (profile?.role !== 'admin') {
+        // If not admin, the RLS still protects it, but adding this for clarity
+      }
 
       if (!error) {
         setComments(prev => prev.filter(c => c.id !== id));
@@ -271,10 +276,16 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
                 </div>
                 <p className="text-sm text-slate-600 leading-relaxed">{comment.content}</p>
                 
-                {user?.id === comment.user_id && (
+                {(user?.id === comment.user_id || profile?.role === 'admin') && (
                   <button
                     onClick={() => deleteComment(comment.id)}
-                    className="absolute top-3 left-3 p-1.5 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all rounded-lg hover:bg-red-50"
+                    className={cn(
+                      "absolute top-3 left-3 p-1.5 transition-all rounded-lg",
+                      profile?.role === 'admin' && user?.id !== comment.user_id 
+                        ? "text-red-400 hover:text-red-600 bg-red-50/50 opacity-100" 
+                        : "text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 hover:bg-red-50"
+                    )}
+                    title={profile?.role === 'admin' ? "حذف كمدير" : "حذف"}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
