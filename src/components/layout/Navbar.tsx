@@ -54,12 +54,12 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo & Back */}
-          <div className="flex shrink-0 items-center justify-between w-full md:w-auto">
+          <div className="flex shrink-0 items-center justify-between w-full lg:w-auto">
             <div className="flex items-center gap-2">
               {pathname !== '/' && (
                 <button
                   onClick={() => router.back()}
-                  className="hidden md:flex items-center justify-center text-slate-500 hover:text-brand-600 hover:bg-slate-100 p-2 rounded-lg transition-colors min-h-[44px] min-w-[44px]"
+                  className="hidden lg:flex items-center justify-center text-slate-500 hover:text-brand-600 hover:bg-slate-100 p-2 rounded-lg transition-colors min-h-[44px] min-w-[44px]"
                   title="رجوع"
                 >
                   <ArrowLeft className="h-5 w-5" />
@@ -75,19 +75,19 @@ export default function Navbar() {
               {pathname !== '/' && (
                 <button
                   onClick={() => router.back()}
-                  className="md:hidden text-slate-500 hover:text-brand-600 hover:bg-slate-100 p-2 rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                  className="lg:hidden text-slate-500 hover:text-brand-600 hover:bg-slate-100 p-2 rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                   title="رجوع"
                 >
                   <ArrowLeft className="h-5 w-5" />
                 </button>
               )}
               {isLoggedIn && (
-                <div className="md:hidden relative">
+                <div className="lg:hidden relative">
                   <NotificationsDropdown />
                 </div>
               )}
               <button 
-                className="md:hidden text-slate-500 hover:text-slate-700 p-2 rounded-lg hover:bg-slate-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="lg:hidden text-slate-500 hover:text-slate-700 p-2 rounded-lg hover:bg-slate-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
                 {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -96,7 +96,7 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6 lg:gap-8">
+          <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.path;
@@ -123,7 +123,7 @@ export default function Navbar() {
           </nav>
 
           {/* Desktop User & Actions */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-3">
             {isLoggedIn ? (
               <>
                 <Link
@@ -194,7 +194,7 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 bg-white px-4 py-3 space-y-1 animate-in slide-in-from-top-2 duration-200">
+        <div className="lg:hidden border-t border-slate-200 bg-white px-4 py-3 space-y-1 animate-in slide-in-from-top-2 duration-200">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.path;
