@@ -73,8 +73,12 @@ export default function TrustedEmployersCarousel() {
         </div>
       </div>
 
-      {/* Scrolling track */}
-      <div className="relative w-full overflow-hidden">
+      {/* Scrolling track — MUST be dir="ltr" even on RTL pages.
+          In RTL, overflow:hidden shows the rightmost part of overflowing
+          content first, which breaks the animation.  Forcing ltr here
+          makes the container show the leftmost items first so the
+          translateX(-50%) animation produces a seamless left-scrolling loop. */}
+      <div className="relative w-full overflow-hidden" dir="ltr">
         {/* Fade masks — purely cosmetic */}
         <div
           className="absolute inset-y-0 right-0 w-16 sm:w-28 z-10 pointer-events-none"
