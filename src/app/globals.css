@@ -17,9 +17,33 @@
 }
 
 @layer base {
-  html, body {
+  html {
     @apply w-full overflow-x-hidden;
     margin: 0;
     padding: 0;
+    /* Smooth, GPU-composited scrolling */
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply w-full overflow-x-hidden;
+    margin: 0;
+    padding: 0;
+    /* Promote to its own compositing layer for smoother paint */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeSpeed;
+  }
+
+  /* Images should never cause layout shifts */
+  img, video {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Reduce paint work on hover-animated elements */
+  a, button {
+    -webkit-tap-highlight-color: transparent;
   }
 }
