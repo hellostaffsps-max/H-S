@@ -220,8 +220,8 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ===== TRUSTED EMPLOYERS CAROUSEL (Guest and Seekers) ===== */}
-      {(!user || isSeeker) && <div className="mt-4"><TrustedEmployersCarousel /></div>}
+      {/* ===== TRUSTED EMPLOYERS CAROUSEL ===== */}
+      <div className="mt-4"><TrustedEmployersCarousel /></div>
 
       {/* ===== ARTICLES (Guest and Seekers) ===== */}
       {(!user || isSeeker) && recentArticles && recentArticles.length > 0 && (
