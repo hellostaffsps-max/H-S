@@ -15,3 +15,11 @@
   
   --font-sans: "Cairo", system-ui, sans-serif;
 }
+
+@layer base {
+  html, body {
+    @apply w-full overflow-x-hidden;
+    margin: 0;
+    padding: 0;
+  }
+}
