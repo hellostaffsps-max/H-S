@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Building2, Star } from "lucide-react";
 import { supabase } from "@/lib/supabase";
@@ -28,39 +28,40 @@ export default function TrustedEmployersCarousel() {
 
     if (error) {
       console.error("Error fetching trusted employers:", error.message);
-    } else {
-      const mapped = (data || []).map((emp) => ({
-        id: emp.profile_id,
-        name: emp.company_name,
-        logo_url: emp.logo_url,
-      }));
-      setEmployers(mapped);
+      setLoading(false);
+      return;
     }
+
+    const mapped = (data || []).map((emp) => ({
+      id: emp.profile_id,
+      name: emp.company_name,
+      logo_url: emp.logo_url,
+    }));
+    setEmployers(mapped);
     setLoading(false);
   }
 
   if (loading || employers.length === 0) return null;
 
-  // --- Infinite loop logic ---
-  // Step 1: Duplicate employers until we have at least 10 visible items.
-  //         This ensures the strip always looks full on any screen size,
-  //         even if only 1 employer exists.
-  const MIN_VISIBLE = 10;
-  let baseItems = [...employers];
-  while (baseItems.length < MIN_VISIBLE) {
-    baseItems = [...baseItems, ...employers];
+  // ── Duplication logic ──────────────────────────────────────────────────────
+  // We need TWO perfectly identical halves so that when the CSS animation
+  // reaches -50% it can snap back to 0 with no visible jump.
+  //
+  // First, pad `employers` to at least MIN_VISIBLE items so the strip is
+  // always visually full even with very few entries.
+  const MIN_VISIBLE = 12; // items in ONE half → 2× in the DOM
+  let half = [...employers];
+  while (half.length < MIN_VISIBLE) {
+    half = [...half, ...employers];
   }
+  // The full scroll row = first half + identical second half
+  const scrollItems = [...half, ...half];
 
-  // Step 2: Double the base set so the CSS animation can seamlessly jump back
-  //         to position 0 when it reaches -50% (the end of the first half).
-  //         Result: a true infinite "doullab" with no gaps or jumps.
-  const scrollItems = [...baseItems, ...baseItems];
-
-  // Speed: each item takes ~4 s to cross the strip
-  const duration = baseItems.length * 4;
+  // Duration: ~3 s per item so it's comfortable to read
+  const durationSec = half.length * 3;
 
   return (
-    <section className="w-full py-6 sm:py-8 bg-white border-y border-slate-100">
+    <section className="w-full py-6 sm:py-8 bg-white border-y border-slate-100 overflow-hidden">
       {/* Title */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-5">
         <div className="flex items-center justify-center gap-2">
@@ -74,32 +75,40 @@ export default function TrustedEmployersCarousel() {
 
       {/* Scrolling track */}
       <div className="relative w-full overflow-hidden">
-        {/* Fade masks */}
+        {/* Fade masks — purely cosmetic */}
         <div
-          className="absolute top-0 right-0 w-20 sm:w-36 h-full z-10 pointer-events-none"
-          style={{ background: "linear-gradient(to left, white 0%, transparent 100%)" }}
+          className="absolute inset-y-0 right-0 w-16 sm:w-28 z-10 pointer-events-none"
+          style={{ background: "linear-gradient(to left, white, transparent)" }}
         />
         <div
-          className="absolute top-0 left-0 w-20 sm:w-36 h-full z-10 pointer-events-none"
-          style={{ background: "linear-gradient(to right, white 0%, transparent 100%)" }}
+          className="absolute inset-y-0 left-0 w-16 sm:w-28 z-10 pointer-events-none"
+          style={{ background: "linear-gradient(to right, white, transparent)" }}
         />
 
-        {/* The scrolling row — always LTR so animation direction is predictable */}
+        {/*
+          The scrolling row.
+          - `width: max-content`  → row never wraps
+          - `dir="ltr"`           → items flow left-to-right regardless of page RTL
+          - `.animate-marquee-ltr` (defined in globals.css) moves the row by -50%
+            (= one half-width) then snaps back to 0 — seamless infinite loop.
+          - CSS variable `--marquee-duration` controls speed.
+        */}
         <div
-          className="flex items-center"
+          className="flex items-center animate-marquee-ltr"
           style={{
             width: "max-content",
-            animation: `trusted-scroll ${duration}s linear infinite`,
-            willChange: "transform",
+            // pass duration via CSS variable so globals.css can read it
+            ["--marquee-duration" as string]: `${durationSec}s`,
           }}
           dir="ltr"
         >
           {scrollItems.map((emp, index) => (
             <div
               key={`${emp.id}-${index}`}
-              className="flex items-center gap-2.5 mx-5 sm:mx-7 shrink-0"
+              className="flex items-center gap-2.5 mx-6 sm:mx-8 shrink-0"
             >
-              <div className="relative w-9 h-9 rounded-full overflow-hidden bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
+              {/* Logo */}
+              <div className="relative w-9 h-9 rounded-full overflow-hidden bg-slate-50 border border-slate-100 shrink-0">
                 {emp.logo_url ? (
                   <Image
                     src={emp.logo_url}
@@ -109,13 +118,17 @@ export default function TrustedEmployersCarousel() {
                     sizes="36px"
                   />
                 ) : (
-                  <Building2 className="w-4 h-4 text-slate-300" />
+                  <Building2 className="w-4 h-4 text-slate-300 m-auto" />
                 )}
               </div>
+
+              {/* Name */}
               <span className="text-sm font-bold text-slate-600 whitespace-nowrap">
                 {emp.name}
               </span>
-              <span className="flex items-center gap-1 bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded text-[10px] font-bold border border-amber-100">
+
+              {/* Badge */}
+              <span className="flex items-center gap-1 bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded text-[10px] font-bold border border-amber-100 whitespace-nowrap">
                 <Star className="w-2.5 h-2.5 fill-amber-500 text-amber-500" />
                 موثق
               </span>
@@ -123,13 +136,6 @@ export default function TrustedEmployersCarousel() {
           ))}
         </div>
       </div>
-
-      <style>{`
-        @keyframes trusted-scroll {
-          0%   { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-      `}</style>
     </section>
   );
 }
