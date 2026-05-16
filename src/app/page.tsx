@@ -220,6 +220,9 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* ===== TRUSTED EMPLOYERS CAROUSEL (Guest and Seekers) ===== */}
+      {(!user || isSeeker) && <div className="mt-4"><TrustedEmployersCarousel /></div>}
+
       {/* ===== ARTICLES (Guest and Seekers) ===== */}
       {(!user || isSeeker) && recentArticles && recentArticles.length > 0 && (
         <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16">
@@ -284,9 +287,6 @@ export default async function Home() {
       )}
 
 
-
-      {/* ===== TRUSTED EMPLOYERS CAROUSEL (Guest and Seekers) ===== */}
-      {(!user || isSeeker) && <TrustedEmployersCarousel />}
 
       {/* ===== ADS CAROUSEL ===== */}
       <AdsCarousel />

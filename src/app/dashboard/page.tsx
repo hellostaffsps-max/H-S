@@ -38,6 +38,7 @@ import {
   Trophy,
   Bell
 } from "lucide-react";
+import TrustedEmployersCarousel from "@/components/TrustedEmployersCarousel";
 import { calculateProfileCompletion } from "@/lib/profile-utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -324,6 +325,9 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <div className="mb-8">
+        <TrustedEmployersCarousel />
+      </div>
       {/* Global Alerts */}
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-3">
