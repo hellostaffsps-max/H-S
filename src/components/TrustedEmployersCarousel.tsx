@@ -57,8 +57,8 @@ export default function TrustedEmployersCarousel() {
   // The full scroll row = first half + identical second half
   const scrollItems = [...half, ...half];
 
-  // Duration: ~3 s per item so it's comfortable to read
-  const durationSec = half.length * 3;
+  // Duration: ~6 s per item — slow and smooth like a news ticker
+  const durationSec = half.length * 6;
 
   return (
     <section className="w-full py-6 sm:py-8 bg-white border-y border-slate-100 overflow-hidden">
