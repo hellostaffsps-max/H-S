@@ -41,18 +41,23 @@ export default function TrustedEmployersCarousel() {
 
   if (loading || employers.length === 0) return null;
 
-  // Ensure enough items to fill screen width without gaps.
-  // We duplicate until we have at least 5 items, then duplicate that set once more.
-  const minItems = 5;
+  // --- Infinite loop logic ---
+  // Step 1: Duplicate employers until we have at least 10 visible items.
+  //         This ensures the strip always looks full on any screen size,
+  //         even if only 1 employer exists.
+  const MIN_VISIBLE = 10;
   let baseItems = [...employers];
-  while (baseItems.length < minItems) {
+  while (baseItems.length < MIN_VISIBLE) {
     baseItems = [...baseItems, ...employers];
   }
-  // The animation moves exactly one set (half the total), so we need 2 identical sets.
+
+  // Step 2: Double the base set so the CSS animation can seamlessly jump back
+  //         to position 0 when it reaches -50% (the end of the first half).
+  //         Result: a true infinite "doullab" with no gaps or jumps.
   const scrollItems = [...baseItems, ...baseItems];
 
-  // Calculate animation duration based on number of items for consistent speed
-  const duration = baseItems.length * 4; // ~4s per item
+  // Speed: each item takes ~4 s to cross the strip
+  const duration = baseItems.length * 4;
 
   return (
     <section className="w-full py-6 sm:py-8 bg-white border-y border-slate-100">
