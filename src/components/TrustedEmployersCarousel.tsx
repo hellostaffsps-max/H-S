@@ -42,8 +42,8 @@ export default function TrustedEmployersCarousel() {
   if (loading || employers.length === 0) return null;
 
   // Ensure enough items to fill screen width without gaps.
-  // We duplicate until we have at least 20 items, then duplicate that set once more.
-  const minItems = 20;
+  // We duplicate until we have at least 5 items, then duplicate that set once more.
+  const minItems = 5;
   let baseItems = [...employers];
   while (baseItems.length < minItems) {
     baseItems = [...baseItems, ...employers];
