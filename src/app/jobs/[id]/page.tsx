@@ -149,10 +149,13 @@ export default async function JobDetailPage({ params }: Props) {
             </div>
 
             <div className="flex flex-wrap gap-4">
-              {userRole !== 'employer' && (
+              {userRole !== 'employer' && (job.employers?.application_preference !== 'whatsapp_only') && (
                 <ApplyButton jobId={job.id} isLoggedIn={!!user} profileComplete={profileComplete} />
               )}
               {job.whatsapp_number && (
+                (userRole !== 'employer' && (job.employers?.application_preference === 'whatsapp_only' || job.employers?.application_preference === 'both')) ||
+                job.employers?.show_whatsapp_to_candidates
+              ) && (
                 <a
                   href={`https://wa.me/${job.whatsapp_number.replace(/\D/g, "").replace(/^0/, "970")}`}
                   target="_blank"
@@ -160,7 +163,7 @@ export default async function JobDetailPage({ params }: Props) {
                   className="flex items-center justify-center gap-2.5 bg-emerald-500 text-white px-8 py-4 rounded-[22px] text-base font-black hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20 active:scale-95"
                 >
                   <Phone className="h-5 w-5" />
-                  تواصل عبر واتساب
+                  {userRole !== 'employer' && (job.employers?.application_preference === 'whatsapp_only' || job.employers?.application_preference === 'both') ? "قدم عبر واتساب" : "تواصل عبر واتساب"}
                 </a>
               )}
             </div>

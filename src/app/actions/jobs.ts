@@ -57,7 +57,7 @@ export async function getJobById(id: string) {
 
   let query = supabase
     .from('jobs')
-    .select('*, employers(company_name, description, logo_url)')
+    .select('*, employers(company_name, description, logo_url, application_preference, show_whatsapp_to_candidates)')
     .eq('id', id);
 
   // If no user or not the employer/admin, only show approved jobs
