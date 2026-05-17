@@ -279,7 +279,7 @@ export default function EmployerProfile({ profile, user, employerData, onEmploye
               <Briefcase className="w-4 h-4" />
               نشر وظيفة
             </Link>
-            <Link href="/dashboard" className="flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-50 border border-brand-200 text-brand-700 text-sm font-bold hover:bg-brand-100 transition-colors">
+            <Link href="/dashboard/jobs" className="flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-50 border border-brand-200 text-brand-700 text-sm font-bold hover:bg-brand-100 transition-colors">
               <Building2 className="w-4 h-4" />
               إدارة الوظائف
             </Link>

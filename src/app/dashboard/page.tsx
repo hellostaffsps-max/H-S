@@ -909,6 +909,7 @@ function EmployerDashboard({
 
   const quickActions = [
     { icon: PlusCircle, title: "نشر وظيفة", desc: isLimitReached ? "وصلت للحد الأقصى" : "أضف فرصة عمل جديدة", href: isLimitReached ? "/pricing" : "/post-job", color: isLimitReached ? "bg-red-50 text-red-600" : "bg-brand-50 text-brand-600 shadow-brand-100/50 shadow-lg" },
+    { icon: Briefcase, title: "إدارة الوظائف", desc: "تعديل وحذف وظائفك", href: "/dashboard/jobs", color: "bg-indigo-50 text-indigo-600 shadow-indigo-100/50 shadow-lg" },
     { icon: UserCheck, title: "فريق العمل", desc: "إدارة الموظفين", href: "/dashboard/team", color: "bg-emerald-50 text-emerald-600 shadow-emerald-100/50 shadow-lg" },
     ...(subscription.allow_ads ? [{ icon: Megaphone, title: "إعلانات المنشأة", desc: "إدارة إعلاناتك المميزة", href: "/dashboard/ads", color: "bg-amber-50 text-amber-600 shadow-amber-100/50 shadow-lg" }] : []),
     { icon: MessageSquare, title: "الرسائل", desc: "تواصل مع المرشحين", href: "/messages", color: "bg-sky-50 text-sky-600 shadow-sky-100/50 shadow-lg" },
