@@ -79,7 +79,7 @@ export default async function JobDetailPage({ params }: Props) {
     .order("created_at", { ascending: false })
     .limit(3);
 
-  const postedDate = new Date(job.created_at);
+  const postedDate = new Date(job.published_at || job.created_at);
   const now = new Date();
   const diffDays = Math.floor((now.getTime() - postedDate.getTime()) / (1000 * 60 * 60 * 24));
   const postedText =
@@ -149,22 +149,31 @@ export default async function JobDetailPage({ params }: Props) {
             </div>
 
             <div className="flex flex-wrap gap-4">
-              {userRole !== 'employer' && (job.employers?.application_preference !== 'whatsapp_only') && (
-                <ApplyButton jobId={job.id} isLoggedIn={!!user} profileComplete={profileComplete} />
-              )}
-              {job.whatsapp_number && (
-                (userRole !== 'employer' && (job.employers?.application_preference === 'whatsapp_only' || job.employers?.application_preference === 'both')) ||
-                job.employers?.show_whatsapp_to_candidates
-              ) && (
-                <a
-                  href={`https://wa.me/${job.whatsapp_number.replace(/\D/g, "").replace(/^0/, "970")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2.5 bg-emerald-500 text-white px-8 py-4 rounded-[22px] text-base font-black hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20 active:scale-95"
-                >
-                  <Phone className="h-5 w-5" />
-                  {userRole !== 'employer' && (job.employers?.application_preference === 'whatsapp_only' || job.employers?.application_preference === 'both') ? "قدم عبر واتساب" : "تواصل عبر واتساب"}
-                </a>
+              {job.status === 'filled' ? (
+                <div className="flex items-center justify-center gap-2.5 bg-indigo-50 text-indigo-700 border border-indigo-100 px-8 py-4 rounded-[22px] text-base font-black shadow-sm w-full lg:w-auto">
+                  <CheckCircle2 className="h-5 w-5" />
+                  تم التوظيف لهذه الوظيفة 🎯
+                </div>
+              ) : (
+                <>
+                  {userRole !== 'employer' && (job.employers?.application_preference !== 'whatsapp_only') && (
+                    <ApplyButton jobId={job.id} isLoggedIn={!!user} profileComplete={profileComplete} />
+                  )}
+                  {job.whatsapp_number && (
+                    (userRole !== 'employer' && (job.employers?.application_preference === 'whatsapp_only' || job.employers?.application_preference === 'both')) ||
+                    job.employers?.show_whatsapp_to_candidates
+                  ) && (
+                    <a
+                      href={`https://wa.me/${job.whatsapp_number.replace(/\D/g, "").replace(/^0/, "970")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2.5 bg-emerald-500 text-white px-8 py-4 rounded-[22px] text-base font-black hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20 active:scale-95"
+                    >
+                      <Phone className="h-5 w-5" />
+                      {userRole !== 'employer' && (job.employers?.application_preference === 'whatsapp_only' || job.employers?.application_preference === 'both') ? "قدم عبر واتساب" : "تواصل عبر واتساب"}
+                    </a>
+                  )}
+                </>
               )}
             </div>
           </div>

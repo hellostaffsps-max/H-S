@@ -1,6 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Rocket,
@@ -13,14 +13,29 @@ import {
   Clock,
   ShieldCheck,
   Briefcase,
+  Pencil,
 } from "lucide-react";
-import { createJob } from "@/app/actions/jobs";
+import { createJob, updateJob, getJobById } from "@/app/actions/jobs";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/lib/supabase";
 
 export default function PostJob() {
+  const { profile } = useAuth();
+  const isEmployer = profile?.role === "employer";
+
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center py-32"><Loader2 className="w-10 h-10 text-brand-600 animate-spin" /></div>}>
+      <PostJobContent />
+    </Suspense>
+  );
+}
+
+function PostJobContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editJobId = searchParams.get('edit');
+
   const { user, profile, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,12 +43,13 @@ export default function PostJob() {
   const { subscription, loading: subLoading } = useSubscription();
   
   const [employerData, setEmployerData] = useState<any>(null);
+  const [editJobData, setEditJobData] = useState<any>(null);
   const [loadingData, setLoadingData] = useState(true);
 
   const isEmployer = profile?.role === "employer";
 
   useEffect(() => {
-    async function fetchEmployerData() {
+    async function fetchData() {
       if (user && isEmployer) {
         const { data, error: fetchErr } = await supabase
           .from("employers")
@@ -44,11 +60,20 @@ export default function PostJob() {
           console.error("Error fetching employer data:", fetchErr);
         }
         setEmployerData(data || {});
+
+        if (editJobId) {
+          const jobRes = await getJobById(editJobId);
+          if (jobRes.success && jobRes.data?.employer_id === user.id) {
+            setEditJobData(jobRes.data);
+          } else {
+            router.push('/dashboard/jobs'); // Not owner or not found
+          }
+        }
       }
       setLoadingData(false);
     }
-    fetchEmployerData();
-  }, [user, isEmployer]);
+    fetchData();
+  }, [user, isEmployer, editJobId, router]);
 
   const isProfileIncomplete = () => {
     if (!profile || !employerData) return true;
@@ -62,7 +87,7 @@ export default function PostJob() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (subscription.current_job_count >= subscription.job_limit) {
+    if (!editJobId && subscription.current_job_count >= subscription.job_limit) {
       setError(`لقد وصلت إلى الحد الأقصى للوظائف المسموح بها في باقتك الحالية (${subscription.job_limit} وظيفة). يرجى ترقية باقتك لنشر المزيد.`);
       return;
     }
@@ -71,21 +96,27 @@ export default function PostJob() {
     setSuccess(false);
 
     const formData = new FormData(e.currentTarget);
-    const result = await createJob(formData);
+    let result;
+    
+    if (editJobId) {
+      result = await updateJob(editJobId, formData);
+    } else {
+      result = await createJob(formData);
+    }
 
     if (result.success) {
       setSuccess(true);
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push("/dashboard/jobs");
       }, 1500);
     } else {
-      setError(result.error || "حدث خطأ أثناء نشر الوظيفة");
+      setError(result.error || `حدث خطأ أثناء ${editJobId ? 'تعديل' : 'نشر'} الوظيفة`);
     }
 
     setLoading(false);
   }
 
-  const isLimitReached = subscription.current_job_count >= subscription.job_limit;
+  const isLimitReached = !editJobId && subscription.current_job_count >= subscription.job_limit;
 
   // Not logged in — professional employer onboarding
   if (!user) {
@@ -198,13 +229,13 @@ export default function PostJob() {
     <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 md:py-12">
       <div className="text-center mb-8">
         <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2 flex items-center justify-center gap-2">
-          نشر وظيفة جديدة{" "}
+          {editJobId ? "تعديل الوظيفة" : "نشر وظيفة جديدة"}{" "}
           <span className="bg-brand-50 text-brand-600 p-1.5 rounded-full">
-            <Rocket className="h-5 w-5" />
+            {editJobId ? <Pencil className="h-5 w-5" /> : <Rocket className="h-5 w-5" />}
           </span>
         </h1>
         <p className="text-sm text-slate-500">
-          أضف تفاصيل الوظيفة لتجذب أفضل المرشحين
+          {editJobId ? "قم بتحديث بيانات الوظيفة الحالية" : "أضف تفاصيل الوظيفة لتجذب أفضل المرشحين"}
         </p>
         
         {subscription.status === 'pending' && (
@@ -218,7 +249,7 @@ export default function PostJob() {
       {success && (
         <div className="mb-6 p-4 bg-green-50 border border-green-100 rounded-2xl flex items-center gap-3 text-green-700">
           <CheckCircle className="h-5 w-5 shrink-0" />
-          <p>تم نشر الوظيفة بنجاح! جاري التوجيه...</p>
+          <p>{editJobId ? 'تم تعديل الوظيفة بنجاح! جاري التوجيه...' : 'تم نشر الوظيفة بنجاح! جاري التوجيه...'}</p>
         </div>
       )}
 
@@ -245,6 +276,7 @@ export default function PostJob() {
                 name="title"
                 type="text"
                 required
+                defaultValue={editJobData?.title || ""}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 sm:py-2.5 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 placeholder="مثال: نادل/ة خبرة، باريستا، طاهي"
               />
@@ -257,6 +289,7 @@ export default function PostJob() {
               <select
                 name="category"
                 required
+                defaultValue={editJobData?.category || ""}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 sm:py-2.5 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 appearance-none"
               >
                 <option value="">اختر التخصص</option>
@@ -278,6 +311,7 @@ export default function PostJob() {
               <select
                 name="type"
                 required
+                defaultValue={editJobData?.type || ""}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 sm:py-2.5 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 appearance-none"
               >
                 <option value="">اختر النوع</option>
@@ -294,7 +328,7 @@ export default function PostJob() {
                 name="company_name"
                 type="text"
                 required
-                defaultValue={employerData?.company_name || profile?.full_name || ""}
+                defaultValue={editJobData?.company_name || employerData?.company_name || profile?.full_name || ""}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 sm:py-2.5 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 placeholder="اسم المنشأة"
               />
@@ -308,7 +342,7 @@ export default function PostJob() {
                 name="location"
                 type="text"
                 required
-                defaultValue={employerData?.city || profile?.location || ""}
+                defaultValue={editJobData?.location || employerData?.city || profile?.location || ""}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 sm:py-2.5 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 placeholder="رام الله، نابلس..."
               />
@@ -320,6 +354,7 @@ export default function PostJob() {
               </label>
               <select
                 name="experience_level"
+                defaultValue={editJobData?.experience_level || ""}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 sm:py-2.5 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 appearance-none"
               >
                 <option value="">بدون خبرة</option>
@@ -340,6 +375,7 @@ export default function PostJob() {
             name="description"
             required
             rows={5}
+            defaultValue={editJobData?.description || ""}
             className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
             placeholder="اكتب وصفاً تفصيلياً للوظيفة، المهام، والمتطلبات..."
           ></textarea>
@@ -359,6 +395,7 @@ export default function PostJob() {
               <input
                 name="salary_min"
                 type="number"
+                defaultValue={editJobData?.salary_min || ""}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 sm:py-2.5 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 placeholder="0"
               />
@@ -370,6 +407,7 @@ export default function PostJob() {
               <input
                 name="salary_max"
                 type="number"
+                defaultValue={editJobData?.salary_max || ""}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 sm:py-2.5 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 placeholder="0"
               />
@@ -380,6 +418,7 @@ export default function PostJob() {
               </label>
               <select
                 name="currency"
+                defaultValue={editJobData?.currency || "ILS"}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 sm:py-2.5 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 appearance-none"
               >
                 <option value="ILS">شيكل ₪</option>
@@ -397,7 +436,7 @@ export default function PostJob() {
               name="whatsapp_number"
               type="tel"
               dir="ltr"
-              defaultValue={employerData?.whatsapp_number || profile?.phone || ""}
+              defaultValue={editJobData?.whatsapp_number || employerData?.whatsapp_number || profile?.phone || ""}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 sm:py-2.5 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-left"
               placeholder="+970599..."
             />
@@ -414,7 +453,7 @@ export default function PostJob() {
           ) : isLimitReached ? (
             "وصلت للحد الأقصى للوظائف"
           ) : (
-            "نشر الوظيفة 🚀"
+            editJobId ? "حفظ التعديلات 💾" : "نشر الوظيفة 🚀"
           )}
         </button>
         {isLimitReached && (

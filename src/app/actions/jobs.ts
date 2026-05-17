@@ -137,6 +137,7 @@ export async function createJob(formData: FormData) {
     salary_max: formData.get('salary_max') ? parseInt(formData.get('salary_max') as string) : null,
     whatsapp_number: formData.get('whatsapp_number') as string,
     status: employer.is_verified ? ('approved' as const) : ('pending' as const),
+    published_at: employer.is_verified ? new Date().toISOString() : null,
   };
 
   if (!job.title || !job.category || !job.type || !job.location || !job.company_name || !job.description) {
@@ -239,9 +240,14 @@ export async function updateJobStatus(jobId: string, status: string) {
     return { success: false, error: 'Unauthorized' };
   }
 
+  const updateData: any = { status };
+  if (status === 'approved') {
+    updateData.published_at = new Date().toISOString();
+  }
+
   const { error } = await supabase
     .from('jobs')
-    .update({ status })
+    .update(updateData)
     .eq('id', jobId)
     .eq('employer_id', user.id);
 
@@ -251,4 +257,68 @@ export async function updateJobStatus(jobId: string, status: string) {
 
   revalidatePath('/dashboard');
   return { success: true };
+}
+
+export async function deleteJob(jobId: string) {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, error: 'Unauthorized' };
+  }
+
+  const { error } = await supabase
+    .from('jobs')
+    .delete()
+    .eq('id', jobId)
+    .eq('employer_id', user.id);
+
+  if (error) {
+    return { success: false, error: toArabicError(error.message) };
+  }
+
+  revalidatePath('/dashboard');
+  return { success: true };
+}
+
+export async function updateJob(jobId: string, formData: FormData) {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, error: 'Unauthorized' };
+  }
+
+  const job = {
+    title: formData.get('title') as string,
+    category: formData.get('category') as string,
+    type: formData.get('type') as string,
+    location: formData.get('location') as string,
+    experience_level: formData.get('experience_level') as string,
+    description: formData.get('description') as string,
+    currency: formData.get('currency') as string || 'ILS',
+    salary_min: formData.get('salary_min') ? parseInt(formData.get('salary_min') as string) : null,
+    salary_max: formData.get('salary_max') ? parseInt(formData.get('salary_max') as string) : null,
+    whatsapp_number: formData.get('whatsapp_number') as string,
+  };
+
+  if (!job.title || !job.category || !job.type || !job.location || !job.description) {
+    return { success: false, error: 'جميع الحقول المطلوبة يجب ملؤها' };
+  }
+
+  const { data, error } = await supabase
+    .from('jobs')
+    .update(job)
+    .eq('id', jobId)
+    .eq('employer_id', user.id)
+    .select()
+    .single();
+
+  if (error) {
+    return { success: false, error: toArabicError(error.message) };
+  }
+
+  revalidatePath('/dashboard');
+  revalidatePath(`/jobs/${jobId}`);
+  return { success: true, data };
 }

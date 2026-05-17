@@ -233,6 +233,9 @@ export async function updateApplicationStatus(
   } else if (status === 'مقبول') {
     notifTitle = '🎉 تهانينا! تم قبولك للعمل';
     notifMessage = `تم قبولك رسمياً للعمل في وظيفة "${job.title}". سنتواصل معك لإتمام الإجراءات.`;
+    
+    // Archive the job (mark as filled)
+    await supabase.from('jobs').update({ status: 'filled' }).eq('id', application.job_id);
   } else if (status === 'لم يتم التوظيف') {
     notifTitle = 'تحديث على طلب التقديم';
     notifMessage = `عذراً، لم يتم اختيارك لوظيفة "${job.title}" هذه المرة. نتمنى لك التوفيق في فرصك القادمة.`;
