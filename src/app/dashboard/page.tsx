@@ -690,7 +690,7 @@ function EmployerDashboard({
               </div>
               <h2 className="text-xl font-black text-slate-900 tracking-tight">أحدث المتقدمين</h2>
             </div>
-            <Link href="/dashboard/applicants" className="text-xs font-black text-brand-600 hover:text-brand-700 bg-brand-50 px-4 py-2 rounded-xl transition-colors">عرض الكل</Link>
+            <button onClick={() => applicantsRef.current?.scrollIntoView({ behavior: 'smooth' })} className="text-xs font-black text-brand-600 hover:text-brand-700 bg-brand-50 px-4 py-2 rounded-xl transition-colors">عرض الكل</button>
           </div>
 
           {applications.length === 0 ? (
