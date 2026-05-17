@@ -5,6 +5,7 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { Camera, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { validateAvatarFile } from '@/lib/file-security';
 
 interface AvatarUploadProps {
   currentUrl?: string | null;
@@ -36,6 +37,15 @@ export default function AvatarUpload({
       }
 
       const file = event.target.files[0];
+
+      // ── Security: validate type & size before any processing ──
+      const validation = validateAvatarFile(file);
+      if (!validation.valid) {
+        setError(validation.error ?? 'ملف غير صالح.');
+        setUploading(false);
+        event.target.value = '';
+        return;
+      }
 
       // Compress the image
       const options = {
@@ -101,7 +111,7 @@ export default function AvatarUpload({
         type="file"
         ref={fileInputRef}
         onChange={handleUpload}
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp,image/gif"
         className="hidden"
       />
       {error && <p className="absolute -bottom-6 text-xs text-red-500 whitespace-nowrap">{error}</p>}

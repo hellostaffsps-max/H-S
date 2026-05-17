@@ -18,6 +18,7 @@ import {
 import { motion } from "motion/react";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
+import { validateReceiptFile } from "@/lib/file-security";
 import { useRouter } from "next/navigation";
 
 const fallbackPlans = [
@@ -104,6 +105,7 @@ export default function PricingPage() {
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
   const [receiptUrl, setReceiptUrl] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [receiptPath, setReceiptPath] = useState("");
@@ -159,6 +161,14 @@ export default function PricingPage() {
       router.push("/login");
       return;
     }
+
+    const validation = validateReceiptFile(file);
+    if (!validation.valid) {
+      setFileError(validation.error ?? 'ملف غير صالح.');
+      e.target.value = '';
+      return;
+    }
+    setFileError(null);
 
     setUploading(true);
     try {
@@ -441,8 +451,9 @@ export default function PricingPage() {
               </h3>
 
               {!receiptUrl ? (
-                <div
-                  onClick={() => fileInputRef.current?.click()}
+                <>
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
                   className={`border-2 border-dashed rounded-2xl sm:rounded-3xl p-6 sm:p-10 flex flex-col items-center justify-center text-center cursor-pointer transition-colors ${
                     uploading
                       ? "border-brand-300 bg-brand-50"
@@ -460,17 +471,21 @@ export default function PricingPage() {
                       : "اضغط لرفع صورة الإيصال"}
                   </h4>
                   <p className="text-xs text-slate-500">
-                    JPG, PNG أقصى حجم 5MB
+                    JPG, PNG, PDF أقصى حجم 5MB
                   </p>
                   <input
                     type="file"
                     ref={fileInputRef}
                     className="hidden"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp,application/pdf"
                     onChange={handleFileUpload}
                     disabled={uploading}
                   />
                 </div>
+                {fileError && (
+                  <p className="mt-2 text-xs text-red-600 font-bold text-center">{fileError}</p>
+                )}
+              </>
               ) : (
                 <div className="space-y-6">
                   <div className="relative rounded-2xl overflow-hidden border border-slate-200 h-40 sm:h-48 bg-slate-50">

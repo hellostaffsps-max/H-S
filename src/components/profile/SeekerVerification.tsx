@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { Loader2, Upload, CheckCircle2, ShieldCheck, Download, Banknote, Wallet, Building2, Smartphone, ChevronDown } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { motion, AnimatePresence } from "motion/react";
+import { validateReceiptFile } from "@/lib/file-security";
 
 export default function SeekerVerification({ seekerData }: { seekerData: any }) {
   const { user } = useAuth();
@@ -12,6 +13,7 @@ export default function SeekerVerification({ seekerData }: { seekerData: any }) 
   const [settings, setSettings] = useState<any>(null);
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [hasPendingSubscription, setHasPendingSubscription] = useState(false);
@@ -63,6 +65,13 @@ export default function SeekerVerification({ seekerData }: { seekerData: any }) 
 
   async function handleSubscribe() {
     if (!selectedPlan || !file || !user) return;
+
+    // ── Security: re-validate before upload ──
+    const validation = validateReceiptFile(file);
+    if (!validation.valid) {
+      setFileError(validation.error ?? 'ملف غير صالح.');
+      return;
+    }
     
     setUploading(true);
     try {
@@ -242,8 +251,21 @@ export default function SeekerVerification({ seekerData }: { seekerData: any }) 
                           type="file"
                           id="receipt-upload"
                           className="hidden"
-                          accept="image/*,.pdf"
-                          onChange={(e) => setFile(e.target.files?.[0] || null)}
+                          accept="image/jpeg,image/png,image/webp,application/pdf"
+                          onChange={(e) => {
+                            const picked = e.target.files?.[0] || null;
+                            if (picked) {
+                              const result = validateReceiptFile(picked);
+                              if (!result.valid) {
+                                setFileError(result.error ?? 'ملف غير صالح.');
+                                setFile(null);
+                                e.target.value = '';
+                                return;
+                              }
+                              setFileError(null);
+                            }
+                            setFile(picked);
+                          }}
                         />
                         <label htmlFor="receipt-upload" className="cursor-pointer flex flex-col items-center">
                           <div className="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mb-4">
@@ -255,7 +277,9 @@ export default function SeekerVerification({ seekerData }: { seekerData: any }) 
                           <span className="text-xs text-slate-400">يدعم JPG, PNG, PDF</span>
                         </label>
                       </div>
-
+                      {fileError && (
+                        <p className="mt-2 text-xs text-red-600 font-bold text-center">{fileError}</p>
+                      )}
                       <button
                         onClick={handleSubscribe}
                         disabled={!file || uploading}

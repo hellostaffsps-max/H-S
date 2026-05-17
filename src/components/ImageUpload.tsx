@@ -4,6 +4,7 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { Camera, Loader2, Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { validateImageFile } from '@/lib/file-security';
 
 interface ImageUploadProps {
   currentUrl?: string | null;
@@ -52,6 +53,15 @@ export default function ImageUpload({
       }
 
       const file = event.target.files[0];
+
+      // ── Security: validate type & size before any processing ──
+      const validation = validateImageFile(file);
+      if (!validation.valid) {
+        setError(validation.error ?? 'ملف غير صالح.');
+        setUploading(false);
+        event.target.value = '';
+        return;
+      }
 
       const options = {
         maxSizeMB,
@@ -143,7 +153,7 @@ export default function ImageUpload({
           type="file"
           ref={fileInputRef}
           onChange={handleUpload}
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp"
           className="hidden"
         />
       </div>

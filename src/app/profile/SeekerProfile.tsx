@@ -8,6 +8,7 @@ import { updateProfile, updateSeekerProfile } from "@/app/actions/profile";
 import { submitContactForm } from "@/app/actions/contact";
 import Link from "next/link";
 import { PALESTINIAN_CITIES, getSuggestedKeywords } from "@/lib/profile-utils";
+import { validateCVFile } from "@/lib/file-security";
 
 interface SeekerProfileProps {
   profile: any;
@@ -43,12 +44,11 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
   const handleCVUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 3 * 1024 * 1024) {
-      alert("حجم الملف يتجاوز 3 ميجابايت");
-      return;
-    }
-    if (file.type !== "application/pdf") {
-      alert("يرجى رفع ملف PDF فقط");
+
+    const validation = validateCVFile(file);
+    if (!validation.valid) {
+      alert(validation.error);
+      e.target.value = '';
       return;
     }
     
