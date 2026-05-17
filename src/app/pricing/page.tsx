@@ -93,7 +93,7 @@ function PricingSkeleton() {
 }
 
 export default function PricingPage() {
-  const { profile } = useAuth();
+  const { profile, loading: authLoading } = useAuth();
   const router = useRouter();
   const { subscription, loading: subLoading } = useSubscription();
 
@@ -110,17 +110,25 @@ export default function PricingPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (!authLoading) {
+      fetchData();
+    }
+  }, [authLoading, profile]);
 
   async function fetchData() {
     try {
+      let query = supabase
+        .from("subscription_plans")
+        .select("*")
+        .eq("is_active", true)
+        .order("price", { ascending: true });
+
+      if (profile?.role) {
+        query = query.eq("target_role", profile.role);
+      }
+
       const [plansRes, settingsRes] = await Promise.all([
-        supabase
-          .from("subscription_plans")
-          .select("*")
-          .eq("is_active", true)
-          .order("price", { ascending: true }),
+        query,
         supabase
           .from("platform_settings")
           .select("wallet_qr_url, bank_details")

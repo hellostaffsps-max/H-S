@@ -137,6 +137,7 @@ export default async function Home() {
         .from("subscription_plans")
         .select("*")
         .eq("is_active", true)
+        .eq("target_role", "employer")
         .order("price", { ascending: true });
       plans = plansData || [];
     }
