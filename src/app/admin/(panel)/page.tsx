@@ -119,7 +119,7 @@ export default function AdminDashboard() {
         supabase.from("jobs").select("id, title, company_name, status, created_at").order("created_at", { ascending: false }).limit(8),
         supabase.from("applications").select("id, status, created_at, jobs(title), profiles(full_name)").order("created_at", { ascending: false }).limit(8),
         supabase.from("user_subscriptions").select("id, status, plan_name, created_at, profiles(full_name, email)").order("created_at", { ascending: false }).limit(8),
-        supabase.from("articles").select("id, title, status, created_at, profiles(full_name)").order("created_at", { ascending: false }).limit(8),
+        supabase.from("articles").select("id, title, status, created_at, profiles!articles_author_id_fkey(full_name)").order("created_at", { ascending: false }).limit(8),
       ]);
 
       setRecent({

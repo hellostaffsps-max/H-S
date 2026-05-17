@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     .from('articles')
     .select(`
       *,
-      profiles(full_name, role)
+      profiles!articles_author_id_fkey(full_name, role)
     `)
     .order('created_at', { ascending: false })
     .range(from, to);

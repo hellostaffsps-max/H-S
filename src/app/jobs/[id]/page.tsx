@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -26,6 +27,48 @@ import { calculateProfileCompletion } from "@/lib/profile-utils";
 
 interface Props {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+  const result = await getJobById(id);
+
+  if (!result.success || !result.data) {
+    return {
+      title: "وظيفة غير موجودة | Hello Staff",
+    };
+  }
+
+  const job = result.data as any;
+  const companyName = job.employers?.company_name || job.company_name || "شركة غير محددة";
+  const title = `${job.title} في ${companyName} | Hello Staff`;
+  const description = job.description?.substring(0, 160) || "فرصة عمل مميزة على منصة Hello Staff";
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      siteName: "Hello Staff",
+      locale: "ar_SA",
+      images: [
+        {
+          url: job.employers?.logo_url || "https://www.staffps.com/icon.png",
+          width: 800,
+          height: 600,
+          alt: companyName,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [job.employers?.logo_url || "https://www.staffps.com/icon.png"],
+    },
+  };
 }
 
 export default async function JobDetailPage({ params }: Props) {

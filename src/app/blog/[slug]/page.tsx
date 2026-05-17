@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,6 +10,55 @@ import ArticleInteractions from "@/components/blog/ArticleInteractions";
 
 interface Props {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const decodedSlug = decodeURIComponent(slug);
+  const supabase = await createClient();
+
+  const { data: article } = await supabase
+    .from("articles")
+    .select("title, excerpt, cover_image")
+    .eq("slug", decodedSlug)
+    .eq("status", "published")
+    .single();
+
+  if (!article) {
+    return {
+      title: "مقال غير موجود | Hello Staff",
+    };
+  }
+
+  const title = `${article.title} | مدونة Hello Staff`;
+  const description = article.excerpt || "اقرأ أحدث المقالات والنصائح المهنية على مدونة Hello Staff";
+  const imageUrl = article.cover_image || "https://www.staffps.com/icon.png";
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      siteName: "Hello Staff",
+      locale: "ar_SA",
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: article.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [imageUrl],
+    },
+  };
 }
 
 export default async function ArticlePage({ params }: Props) {

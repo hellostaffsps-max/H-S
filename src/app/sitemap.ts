@@ -1,8 +1,17 @@
 import type { MetadataRoute } from "next";
+import { createClient } from '@supabase/supabase-js';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+// Using standard supabase client for build-time / server-side static generation
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+export const revalidate = 3600; // Revalidate every hour
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://www.staffps.com";
 
+  // Static pages
   const staticPages = [
     { path: "", priority: 1.0 },
     { path: "/jobs", priority: 0.9 },
@@ -20,12 +29,38 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/auth/signup", priority: 0.3 },
     { path: "/search-resumes", priority: 0.8 },
     { path: "/post-job", priority: 0.8 },
-  ];
-
-  return staticPages.map((page) => ({
+  ].map((page) => ({
     url: `${baseUrl}${page.path}`,
     lastModified: new Date(),
     changeFrequency: "daily" as const,
     priority: page.priority,
   }));
+
+  // Fetch dynamic active jobs
+  const { data: jobs } = await supabase
+    .from("jobs")
+    .select("id, updated_at, published_at")
+    .eq("status", "approved");
+
+  const jobPages = (jobs || []).map((job) => ({
+    url: `${baseUrl}/jobs/${job.id}`,
+    lastModified: new Date(job.updated_at || job.published_at || Date.now()),
+    changeFrequency: "daily" as const,
+    priority: 0.9,
+  }));
+
+  // Fetch dynamic published articles
+  const { data: articles } = await supabase
+    .from("articles")
+    .select("slug, updated_at, created_at")
+    .eq("status", "published");
+
+  const articlePages = (articles || []).map((article) => ({
+    url: `${baseUrl}/blog/${article.slug}`,
+    lastModified: new Date(article.updated_at || article.created_at || Date.now()),
+    changeFrequency: "weekly" as const,
+    priority: 0.8,
+  }));
+
+  return [...staticPages, ...jobPages, ...articlePages];
 }
