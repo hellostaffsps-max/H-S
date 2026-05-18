@@ -19,7 +19,8 @@ export async function getTeamMembers() {
   const { data: jobs } = await supabase
     .from('jobs')
     .select('id, title, company_name')
-    .eq('employer_id', user.id);
+    .eq('employer_id', user.id)
+    .is('deleted_at', null);
 
   if (!jobs || jobs.length === 0) {
     return { success: true, data: [], companyName: '' };
@@ -89,6 +90,7 @@ export async function terminateEmployee(applicationId: string, reason?: string) 
     .from('jobs')
     .select('employer_id, title')
     .eq('id', application.job_id)
+    .is('deleted_at', null)
     .single();
 
   if (!job || job.employer_id !== user.id) {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
+import { checkAndExpireSubscription } from '@/app/actions/subscription';
 
 export interface SubscriptionFeatures {
   plan_id: string;
@@ -41,22 +42,37 @@ export function useSubscription() {
 
     async function fetchSubscription() {
       try {
+        // Check and expire old subscriptions first
+        await checkAndExpireSubscription();
+
         // Fetch job count
         const { count: jobCount } = await supabase
           .from('jobs')
           .select('*', { count: 'exact', head: true })
           .eq('employer_id', user?.id)
+          .is('deleted_at', null)
           .neq('status', 'closed');
 
-        // 1. Try to find an ACTIVE or FREE subscription
-        const { data: activeSub } = await supabase
+        // 1. Try to find an ACTIVE or FREE subscription (not expired)
+        let { data: activeSub } = await supabase
           .from('user_subscriptions')
-          .select('status, plan_id, plan_name, created_at, subscription_plans(id, name, job_limit, allow_articles, featured_listings, max_articles_per_month, allow_ads, price)')
+          .select('id, status, plan_id, plan_name, created_at, ends_at, subscription_plans(id, name, job_limit, allow_articles, featured_listings, max_articles_per_month, allow_ads, price)')
           .eq('user_id', user?.id)
           .in('status', ['active', 'free'])
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
+
+        // Double-check expiry on client side (in case server action missed it)
+        if (activeSub && activeSub.ends_at && new Date(activeSub.ends_at) < new Date()) {
+          // Fallback: mark as expired via direct update
+          await supabase
+            .from('user_subscriptions')
+            .update({ status: 'expired' })
+            .eq('id', activeSub.id);
+          // Treat as no active subscription
+          activeSub = null;
+        }
 
         if (activeSub) {
           if (activeSub.subscription_plans) {

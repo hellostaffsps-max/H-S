@@ -9,6 +9,7 @@ import { submitContactForm } from "@/app/actions/contact";
 import Link from "next/link";
 import { PALESTINIAN_CITIES, getSuggestedKeywords } from "@/lib/profile-utils";
 import { validateCVFile } from "@/lib/file-security";
+import { useToast } from "@/hooks/useToast";
 
 interface SeekerProfileProps {
   profile: any;
@@ -19,6 +20,7 @@ interface SeekerProfileProps {
 }
 
 export default function SeekerProfile({ profile, user, seekerData, onSeekerDataUpdate, onProfileUpdate }: SeekerProfileProps) {
+  const { showToast } = useToast();
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -47,7 +49,7 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
 
     const validation = validateCVFile(file);
     if (!validation.valid) {
-      alert(validation.error);
+      showToast(validation.error || 'ملف غير صالح', 'error');
       e.target.value = '';
       return;
     }
@@ -70,10 +72,10 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
       setCvUrl(signedData.signedUrl);
       await supabase.from("seekers").update({ cv_url: filePath }).eq("profile_id", user.id);
       onSeekerDataUpdate({ ...seekerData, cv_url: filePath });
-      alert("تم رفع السيرة الذاتية بنجاح!");
+      showToast("تم رفع السيرة الذاتية بنجاح!", "success");
     } catch (err) {
       console.error("Error uploading CV:", err);
-      alert("حدث خطأ أثناء رفع السيرة الذاتية");
+      showToast("حدث خطأ أثناء رفع السيرة الذاتية", "error");
     } finally {
       setUploadingCV(false);
     }
@@ -134,11 +136,11 @@ export default function SeekerProfile({ profile, user, seekerData, onSeekerDataU
     
     const res = await submitContactForm(formData);
     if (res.success) {
-      alert("تم إرسال الطلب بنجاح للإدارة وسيتم مراجعته.");
+      showToast("تم إرسال الطلب بنجاح للإدارة وسيتم مراجعته.", "success");
       setShowStatusModal(false);
       setEmployerName("");
     } else {
-      alert(res.error || "حدث خطأ أثناء الإرسال");
+      showToast(res.error || "حدث خطأ أثناء الإرسال", "error");
     }
     setSubmittingStatus(false);
   };

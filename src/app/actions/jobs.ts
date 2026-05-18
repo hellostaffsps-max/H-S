@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase-server';
 import { revalidatePath } from 'next/cache';
 import { toArabicError } from '@/lib/error-messages';
+import { jobSchema, formatZodError } from '@/lib/validation';
 
 export async function getJobs(filters?: { category?: string; type?: string; location?: string; search?: string; experience_level?: string; has_salary?: boolean; page?: number; limit?: number }) {
   const supabase = await createClient();
@@ -10,6 +11,7 @@ export async function getJobs(filters?: { category?: string; type?: string; loca
   let query = supabase
     .from('jobs')
     .select('*, employers(company_name, logo_url)')
+    .is('deleted_at', null)
     .eq('status', 'approved')
     .gte('expires_at', new Date().toISOString())
     .order('created_at', { ascending: false });
@@ -62,7 +64,7 @@ export async function getJobById(id: string) {
 
   // If no user or not the employer/admin, only show approved jobs
   if (!user) {
-    query = query.eq('status', 'approved').gte('expires_at', new Date().toISOString());
+    query = query.eq('status', 'approved').gte('expires_at', new Date().toISOString()).is('deleted_at', null);
   } else {
     const { data: profile } = await supabase
       .from('profiles')
@@ -80,8 +82,12 @@ export async function getJobById(id: string) {
       .then(({ data }) => !!data);
 
     if (!isAdmin && !isOwner) {
-      query = query.eq('status', 'approved').gte('expires_at', new Date().toISOString());
+      query = query.eq('status', 'approved').gte('expires_at', new Date().toISOString()).is('deleted_at', null);
+    } else if (!isAdmin && isOwner) {
+      // Owner sees their own jobs but not soft-deleted ones
+      query = query.is('deleted_at', null);
     }
+    // Admin sees everything including soft-deleted
   }
 
   const { data, error } = await query.single();
@@ -123,26 +129,31 @@ export async function createJob(formData: FormData) {
     return { success: false, error: 'لم يتم العثور على بيانات صاحب العمل' };
   }
 
-  const job = {
-    employer_id: user.id,
+  const raw = {
     title: formData.get('title') as string,
     category: formData.get('category') as string,
     type: formData.get('type') as string,
     location: formData.get('location') as string,
     company_name: formData.get('company_name') as string,
-    experience_level: formData.get('experience_level') as string,
+    experience_level: formData.get('experience_level') as string || null,
     description: formData.get('description') as string,
     currency: formData.get('currency') as string || 'ILS',
     salary_min: formData.get('salary_min') ? parseInt(formData.get('salary_min') as string) : null,
     salary_max: formData.get('salary_max') ? parseInt(formData.get('salary_max') as string) : null,
-    whatsapp_number: formData.get('whatsapp_number') as string,
+    whatsapp_number: formData.get('whatsapp_number') as string || null,
+  };
+
+  const parsed = jobSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
+  }
+
+  const job = {
+    employer_id: user.id,
+    ...parsed.data,
     status: employer.is_verified ? ('approved' as const) : ('pending' as const),
     published_at: employer.is_verified ? new Date().toISOString() : null,
   };
-
-  if (!job.title || !job.category || !job.type || !job.location || !job.company_name || !job.description) {
-    return { success: false, error: 'جميع الحقول المطلوبة يجب ملؤها' };
-  }
 
   // --- Subscription Limit Check ---
   // 1. Get the current active plan or fallback to free
@@ -175,6 +186,7 @@ export async function createJob(formData: FormData) {
     .from('jobs')
     .select('*', { count: 'exact', head: true })
     .eq('employer_id', user.id)
+    .is('deleted_at', null)
     .in('status', ['approved', 'pending']);
 
   if (currentJobs !== null && currentJobs >= jobLimit) {
@@ -223,6 +235,7 @@ export async function getEmployerJobs() {
     .from('jobs')
     .select('id, employer_id, title, category, type, location, company_name, status, salary_min, salary_max, currency, experience_level, created_at, expires_at, whatsapp_number')
     .eq('employer_id', user.id)
+    .is('deleted_at', null)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -249,7 +262,8 @@ export async function updateJobStatus(jobId: string, status: string) {
     .from('jobs')
     .update(updateData)
     .eq('id', jobId)
-    .eq('employer_id', user.id);
+    .eq('employer_id', user.id)
+    .is('deleted_at', null);
 
   if (error) {
     return { success: false, error: toArabicError(error.message) };
@@ -269,7 +283,7 @@ export async function deleteJob(jobId: string) {
 
   const { error } = await supabase
     .from('jobs')
-    .delete()
+    .update({ deleted_at: new Date().toISOString() })
     .eq('id', jobId)
     .eq('employer_id', user.id);
 
@@ -289,28 +303,32 @@ export async function updateJob(jobId: string, formData: FormData) {
     return { success: false, error: 'Unauthorized' };
   }
 
-  const job = {
+  const raw = {
     title: formData.get('title') as string,
     category: formData.get('category') as string,
     type: formData.get('type') as string,
     location: formData.get('location') as string,
-    experience_level: formData.get('experience_level') as string,
+    experience_level: formData.get('experience_level') as string || null,
     description: formData.get('description') as string,
     currency: formData.get('currency') as string || 'ILS',
     salary_min: formData.get('salary_min') ? parseInt(formData.get('salary_min') as string) : null,
     salary_max: formData.get('salary_max') ? parseInt(formData.get('salary_max') as string) : null,
-    whatsapp_number: formData.get('whatsapp_number') as string,
+    whatsapp_number: formData.get('whatsapp_number') as string || null,
   };
 
-  if (!job.title || !job.category || !job.type || !job.location || !job.description) {
-    return { success: false, error: 'جميع الحقول المطلوبة يجب ملؤها' };
+  const parsed = jobSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
   }
+
+  const job = parsed.data;
 
   const { data, error } = await supabase
     .from('jobs')
     .update(job)
     .eq('id', jobId)
     .eq('employer_id', user.id)
+    .is('deleted_at', null)
     .select()
     .single();
 

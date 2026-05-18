@@ -5,6 +5,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { getConversations, getMessages } from "@/app/actions/messages";
 import { supabase } from "../../lib/supabase";
 import { useSearchParams } from "next/navigation";
+import { useToast } from "@/hooks/useToast";
 import {
   ArrowLeft, Check, CheckCheck, Loader2, Lock,
   MessageCircle, MoreVertical, Send, Trash2, User, X,
@@ -65,6 +66,7 @@ function groupByDate(msgs: Message[]) {
 function MessagesPage() {
   const searchParams = useSearchParams();
   const initialPartner = searchParams.get("with");
+  const { showToast } = useToast();
 
   const [myId, setMyId] = useState<string | null>(null);
   const [myRole, setMyRole] = useState<string | null>(null);
@@ -199,7 +201,7 @@ function MessagesPage() {
     if (error) {
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
       setNewMessage(text);
-      alert("فشل إرسال الرسالة. حاول مرة أخرى.");
+      showToast("فشل إرسال الرسالة. حاول مرة أخرى.", "error");
     } else {
       setMessages((prev) => prev.map((m) => m.id === tempId ? { ...m, id: data.id } : m));
       // Fire notification in background
@@ -221,7 +223,7 @@ function MessagesPage() {
       setSelectMode(false);
       loadConversations();
     } else {
-      alert("لا يمكن حذف رسائل الطرف الآخر.");
+      showToast("لا يمكن حذف رسائل الطرف الآخر.", "error");
     }
   }
 

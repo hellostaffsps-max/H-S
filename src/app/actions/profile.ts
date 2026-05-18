@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase-server';
 import { revalidatePath } from 'next/cache';
+import { profileSchema, seekerProfileSchema, employerProfileSchema, formatZodError } from '@/lib/validation';
 
 export async function getProfile() {
   const supabase = await createClient();
@@ -32,16 +33,20 @@ export async function updateProfile(formData: FormData) {
     return { success: false, error: 'Unauthorized' };
   }
 
-  const updates: Record<string, any> = {};
-  const fields = ['full_name', 'phone', 'location'];
-  fields.forEach((field) => {
-    const value = formData.get(field);
-    if (value !== null) updates[field] = value;
-  });
+  const raw = {
+    full_name: formData.get('full_name') as string | null,
+    phone: formData.get('phone') as string | null,
+    location: formData.get('location') as string | null,
+  };
+
+  const parsed = profileSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
+  }
 
   const { data, error } = await supabase
     .from('profiles')
-    .update(updates)
+    .update(parsed.data)
     .eq('id', user.id)
     .select()
     .single();
@@ -62,26 +67,23 @@ export async function updateSeekerProfile(formData: FormData) {
     return { success: false, error: 'Unauthorized' };
   }
 
-  const updates: Record<string, any> = {};
-  const fields = ['job_title', 'bio', 'experience_years', 'is_available', 'skills', 'cv_url'];
-  fields.forEach((field) => {
-    const value = formData.get(field);
-    if (value !== null) {
-      if (field === 'experience_years') {
-        updates[field] = parseInt(value as string) || 0;
-      } else if (field === 'is_available') {
-        updates[field] = value === 'true';
-      } else if (field === 'skills') {
-        updates[field] = (value as string).split(',').map(s => s.trim());
-      } else {
-        updates[field] = value;
-      }
-    }
-  });
+  const raw = {
+    job_title: formData.get('job_title') as string | null,
+    bio: formData.get('bio') as string | null,
+    experience_years: formData.get('experience_years') ? parseInt(formData.get('experience_years') as string) : null,
+    is_available: formData.get('is_available') === 'true',
+    skills: formData.get('skills') ? (formData.get('skills') as string).split(',').map(s => s.trim()) : [],
+    cv_url: formData.get('cv_url') as string | null,
+  };
+
+  const parsed = seekerProfileSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
+  }
 
   const { data, error } = await supabase
     .from('seekers')
-    .upsert({ profile_id: user.id, ...updates })
+    .upsert({ profile_id: user.id, ...parsed.data })
     .select()
     .single();
 
@@ -101,40 +103,31 @@ export async function updateEmployerProfile(formData: FormData) {
     return { success: false, error: 'Unauthorized' };
   }
 
-  const updates: Record<string, any> = {};
-  const fields = [
-    'company_name',
-    'description',
-    'logo_url',
-    'business_type',
-    'city',
-    'area',
-    'whatsapp_number',
-    'business_email',
-    'number_of_branches',
-    'number_of_employees',
-    'opening_hours',
-    'cover_image_url',
-    'application_preference',
-    'show_whatsapp_to_candidates',
-  ];
+  const raw: Record<string, any> = {
+    company_name: formData.get('company_name') as string | null,
+    description: formData.get('description') as string | null,
+    logo_url: formData.get('logo_url') as string | null,
+    business_type: formData.get('business_type') as string | null,
+    city: formData.get('city') as string | null,
+    area: formData.get('area') as string | null,
+    whatsapp_number: formData.get('whatsapp_number') as string | null,
+    business_email: formData.get('business_email') as string | null,
+    number_of_branches: formData.get('number_of_branches') ? parseInt(formData.get('number_of_branches') as string) : null,
+    number_of_employees: formData.get('number_of_employees') ? parseInt(formData.get('number_of_employees') as string) : null,
+    opening_hours: formData.get('opening_hours') as string | null,
+    cover_image_url: formData.get('cover_image_url') as string | null,
+    application_preference: formData.get('application_preference') as string | null,
+    show_whatsapp_to_candidates: formData.get('show_whatsapp_to_candidates') === 'true',
+  };
 
-  fields.forEach((field) => {
-    const value = formData.get(field);
-    if (value !== null) {
-      if (field === 'number_of_branches') {
-        updates[field] = parseInt(value as string) || 0;
-      } else if (field === 'show_whatsapp_to_candidates') {
-        updates[field] = value === 'true';
-      } else {
-        updates[field] = value;
-      }
-    }
-  });
+  const parsed = employerProfileSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
+  }
 
   const { data, error } = await supabase
     .from('employers')
-    .upsert({ profile_id: user.id, ...updates })
+    .upsert({ profile_id: user.id, ...parsed.data })
     .select()
     .single();
 

@@ -93,11 +93,13 @@ export default async function Home() {
       .from("jobs")
       .select("*", { count: "exact", head: true })
       .eq("status", "approved")
+      .is("deleted_at", null)
       .in("category", HOSPITALITY_CATEGORIES),
     supabase
       .from("jobs")
       .select("*, employers(company_name, logo_url)")
       .eq("status", "approved")
+      .is("deleted_at", null)
       .in("category", HOSPITALITY_CATEGORIES)
       .order("created_at", { ascending: false })
       .limit(6),

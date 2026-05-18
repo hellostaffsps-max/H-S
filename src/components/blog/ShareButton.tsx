@@ -1,12 +1,14 @@
 "use client";
 
 import { Share2 } from "lucide-react";
+import { useToast } from "@/hooks/useToast";
 
 export default function ShareButton() {
+  const { showToast } = useToast();
   const handleCopy = () => {
     if (typeof navigator !== "undefined") {
       navigator.clipboard.writeText(window.location.href);
-      alert('تم نسخ الرابط بنجاح');
+      showToast('تم نسخ الرابط بنجاح', 'success');
     }
   };
 

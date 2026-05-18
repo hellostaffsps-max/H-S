@@ -74,6 +74,7 @@ create table if not exists public.jobs (
   whatsapp_number text,
   status text check (status in ('pending', 'approved', 'rejected', 'closed', 'expired')) default 'pending',
   expires_at timestamp with time zone,
+  deleted_at timestamp with time zone,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -135,6 +136,7 @@ create index if not exists idx_jobs_employer_id on public.jobs(employer_id);
 create index if not exists idx_jobs_status on public.jobs(status);
 create index if not exists idx_jobs_category on public.jobs(category);
 create index if not exists idx_jobs_location on public.jobs(location);
+create index if not exists idx_jobs_deleted_at on public.jobs(deleted_at);
 create index if not exists idx_applications_job_id on public.applications(job_id);
 create index if not exists idx_applications_seeker_id on public.applications(seeker_id);
 create index if not exists idx_notifications_user_id on public.notifications(user_id);
@@ -221,12 +223,12 @@ create policy "Seeker update"
 -- ==========================================
 drop policy if exists "Approved jobs viewable by everyone." on public.jobs;
 create policy "Approved jobs viewable by everyone." 
-  on public.jobs for select using (status = 'approved');
+  on public.jobs for select using (status = 'approved' and deleted_at is null);
 
 drop policy if exists "Employers can view own jobs." on public.jobs;
 create policy "Employers can view own jobs." 
   on public.jobs for select 
-  using (auth.uid() = employer_id);
+  using (auth.uid() = employer_id and deleted_at is null);
 
 drop policy if exists "Admins can view all jobs." on public.jobs;
 create policy "Admins can view all jobs." 
@@ -244,7 +246,7 @@ create policy "Employers can insert jobs."
 drop policy if exists "Employers can update own jobs." on public.jobs;
 create policy "Employers can update own jobs." 
   on public.jobs for update 
-  using (auth.uid() = employer_id) 
+  using (auth.uid() = employer_id and deleted_at is null) 
   with check (auth.uid() = employer_id);
 
 drop policy if exists "Admins can update any job." on public.jobs;

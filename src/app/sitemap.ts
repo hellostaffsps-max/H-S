@@ -40,7 +40,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { data: jobs } = await supabase
     .from("jobs")
     .select("id, updated_at, published_at")
-    .eq("status", "approved");
+    .eq("status", "approved")
+    .is("deleted_at", null);
 
   const jobPages = (jobs || []).map((job) => ({
     url: `${baseUrl}/jobs/${job.id}`,

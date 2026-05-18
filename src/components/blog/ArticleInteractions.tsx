@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { ThumbsUp, MessageCircle, Send, Trash2, Loader2, Lock, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/useToast";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,7 @@ interface Comment {
 
 export default function ArticleInteractions({ articleId }: { articleId: string }) {
   const { user, profile } = useAuth();
+  const { showToast } = useToast();
   const [likes, setLikes] = useState<number>(0);
   const [isLiked, setIsLiked] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -101,8 +103,14 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
   }
 
   async function toggleLike() {
-    if (!user) return alert("يرجى تسجيل الدخول أولاً");
-    if (!isVerified) return alert("هذه الميزة متاحة فقط للمستخدمين الموثقين");
+    if (!user) {
+      showToast("يرجى تسجيل الدخول أولاً", "warning");
+      return;
+    }
+    if (!isVerified) {
+      showToast("هذه الميزة متاحة فقط للمستخدمين الموثقين", "warning");
+      return;
+    }
 
     try {
       if (isLiked) {

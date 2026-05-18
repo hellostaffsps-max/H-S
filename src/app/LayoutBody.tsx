@@ -8,6 +8,8 @@ import { UnreadMessagesProvider } from "../hooks/useUnreadMessages";
 import { isSupabaseConfigured } from "../lib/supabase";
 import Link from "next/link";
 import CookieConsent from "../components/CookieConsent";
+import { ToastProvider } from "../hooks/useToast";
+import ToastContainer from "../components/ToastContainer";
 import PWAInstallPrompt from "../components/PWAInstallPrompt";
 import PushNotificationPrompt from "../components/PushNotificationPrompt";
 import TrustedEmployersCarousel from "../components/TrustedEmployersCarousel";
@@ -27,6 +29,7 @@ export default function LayoutBody({ children, preFooter }: { children: React.Re
           <Link href="/setup" className="underline mr-2 text-amber-900">طريقة الإعداد</Link>
         </div>
       )}
+      <ToastProvider>
       <NotificationsProvider>
       <UnreadMessagesProvider>
         {!hideNavbar && <Navbar />}
@@ -36,8 +39,10 @@ export default function LayoutBody({ children, preFooter }: { children: React.Re
 
         {!hideFooter && preFooter}
         {!hideFooter && <Footer />}
+        <ToastContainer />
       </UnreadMessagesProvider>
       </NotificationsProvider>
+      </ToastProvider>
       <CookieConsent />
       <PWAInstallPrompt />
       <PushNotificationPrompt />

@@ -6,9 +6,11 @@ import { Loader2, Upload, CheckCircle2, ShieldCheck, Download, Banknote, Wallet,
 import { useAuth } from "@/hooks/useAuth";
 import { motion, AnimatePresence } from "motion/react";
 import { validateReceiptFile } from "@/lib/file-security";
+import { useToast } from "@/hooks/useToast";
 
 export default function SeekerVerification({ seekerData }: { seekerData: any }) {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [plans, setPlans] = useState<any[]>([]);
   const [settings, setSettings] = useState<any>(null);
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
@@ -104,7 +106,7 @@ export default function SeekerVerification({ seekerData }: { seekerData: any }) 
       setFile(null);
     } catch (err) {
       console.error("Error submitting subscription:", err);
-      alert("حدث خطأ أثناء تقديم الطلب. يرجى المحاولة مرة أخرى.");
+      showToast("حدث خطأ أثناء تقديم الطلب. يرجى المحاولة مرة أخرى.", "error");
     } finally {
       setUploading(false);
     }

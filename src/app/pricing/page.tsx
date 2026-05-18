@@ -18,6 +18,7 @@ import {
 import { motion } from "motion/react";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useToast } from "@/hooks/useToast";
 import { validateReceiptFile } from "@/lib/file-security";
 import { useRouter } from "next/navigation";
 
@@ -97,6 +98,7 @@ export default function PricingPage() {
   const { profile, loading: authLoading } = useAuth();
   const router = useRouter();
   const { subscription, loading: subLoading } = useSubscription();
+  const { showToast } = useToast();
 
   const [plans, setPlans] = useState<any[]>([]);
   const [settings, setSettings] = useState<any>(null);
@@ -157,7 +159,7 @@ export default function PricingPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!profile) {
-      alert("يرجى تسجيل الدخول أولاً");
+      showToast("يرجى تسجيل الدخول أولاً", "warning");
       router.push("/login");
       return;
     }
@@ -192,7 +194,7 @@ export default function PricingPage() {
       setReceiptUrl(signedData.signedUrl); // Use temporary signed URL for UI preview
     } catch (error: any) {
       console.error("Upload error:", error.message);
-      alert("حدث خطأ أثناء رفع الوصل. المرجو المحاولة مرة أخرى.");
+      showToast("حدث خطأ أثناء رفع الوصل. المرجو المحاولة مرة أخرى.", "error");
     } finally {
       setUploading(false);
     }
@@ -243,7 +245,7 @@ export default function PricingPage() {
       setSuccess(true);
     } catch (error: any) {
       console.error("Submission error:", error);
-      alert(`حدث خطأ أثناء تقديم الطلب: ${error.message || 'خطأ غير معروف'}`);
+      showToast(`حدث خطأ أثناء تقديم الطلب: ${error.message || 'خطأ غير معروف'}`, "error");
     } finally {
       setSubmitting(false);
     }

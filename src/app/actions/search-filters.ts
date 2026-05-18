@@ -23,6 +23,7 @@ export async function getJobCategories(): Promise<string[]> {
   const { data } = await supabase
     .from('jobs')
     .select('category')
+    .is('deleted_at', null)
     .not('category', 'is', null)
     .order('category');
 
@@ -69,6 +70,7 @@ export async function getJobLocations(): Promise<string[]> {
   const { data } = await supabase
     .from('jobs')
     .select('location')
+    .is('deleted_at', null)
     .not('location', 'is', null)
     .order('location');
 

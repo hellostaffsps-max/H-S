@@ -9,3 +9,7 @@ coverage/
 .env*
 !.env.example
 .vercel/
+.playwright-mcp/
+supabase/.temp/
+docs/
+

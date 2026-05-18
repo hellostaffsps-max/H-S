@@ -64,6 +64,7 @@ export async function applyToJob(jobId: string, message?: string) {
       .from('jobs')
       .select('employer_id, title')
       .eq('id', jobId)
+      .is('deleted_at', null)
       .single();
 
     const { data: seekerProfile } = await supabase
@@ -199,6 +200,7 @@ export async function updateApplicationStatus(
     .from('jobs')
     .select('employer_id, title')
     .eq('id', application.job_id)
+    .is('deleted_at', null)
     .single();
 
   if (!job || job.employer_id !== user.id) {
@@ -235,7 +237,7 @@ export async function updateApplicationStatus(
     notifMessage = `تم قبولك رسمياً للعمل في وظيفة "${job.title}". سنتواصل معك لإتمام الإجراءات.`;
     
     // Archive the job (mark as filled)
-    await supabase.from('jobs').update({ status: 'filled' }).eq('id', application.job_id);
+    await supabase.from('jobs').update({ status: 'filled' }).eq('id', application.job_id).is('deleted_at', null);
   } else if (status === 'لم يتم التوظيف') {
     notifTitle = 'تحديث على طلب التقديم';
     notifMessage = `عذراً، لم يتم اختيارك لوظيفة "${job.title}" هذه المرة. نتمنى لك التوفيق في فرصك القادمة.`;

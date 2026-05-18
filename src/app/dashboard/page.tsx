@@ -249,6 +249,7 @@ export default function Dashboard() {
             .from("jobs")
             .select("id, title, company_name, location, type, category, salary_min, salary_max, currency, created_at")
             .eq("status", "approved")
+            .is("deleted_at", null)
             .or(`category.ilike.%${category || ""}%`)
             .order("created_at", { ascending: false })
             .limit(4);

@@ -117,6 +117,7 @@ export default async function JobDetailPage({ params }: Props) {
     .from("jobs")
     .select("id, title, company_name, location, type, category, salary_min, salary_max, currency, created_at")
     .eq("status", "approved")
+    .is("deleted_at", null)
     .eq("category", job.category)
     .neq("id", id)
     .order("created_at", { ascending: false })
