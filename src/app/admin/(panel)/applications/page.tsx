@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { ClipboardList, Search, Loader2, Calendar, Filter } from "lucide-react";
+import Pagination from "@/components/Pagination";
 import { supabase } from "@/lib/supabase";
 
 interface Application {
@@ -35,6 +36,10 @@ export default function ApplicationsManagement() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+
+  // Pagination
+  const [page, setPage] = useState(1);
+  const limit = 20;
 
   useEffect(() => {
     fetchApplications();
@@ -74,6 +79,12 @@ export default function ApplicationsManagement() {
     const matchStatus = statusFilter === "all" || app.status === statusFilter;
     return matchSearch && matchStatus;
   });
+
+  const total = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  const hasNext = page < totalPages;
+  const hasPrev = page > 1;
+  const paginated = filtered.slice((page - 1) * limit, page * limit);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -184,6 +195,15 @@ export default function ApplicationsManagement() {
           </table>
         </div>
       </div>
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        hasNext={hasNext}
+        hasPrev={hasPrev}
+        total={total}
+        onPageChange={setPage}
+      />
     </div>
   );
 }

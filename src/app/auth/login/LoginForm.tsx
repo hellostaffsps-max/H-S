@@ -44,6 +44,18 @@ export default function LoginForm({ redirect = "/dashboard" }: LoginFormProps) {
     setError(null);
 
     try {
+      // Rate limit check: 5 attempts per 15 minutes per IP (Fix 5)
+      const rateRes = await fetch('/api/auth/rate-check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'login', limit: 5, windowMs: 15 * 60 * 1000 }),
+      });
+
+      if (!rateRes.ok) {
+        const rateData = await rateRes.json().catch(() => ({}));
+        throw new Error(rateData.error || 'لقد تجاوزت الحد المسموح من محاولات تسجيل الدخول، يرجى الانتظار 15 دقيقة');
+      }
+
       const { error: loginError } = await supabase.auth.signInWithPassword({
         email,
         password,

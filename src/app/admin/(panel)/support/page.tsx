@@ -62,7 +62,7 @@ export default function SupportManagement() {
     try {
       const { data, error } = await supabase
         .from("support_tickets")
-        .select("*")
+        .select("id, name, email, subject, message, status, user_id, conversation_open, created_at")
         .order("created_at", { ascending: false })
         .limit(200);
 
@@ -74,7 +74,7 @@ export default function SupportManagement() {
       if (ticketIds.length > 0) {
         const { data: repliesData } = await supabase
           .from("ticket_replies")
-          .select("*")
+          .select("id, ticket_id, sender_role, sender_name, content, created_at")
           .in("ticket_id", ticketIds)
           .order("created_at", { ascending: true });
         (repliesData || []).forEach((r: Reply) => {

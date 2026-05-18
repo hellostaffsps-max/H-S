@@ -55,7 +55,7 @@ export default function EmployerArticles() {
       // 1. Fetch active subscription
       const { data: subData } = await supabase
         .from('user_subscriptions')
-        .select('*, subscription_plans(max_articles_per_month)')
+        .select('status, subscription_plans(max_articles_per_month)')
         .eq('user_id', profile.id)
         .in('status', ['active', 'free'])
         .limit(1)
@@ -66,7 +66,7 @@ export default function EmployerArticles() {
       // 2. Fetch all user's articles
       const { data: articlesData } = await supabase
         .from('articles')
-        .select('*')
+        .select('id, title, slug, content, excerpt, status, cover_image, created_at')
         .eq('author_id', profile.id)
         .order('created_at', { ascending: false });
         

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { UserCircle, Search, Loader2, MapPin, Calendar, Briefcase, Star, CheckCircle, XCircle, ShieldCheck, Clock, Eye, Trophy } from "lucide-react";
+import Pagination from "@/components/Pagination";
 import { supabase } from "@/lib/supabase";
 import SeekerDetailModal from "@/components/admin/SeekerDetailModal";
 
@@ -34,6 +35,10 @@ export default function CandidatesManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSeeker, setSelectedSeeker] = useState<Seeker | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Pagination
+  const [page, setPage] = useState(1);
+  const limit = 20;
 
   useEffect(() => {
     fetchSeekers();
@@ -144,6 +149,12 @@ export default function CandidatesManagement() {
     s.skills?.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  const total = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  const hasNext = page < totalPages;
+  const hasPrev = page > 1;
+  const paginated = filtered.slice((page - 1) * limit, page * limit);
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -178,6 +189,7 @@ export default function CandidatesManagement() {
             <thead>
               <tr className="bg-slate-50/50 border-b border-slate-100">
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">المرشح</th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">البريد الإلكتروني</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">المسمى الوظيفي</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">الخبرة</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">المهارات</th>
@@ -189,13 +201,13 @@ export default function CandidatesManagement() {
             <tbody className="divide-y divide-slate-50">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-16 text-center">
+                  <td colSpan={8} className="px-6 py-16 text-center">
                     <Loader2 className="h-8 w-8 animate-spin text-brand-600 mx-auto" />
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-16 text-center text-slate-400">
+                  <td colSpan={8} className="px-6 py-16 text-center text-slate-400">
                     {searchTerm ? "لا توجد نتائج مطابقة" : "لا يوجد مرشحون مسجلون بعد"}
                   </td>
                 </tr>
@@ -232,6 +244,11 @@ export default function CandidatesManagement() {
                             {s.profiles?.location || "غير محدد"}
                           </p>
                         </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-xs text-slate-600 font-medium truncate max-w-[160px]" dir="ltr">
+                        {s.profiles?.email || "—"}
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -298,6 +315,15 @@ export default function CandidatesManagement() {
           </table>
         </div>
       </div>
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        hasNext={hasNext}
+        hasPrev={hasPrev}
+        total={total}
+        onPageChange={setPage}
+      />
 
       {/* Detail Modal */}
       {isModalOpen && selectedSeeker && (

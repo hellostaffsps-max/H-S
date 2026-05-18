@@ -48,12 +48,17 @@ export default function PaymentsManagement() {
     try {
       const { data, error } = await supabase
         .from("user_subscriptions")
-        .select("*, profiles(full_name, email, avatar_url), subscription_plans(target_role, price)")
+        .select("id, status, plan_name, amount, payment_method, payment_receipt_url, start_date, end_date, created_at, profiles(full_name, email, avatar_url), subscription_plans(target_role, price)")
         .order("created_at", { ascending: false })
         .limit(200);
 
       if (error) throw error;
-      setSubscriptions(data || []);
+      const normalized = (data || []).map((sub: any) => ({
+        ...sub,
+        profiles: Array.isArray(sub.profiles) && sub.profiles.length > 0 ? sub.profiles[0] : sub.profiles,
+        subscription_plans: Array.isArray(sub.subscription_plans) && sub.subscription_plans.length > 0 ? sub.subscription_plans[0] : sub.subscription_plans,
+      }));
+      setSubscriptions(normalized);
     } catch (e: any) {
       console.error("Error fetching subscriptions:", e.message);
     } finally {

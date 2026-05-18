@@ -49,7 +49,7 @@ export default function TrustedEmployersPage() {
     setLoading(true);
     const { data, error } = await supabase
       .from("trusted_employers")
-      .select("*")
+      .select("id, name, logo_url, is_verified, is_active, display_order, created_at")
       .order("display_order", { ascending: true })
       .order("created_at", { ascending: false });
 

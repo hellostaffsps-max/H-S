@@ -65,7 +65,7 @@ export default function JobsContent({
     });
     
     if (user && profile?.role === 'seeker') {
-      supabase.from('seekers').select('*').eq('profile_id', user.id).single()
+      supabase.from('seekers').select('job_title, experience_years, skills, bio, cv_url, resume_data').eq('profile_id', user.id).single()
         .then(({ data }) => {
           if (data) setSeekerData(data);
         });

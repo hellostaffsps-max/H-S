@@ -142,7 +142,7 @@ export default function EmployerProfile({ profile, user, employerData, onEmploye
           .from("profiles")
           .update(profileUpdates)
           .eq("id", user.id)
-          .select();
+          .select('id, full_name, phone, location');
         if (profileErr) throw profileErr;
         if (!profileData || profileData.length === 0) {
           throw new Error("لم يتم تحديث بيانات الملف الشخصي — تأكد من صلاحياتك");
@@ -177,7 +177,7 @@ export default function EmployerProfile({ profile, user, employerData, onEmploye
         const { data: empData, error: empErr } = await supabase
           .from("employers")
           .upsert({ profile_id: user.id, ...employerUpdates })
-          .select();
+          .select('profile_id, company_name, description, logo_url, cover_image_url, business_type, city, area, whatsapp_number, business_email, number_of_branches, number_of_employees, opening_hours, application_preference, show_whatsapp_to_candidates');
         if (empErr) throw empErr;
         if (!empData || empData.length === 0) {
           throw new Error("لم يتم حفظ بيانات المنشأة — تأكد من صلاحياتك");

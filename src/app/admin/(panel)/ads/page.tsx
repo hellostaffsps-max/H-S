@@ -88,7 +88,7 @@ export default function AdminAds() {
       const { data, error } = await supabase
         .from('advertisements')
         .select(`
-          *,
+          id, title, media_url, media_type, link_url, is_active, status, start_date, end_date, rejection_reason, cancellation_requested, order_index, created_at, created_by,
           profiles:created_by (
             full_name,
             email
@@ -121,10 +121,11 @@ export default function AdminAds() {
       }
       
       // Merge employer data into ads
-      const enrichedAds = adsWithCreators.map(ad => ({
+      const enrichedAds = adsWithCreators.map((ad: any) => ({
         ...ad,
-        employers: ad.created_by && employerMap[ad.created_by] 
-          ? { company_name: employerMap[ad.created_by] } 
+        profiles: Array.isArray(ad.profiles) && ad.profiles.length > 0 ? ad.profiles[0] : ad.profiles,
+        employers: ad.created_by && employerMap[ad.created_by]
+          ? { company_name: employerMap[ad.created_by] }
           : undefined
       }));
       
@@ -208,7 +209,7 @@ export default function AdminAds() {
           status: 'approved',
           order_index: systemAds.length
         }])
-        .select()
+        .select('id, title, media_url, media_type, link_url, status, is_active, order_index, start_date, end_date, rejection_reason, cancellation_requested, created_by, created_at')
         .single();
 
       if (error) throw error;

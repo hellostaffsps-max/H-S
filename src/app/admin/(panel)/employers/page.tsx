@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Building2, Search, Loader2, MapPin, Phone, Calendar, Briefcase, ShieldCheck, XCircle, Clock, Eye } from "lucide-react";
+import Pagination from "@/components/Pagination";
 import { supabase } from "@/lib/supabase";
 import EmployerDetailModal from "@/components/admin/EmployerDetailModal";
 
@@ -35,6 +36,10 @@ export default function EmployersManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedEmployer, setSelectedEmployer] = useState<Employer | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Pagination
+  const [page, setPage] = useState(1);
+  const limit = 20;
 
   useEffect(() => {
     fetchEmployers();
@@ -113,8 +118,15 @@ export default function EmployersManagement() {
   const filtered = employers.filter((emp) =>
     emp.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     emp.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.business_type?.toLowerCase().includes(searchTerm.toLowerCase())
+    emp.business_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    emp.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const total = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  const hasNext = page < totalPages;
+  const hasPrev = page > 1;
+  const paginated = filtered.slice((page - 1) * limit, page * limit);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -150,6 +162,7 @@ export default function EmployersManagement() {
             <thead>
               <tr className="bg-slate-50/50 border-b border-slate-100">
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">المنشأة</th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">البريد الإلكتروني</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">نوع العمل</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">الموقع</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">التواصل</th>
@@ -161,13 +174,13 @@ export default function EmployersManagement() {
             <tbody className="divide-y divide-slate-50">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-16 text-center">
+                  <td colSpan={8} className="px-6 py-16 text-center">
                     <Loader2 className="h-8 w-8 animate-spin text-brand-600 mx-auto" />
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-16 text-center text-slate-400">
+                  <td colSpan={8} className="px-6 py-16 text-center text-slate-400">
                     {searchTerm ? "لا توجد نتائج مطابقة" : "لا يوجد أصحاب عمل مسجلين بعد"}
                   </td>
                 </tr>
@@ -194,6 +207,11 @@ export default function EmployersManagement() {
                           <p className="text-sm font-bold text-slate-900">{emp.company_name || "بدون اسم"}</p>
                           <p className="text-xs text-slate-500">{emp.profiles?.full_name || "—"}</p>
                         </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-xs text-slate-600 font-medium truncate max-w-[160px]" dir="ltr">
+                        {emp.profiles?.email || "—"}
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -254,6 +272,15 @@ export default function EmployersManagement() {
           </table>
         </div>
       </div>
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        hasNext={hasNext}
+        hasPrev={hasPrev}
+        total={total}
+        onPageChange={setPage}
+      />
 
       {/* Detail Modal */}
       {isModalOpen && selectedEmployer && (

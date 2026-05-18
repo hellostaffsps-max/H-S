@@ -46,7 +46,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     try {
       const { data, error } = await supabase
         .from('notifications')
-        .select('*')
+        .select('id, user_id, title, message, type, is_read, created_at, link')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(50);

@@ -10,7 +10,7 @@ export async function GET() {
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from('admin_permissions')
-    .select('*')
+    .select('id, name, label, category, description')
     .order('category', { ascending: true });
 
   if (error) {

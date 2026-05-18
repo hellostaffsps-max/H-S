@@ -11,7 +11,7 @@ export async function GET() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('subscription_plans')
-    .select('*')
+    .select('id, name, price, features, job_limit, extra_job_price, duration_days, allow_articles, featured_listings, max_articles_per_month, allow_ads, is_active')
     .order('price', { ascending: true });
 
   if (error) {
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
       allow_ads: allow_ads || false,
       is_active: true
     }])
-    .select()
+    .select('id, name, price, features, job_limit, extra_job_price, duration_days, allow_articles, featured_listings, max_articles_per_month, allow_ads, is_active')
     .single();
 
   if (error) {

@@ -40,7 +40,7 @@ export default function PlatformSettings() {
   async function fetchSettings() {
     const { data, error } = await supabase
       .from('platform_settings')
-      .select('*')
+      .select('id, site_name, logo_url, wallet_qr_url, bank_details, maintenance_mode')
       .maybeSingle(); // Better than single() if it might be empty
     
     if (data) {
@@ -79,7 +79,7 @@ export default function PlatformSettings() {
         result = await supabase
           .from('platform_settings')
           .insert(payload)
-          .select()
+          .select('id, site_name, logo_url, wallet_qr_url, bank_details, maintenance_mode')
           .single();
         if (result.data) setSettings(prev => ({ ...prev, id: result.data.id }));
       }

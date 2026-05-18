@@ -23,7 +23,7 @@ export function useAuth() {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, role, full_name, avatar_url, phone, location')
         .eq('id', userId)
         .single();
 

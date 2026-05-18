@@ -61,7 +61,7 @@ export default function AdminSubscriptions() {
   }, [page]);
 
   async function fetchPlans() {
-    const { data } = await supabase.from('subscription_plans').select('*').order('price', { ascending: true });
+    const { data } = await supabase.from('subscription_plans').select('id, name, price, features, job_limit, extra_job_price, duration_days, allow_articles, featured_listings, max_articles_per_month, allow_ads, is_active').order('price', { ascending: true });
     if (data) setPlans(data);
   }
 

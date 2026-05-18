@@ -52,7 +52,7 @@ export default function AdminMessages() {
       const { data, error } = await supabase
         .from('messages')
         .select(`
-          *,
+          id, title, content, created_at, receiver_id, sender_id,
           receiver:profiles!messages_receiver_id_fkey(full_name, email)
         `)
         .order('created_at', { ascending: false })

@@ -67,7 +67,7 @@ export default function EstablishmentAds() {
     try {
       const { data, error } = await supabase
         .from('advertisements')
-        .select('*')
+        .select('id, title, media_url, media_type, link_url, status, start_date, end_date, rejection_reason, cancellation_requested, created_at')
         .eq('created_by', user?.id)
         .order('created_at', { ascending: false });
 

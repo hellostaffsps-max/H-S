@@ -194,7 +194,7 @@ function MessagesPage() {
     setMessages((prev) => [...prev, optimistic]);
     scrollToBottom();
 
-    const { data, error } = await supabase.from("messages").insert({ sender_id: myId, receiver_id: selectedPartnerId, title: "", content: text }).select().single();
+    const { data, error } = await supabase.from("messages").insert({ sender_id: myId, receiver_id: selectedPartnerId, title: "", content: text }).select('id, sender_id, receiver_id, content, is_read, created_at').single();
 
     if (error) {
       setMessages((prev) => prev.filter((m) => m.id !== tempId));

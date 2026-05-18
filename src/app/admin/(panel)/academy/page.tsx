@@ -45,7 +45,7 @@ export default function AdminAcademyPage() {
     setLoading(true);
     const { data } = await supabase
       .from("academy_courses")
-      .select("*")
+      .select("id, title, description, cover_image_url, file_url, type, is_active, created_at")
       .order("created_at", { ascending: false });
     
     if (data) setCourses(data);

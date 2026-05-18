@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -79,6 +79,23 @@ export default function AdminLayoutClient({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+
+  // Permission guard: redirect if user lacks permission for current page
+  useEffect(() => {
+    const currentItem = navItems.find(
+      (item) => pathname === item.href || pathname.startsWith(item.href + "/")
+    );
+    if (!currentItem) return;
+    if (!currentItem.permission) return; // Dashboard always allowed
+    if (isSuperAdmin) return;
+    if (currentItem.permission === "__super_admin_only__" && !isSuperAdmin) {
+      router.replace("/admin");
+      return;
+    }
+    if (!permissions.includes(currentItem.permission)) {
+      router.replace("/admin");
+    }
+  }, [pathname, permissions, isSuperAdmin, router]);
 
   // Filter nav items based on permissions
   const visibleNavItems = navItems.filter((item) => {

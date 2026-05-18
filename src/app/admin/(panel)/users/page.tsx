@@ -87,6 +87,7 @@ export default function UsersManagement() {
 
   const filteredUsers = users.filter(user => 
     user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -106,7 +107,7 @@ export default function UsersManagement() {
           <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
           <input 
             type="text" 
-            placeholder="البحث بالاسم أو المعرف..." 
+            placeholder="البحث بالاسم أو الإيميل أو المعرف..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pr-12 pl-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-brand-500/20 outline-none"
@@ -127,6 +128,7 @@ export default function UsersManagement() {
             <thead>
               <tr className="bg-slate-50/50 border-b border-slate-100">
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">المستخدم</th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">البريد الإلكتروني</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">الدور</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">الموقع</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">تاريخ التسجيل</th>
@@ -136,11 +138,11 @@ export default function UsersManagement() {
             <tbody className="divide-y divide-slate-50">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-slate-400">جاري التحميل...</td>
+                  <td colSpan={6} className="px-6 py-12 text-center text-slate-400">جاري التحميل...</td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-slate-400">لا يوجد مستخدمين حالياً</td>
+                  <td colSpan={6} className="px-6 py-12 text-center text-slate-400">لا يوجد مستخدمين حالياً</td>
                 </tr>
               ) : (
                 users.map((user) => (
@@ -158,6 +160,12 @@ export default function UsersManagement() {
                           <p className="text-sm font-bold text-slate-900">{user.full_name || 'بدون اسم'}</p>
                           <p className="text-xs text-slate-500">{user.id.substring(0, 8)}...</p>
                         </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-1">
+                        <Mail className="h-3 w-3 text-slate-400" />
+                        <span className="text-xs text-slate-600 truncate max-w-[140px]" dir="ltr">{user.email || '—'}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

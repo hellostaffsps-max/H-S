@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, role, full_name, avatar_url, phone, location, created_at')
+    .select('id, role, full_name, email, avatar_url, phone, location, created_at')
     .order('created_at', { ascending: false })
     .range(from, to);
 

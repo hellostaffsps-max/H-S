@@ -7,6 +7,8 @@ import { ChefHat, Lock, User, AlertCircle, CheckCircle2, Loader2 } from 'lucide-
 import Image from 'next/image';
 import { Turnstile } from '@marsidev/react-turnstile';
 
+const GENERIC_ERROR = 'اسم المستخدم أو كلمة المرور غير صحيحة';
+
 export default function AdminLogin() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -26,87 +28,40 @@ export default function AdminLogin() {
 
     try {
       const input = username.trim().toLowerCase();
-      let emailToLogin: string | null = null;
 
-      if (input.includes('@')) {
-        // User entered an email address — look up profile by email
-        const { data: profile, error: lookupError } = await supabase
-          .from('profiles')
-          .select('id, email, role')
-          .eq('email', input)
-          .single();
+      // Use server-side lookup to avoid exposing profile data in browser (Fix 3 & 6)
+      const lookupRes = await fetch('/api/admin/lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input }),
+      });
 
-        if (lookupError || !profile) {
-          // Fallback: try direct auth login (for accounts created directly in Supabase Auth)
-          const { error: directLoginError } = await supabase.auth.signInWithPassword({
-            email: input,
-            password,
-            options: {
-              captchaToken: captchaToken || undefined,
-            }
-          });
-          if (directLoginError) throw new Error(directLoginError.message);
+      const lookupData = await lookupRes.json();
 
-          // After direct login, verify admin role
-          const { data: { user } } = await supabase.auth.getUser();
-          if (!user) throw new Error('اسم المستخدم أو كلمة المرور غير صحيحة');
-
-          const { data: postLoginProfile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single();
-
-          if (postLoginProfile?.role !== 'admin') {
-            await supabase.auth.signOut();
-            throw new Error('غير مصرح لك بالدخول إلى لوحة الإدارة');
-          }
-
-          router.push('/admin');
-          return;
-        }
-
-        if (profile.role !== 'admin') {
-          throw new Error('غير مصرح لك بالدخول إلى لوحة الإدارة');
-        }
-
-        emailToLogin = profile.email;
-      } else {
-        // User entered a username — look up by username
-        const { data: profile, error: lookupError } = await supabase
-          .from('profiles')
-          .select('id, email, role')
-          .eq('username', input)
-          .single();
-
-        if (lookupError || !profile) {
-          throw new Error('اسم المستخدم أو كلمة المرور غير صحيحة');
-        }
-
-        if (profile.role !== 'admin') {
-          throw new Error('غير مصرح لك بالدخول إلى لوحة الإدارة');
-        }
-
-        emailToLogin = profile.email || `${input}@admin.local`;
+      if (!lookupRes.ok || !lookupData.success) {
+        // Generic error — never reveals if user exists or not (Fix 6)
+        throw new Error(GENERIC_ERROR);
       }
+
+      const emailToLogin = lookupData.email;
 
       // Sign in with the resolved email
       const { error: loginError } = await supabase.auth.signInWithPassword({
-        email: emailToLogin!,
+        email: emailToLogin,
         password,
         options: {
           captchaToken: captchaToken || undefined,
-        }
+        },
       });
 
-      if (loginError) throw new Error(loginError.message);
+      if (loginError) throw new Error(GENERIC_ERROR);
 
       router.push('/admin');
     } catch (err: any) {
-      setError(err.message || 'حدث خطأ أثناء تسجيل الدخول');
+      setError(err.message || GENERIC_ERROR);
       setLoading(false);
       setCaptchaToken(null);
-      setTurnstileKey(prev => prev + 1);
+      setTurnstileKey((prev) => prev + 1);
     }
   };
 
@@ -121,40 +76,32 @@ export default function AdminLogin() {
 
     try {
       const input = username.trim().toLowerCase();
-      let targetEmail: string | null = null;
 
-      if (input.includes('@')) {
-        // User entered an email
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('email')
-          .eq('email', input)
-          .single();
-        targetEmail = profile?.email || input;
-      } else {
-        // User entered a username
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('email')
-          .eq('username', input)
-          .single();
-        targetEmail = profile?.email || null;
+      // Server-side lookup for reset too — generic error on failure
+      const lookupRes = await fetch('/api/admin/lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input }),
+      });
+
+      const lookupData = await lookupRes.json();
+
+      if (!lookupRes.ok || !lookupData.success) {
+        throw new Error(GENERIC_ERROR);
       }
 
-      if (!targetEmail) {
-        throw new Error('لم يتم العثور على حساب بهذا الاسم');
-      }
+      const targetEmail = lookupData.email;
 
       const { error } = await supabase.auth.resetPasswordForEmail(targetEmail, {
         redirectTo: `${window.location.origin}/admin/login`,
         captchaToken: captchaToken || undefined,
       });
-      if (error) throw error;
+      if (error) throw new Error(GENERIC_ERROR);
       setSuccess('تم إرسال رابط إعادة تعيين كلمة المرور إلى البريد المرتبط');
     } catch (err: any) {
-      setError(err.message || 'حدث خطأ أثناء إرسال رابط إعادة التعيين');
+      setError(err.message || GENERIC_ERROR);
       setCaptchaToken(null);
-      setTurnstileKey(prev => prev + 1);
+      setTurnstileKey((prev) => prev + 1);
     } finally {
       setResetLoading(false);
     }
@@ -224,9 +171,9 @@ export default function AdminLogin() {
             </div>
 
             <div className="flex justify-center py-2">
-              <Turnstile 
+              <Turnstile
                 key={turnstileKey}
-                siteKey="0x4AAAAAADO2aIuCx4SlQRvd" 
+                siteKey="0x4AAAAAADO2aIuCx4SlQRvd"
                 onSuccess={(token) => setCaptchaToken(token)}
                 onExpire={() => setCaptchaToken(null)}
                 onError={() => setCaptchaToken(null)}
@@ -238,11 +185,7 @@ export default function AdminLogin() {
               disabled={loading || !captchaToken}
               className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-brand-200 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mt-4"
             >
-              {loading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                'تسجيل الدخول'
-              )}
+              {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'تسجيل الدخول'}
             </button>
 
             <button

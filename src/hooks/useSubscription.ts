@@ -51,7 +51,7 @@ export function useSubscription() {
         // 1. Try to find an ACTIVE or FREE subscription
         const { data: activeSub } = await supabase
           .from('user_subscriptions')
-          .select('*, subscription_plans(*)')
+          .select('status, plan_id, plan_name, created_at, subscription_plans(id, name, job_limit, allow_articles, featured_listings, max_articles_per_month, allow_ads, price)')
           .eq('user_id', user?.id)
           .in('status', ['active', 'free'])
           .order('created_at', { ascending: false })
@@ -60,19 +60,25 @@ export function useSubscription() {
 
         if (activeSub) {
           if (activeSub.subscription_plans) {
-            const plan = activeSub.subscription_plans;
-            setSubscription({
-              plan_id: plan.id,
-              plan_name: plan.name,
-              status: activeSub.status as 'active' | 'free',
-              job_limit: plan.job_limit || 0,
-              allow_articles: plan.allow_articles || false,
-              featured_listings: plan.featured_listings || false,
-              max_articles_per_month: plan.max_articles_per_month || 0,
-              allow_ads: plan.allow_ads || false,
-              price: plan.price || 0,
-              current_job_count: jobCount || 0,
-            });
+            const plan = Array.isArray(activeSub.subscription_plans)
+              ? activeSub.subscription_plans[0]
+              : activeSub.subscription_plans;
+            if (plan) {
+              setSubscription({
+                plan_id: plan.id,
+                plan_name: plan.name,
+                status: activeSub.status as 'active' | 'free',
+                job_limit: plan.job_limit || 0,
+                allow_articles: plan.allow_articles || false,
+                featured_listings: plan.featured_listings || false,
+                max_articles_per_month: plan.max_articles_per_month || 0,
+                allow_ads: plan.allow_ads || false,
+                price: plan.price || 0,
+                current_job_count: jobCount || 0,
+              });
+            } else {
+              setSubscription({ ...DEFAULT_FREE_FEATURES, status: activeSub.status as 'active' | 'free', current_job_count: jobCount || 0 });
+            }
           } else {
             // Subscription is ACTIVE but has no linked plan_id (e.g. manual/legacy)
             // Use defaults but keep status as active
@@ -96,7 +102,7 @@ export function useSubscription() {
         // 2. If no active sub, check if they have a PENDING one (for UI info)
         const { data: pendingSub } = await supabase
           .from('user_subscriptions')
-          .select('*, subscription_plans(*)')
+          .select('status, plan_id, plan_name, created_at, subscription_plans(id, name, job_limit, allow_articles, featured_listings, max_articles_per_month, allow_ads, price)')
           .eq('user_id', user?.id)
           .eq('status', 'pending')
           .order('created_at', { ascending: false })
@@ -106,7 +112,7 @@ export function useSubscription() {
         // 3. Regardless of pending, we also need the REAL Free Plan features from the DB
         const { data: freePlan } = await supabase
           .from('subscription_plans')
-          .select('*')
+          .select('id, name, job_limit, allow_articles, featured_listings, max_articles_per_month, allow_ads, price')
           .eq('price', 0)
           .eq('is_active', true)
           .limit(1)
