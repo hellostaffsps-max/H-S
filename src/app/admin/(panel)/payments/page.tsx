@@ -12,8 +12,8 @@ interface Subscription {
   amount: number | null;
   payment_method: string | null;
   payment_receipt_url: string | null;
-  start_date: string | null;
-  end_date: string | null;
+  starts_at: string | null;
+  ends_at: string | null;
   created_at: string;
   profiles: {
     full_name: string | null;
@@ -48,7 +48,7 @@ export default function PaymentsManagement() {
     try {
       const { data, error } = await supabase
         .from("user_subscriptions")
-        .select("id, status, plan_name, amount, payment_method, payment_receipt_url, start_date, end_date, created_at, profiles(full_name, email, avatar_url), subscription_plans(target_role, price)")
+        .select("id, status, plan_name, payment_receipt_url, starts_at, ends_at, created_at, profiles(full_name, email, avatar_url), subscription_plans(target_role, price)")
         .order("created_at", { ascending: false })
         .limit(200);
 
@@ -239,9 +239,9 @@ export default function PaymentsManagement() {
                       </td>
                       <td className="px-6 py-4 text-xs text-slate-500">
                         <div className="space-y-0.5">
-                          {sub.start_date && <div>من: {new Date(sub.start_date).toLocaleDateString("ar-EG")}</div>}
-                          {sub.end_date && <div>إلى: {new Date(sub.end_date).toLocaleDateString("ar-EG")}</div>}
-                          {!sub.start_date && !sub.end_date && <span>—</span>}
+                          {sub.starts_at && <div>من: {new Date(sub.starts_at).toLocaleDateString("ar-EG")}</div>}
+                          {sub.ends_at && <div>إلى: {new Date(sub.ends_at).toLocaleDateString("ar-EG")}</div>}
+                          {!sub.starts_at && !sub.ends_at && <span>—</span>}
                         </div>
                       </td>
                       <td className="px-6 py-4">
