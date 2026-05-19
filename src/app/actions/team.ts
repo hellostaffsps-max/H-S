@@ -50,6 +50,7 @@ export async function getTeamMembers() {
     `)
     .in('job_id', jobIds)
     .eq('status', 'مقبول')
+    .is('deleted_at', null)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -75,6 +76,7 @@ export async function terminateEmployee(applicationId: string, reason?: string) 
     .from('applications')
     .select('id, seeker_id, job_id, status')
     .eq('id', applicationId)
+    .is('deleted_at', null)
     .single();
 
   if (!application) {

@@ -95,7 +95,7 @@ export async function DELETE(
   // Fetch job title before deletion for audit log
   const { data: jobBefore } = await supabase.from('jobs').select('title').eq('id', id).single();
 
-  const { error } = await supabase.from('jobs').delete().eq('id', id);
+  const { error } = await supabase.from('jobs').update({ deleted_at: new Date().toISOString() }).eq('id', id);
 
   if (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

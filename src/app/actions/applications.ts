@@ -104,6 +104,7 @@ export async function getApplications(jobId?: string) {
   let query = supabase
     .from('applications')
     .select('*, jobs(title, company_name), seekers(experience_years, job_title, bio, skills, cv_url, resume_data, is_available, current_employer, is_featured, profiles!seekers_profile_id_fkey(full_name, avatar_url, location, phone, email))')
+    .is('deleted_at', null)
     .order('created_at', { ascending: false })
     .limit(200);
 
@@ -161,6 +162,7 @@ export async function getMyApplications() {
     .from('applications')
     .select('*, jobs(title, company_name, location, type)')
     .eq('seeker_id', user.id)
+    .is('deleted_at', null)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -249,5 +251,29 @@ export async function updateApplicationStatus(
   await createNotification(supabase, application.seeker_id, notifTitle, notifMessage, 'application', notifLink);
 
   revalidatePath('/dashboard');
+  return { success: true };
+}
+
+export async function deleteApplication(applicationId: string) {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, error: 'Unauthorized' };
+  }
+
+  // Soft delete the application by updating deleted_at
+  const { error } = await supabase
+    .from('applications')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', applicationId)
+    .eq('seeker_id', user.id); // Only the seeker can soft delete their application
+
+  if (error) {
+    return { success: false, error: toArabicError(error.message) };
+  }
+
+  revalidatePath('/dashboard');
+  revalidatePath('/jobs');
   return { success: true };
 }
