@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useToast } from "@/hooks/useToast";
 import { 
   Layers, 
   Search, 
@@ -33,6 +34,7 @@ interface Plan {
 }
 
 export default function PlansManagement() {
+  const { showToast } = useToast();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -80,10 +82,10 @@ export default function PlansManagement() {
         setIsModalOpen(false);
         fetchPlans();
       } else {
-        alert("فشل الحفظ: " + json.error);
+        showToast("فشل الحفظ: " + json.error, "error");
       }
     } catch (e: any) {
-      alert("حدث خطأ أثناء الحفظ");
+      showToast("حدث خطأ أثناء الحفظ", "error");
     } finally {
       setModalLoading(false);
     }
@@ -103,7 +105,7 @@ export default function PlansManagement() {
         fetchPlans();
       }
     } catch (e) {
-      alert("فشل في تغيير حالة الباقة");
+      showToast("فشل في تغيير حالة الباقة", "error");
     }
   };
 

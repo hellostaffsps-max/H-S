@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/useToast";
 
 type Course = {
   id: string;
@@ -21,6 +22,7 @@ type Course = {
 };
 
 export default function AdminAcademyPage() {
+  const { showToast } = useToast();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -90,7 +92,7 @@ export default function AdminAcademyPage() {
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     if (!title || (!contentFile && !existingContentUrl)) {
-      alert("يرجى إدخال عنوان الكورس وملف المحتوى");
+      showToast("يرجى إدخال عنوان الكورس وملف المحتوى", "info");
       return;
     }
 
@@ -133,7 +135,7 @@ export default function AdminAcademyPage() {
       fetchCourses();
     } catch (err) {
       console.error(err);
-      alert("حدث خطأ أثناء الحفظ");
+      showToast("حدث خطأ أثناء الحفظ", "error");
     } finally {
       setSaving(false);
     }
@@ -148,7 +150,7 @@ export default function AdminAcademyPage() {
       .eq("id", id);
       
     if (error) {
-      alert("حدث خطأ أثناء الحذف");
+      showToast("حدث خطأ أثناء الحذف", "error");
     } else {
       fetchCourses();
     }

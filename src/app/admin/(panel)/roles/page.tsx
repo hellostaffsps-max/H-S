@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import { useToast } from "@/hooks/useToast";
 import { 
   Shield, 
   Plus, 
@@ -35,6 +36,7 @@ const CATEGORY_ICONS: Record<string, any> = {
 };
 
 export default function RolesManagement() {
+  const { showToast } = useToast();
   const [roles, setRoles] = useState<any[]>([]);
   const [permissions, setPermissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -123,10 +125,10 @@ export default function RolesManagement() {
         setIsModalOpen(false);
         fetchData();
       } else {
-        alert('خطأ: ' + json.error);
+        showToast('خطأ: ' + json.error, "error");
       }
     } catch (error) {
-      alert('خطأ في الاتصال بالسيرفر');
+      showToast('خطأ في الاتصال بالسيرفر', "error");
     } finally {
       setLoading(false);
     }
@@ -140,7 +142,7 @@ export default function RolesManagement() {
       const json = await res.json();
       if (json.success) fetchData();
     } catch (error) {
-      alert('خطأ في الحذف');
+      showToast('خطأ في الحذف', "error");
     }
   };
 
@@ -162,17 +164,17 @@ export default function RolesManagement() {
 
       const json = await res.json();
       if (json.success) {
-        alert('تم إنشاء المشرف بنجاح');
+        showToast('تم إنشاء المشرف بنجاح', "success");
         setIsAddModeratorOpen(false);
         setNewModUsername('');
         setNewModPass('');
         setNewModName('');
         setNewModRole('');
       } else {
-        alert('خطأ: ' + json.error);
+        showToast('خطأ: ' + json.error, "error");
       }
     } catch (error) {
-      alert('خطأ في الاتصال بالسيرفر');
+      showToast('خطأ في الاتصال بالسيرفر', "error");
     } finally {
       setIsSubmitting(false);
     }

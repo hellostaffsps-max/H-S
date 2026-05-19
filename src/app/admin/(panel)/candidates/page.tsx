@@ -5,6 +5,7 @@ import Image from "next/image";
 import { UserCircle, Search, Loader2, MapPin, Calendar, Briefcase, Star, CheckCircle, XCircle, ShieldCheck, Clock, Eye, Trophy } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/useToast";
 import SeekerDetailModal from "@/components/admin/SeekerDetailModal";
 
 interface Seeker {
@@ -30,6 +31,7 @@ interface Seeker {
 }
 
 export default function CandidatesManagement() {
+  const { showToast } = useToast();
   const [seekers, setSeekers] = useState<Seeker[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -91,9 +93,10 @@ export default function CandidatesManagement() {
       if (selectedSeeker?.profile_id === id) {
         setSelectedSeeker({ ...selectedSeeker, verification_status: status });
       }
-      alert("Verification status updated successfully");
+      showToast("تم تحديث حالة التوثيق بنجاح", "success");
     } catch (e: any) {
-      alert("Error: " + e.message);
+      console.error("Verification update error:", e);
+      showToast("خطأ: " + e.message, "error");
     }
   }
 
@@ -115,9 +118,10 @@ export default function CandidatesManagement() {
       if (selectedSeeker?.profile_id === id) {
         setSelectedSeeker({ ...selectedSeeker, is_featured: featured });
       }
-      alert(featured ? "تم تمييز الموظف بنجاح" : "تم إلغاء تمييز الموظف");
+      showToast(featured ? "تم تمييز الموظف بنجاح" : "تم إلغاء تمييز الموظف", "success");
     } catch (e: any) {
-      alert("خطأ: " + e.message);
+      console.error("Featured toggle error:", e);
+      showToast("خطأ: " + e.message, "error");
     }
   }
 

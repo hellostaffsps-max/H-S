@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Building2, Search, Loader2, MapPin, Phone, Calendar, Briefcase, ShieldCheck, XCircle, Clock, Eye } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/useToast";
 import EmployerDetailModal from "@/components/admin/EmployerDetailModal";
 
 interface Employer {
@@ -31,6 +32,7 @@ interface Employer {
 }
 
 export default function EmployersManagement() {
+  const { showToast } = useToast();
   const [employers, setEmployers] = useState<Employer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -87,9 +89,10 @@ export default function EmployersManagement() {
       if (selectedEmployer?.profile_id === id) {
         setSelectedEmployer({ ...selectedEmployer, verification_status: status });
       }
-      alert("تم تحديث حالة التوثيق بنجاح");
+      showToast("تم تحديث حالة التوثيق بنجاح", "success");
     } catch (e: any) {
-      alert("خطأ: " + e.message);
+      console.error("Verification update error:", e);
+      showToast("خطأ: " + e.message, "error");
     }
   }
 

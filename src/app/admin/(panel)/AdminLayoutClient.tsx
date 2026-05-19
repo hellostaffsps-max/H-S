@@ -32,6 +32,8 @@ import {
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import NotificationsDropdown from "@/components/NotificationsDropdown";
+import { ToastProvider } from "@/hooks/useToast";
+import ToastContainer from "@/components/ToastContainer";
 
 interface NavItem {
   label: string;
@@ -111,6 +113,7 @@ export default function AdminLayoutClient({
   }
 
   return (
+    <ToastProvider>
     <div className="flex min-h-screen bg-slate-50" dir="rtl">
       {/* Mobile overlay */}
       {sidebarOpen && (
@@ -222,6 +225,8 @@ export default function AdminLayoutClient({
           {children}
         </main>
       </div>
+      <ToastContainer />
     </div>
+    </ToastProvider>
   );
 }

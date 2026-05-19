@@ -15,8 +15,10 @@ import {
   XCircle
 } from 'lucide-react';
 import Pagination from '@/components/Pagination';
+import { useToast } from "@/hooks/useToast";
 
 export default function UsersManagement() {
+  const { showToast } = useToast();
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -48,7 +50,7 @@ export default function UsersManagement() {
         }
       }
     } catch (error: any) {
-      alert('خطأ في تحميل المستخدمين: ' + error.message);
+      showToast('خطأ في تحميل المستخدمين: ' + error.message, "error");
     } finally {
       setLoading(false);
     }
@@ -62,9 +64,9 @@ export default function UsersManagement() {
       const json = await res.json();
       if (!json.success) throw new Error(json.message || 'فشل الحذف');
       setUsers(users.filter(u => u.id !== id));
-      alert(json.message || 'تم حذف المستخدم بنجاح');
+      showToast(json.message || 'تم حذف المستخدم بنجاح', "success");
     } catch (error: any) {
-      alert('خطأ في الحذف: ' + error.message);
+      showToast('خطأ في الحذف: ' + error.message, "error");
     }
   };
 
@@ -79,9 +81,9 @@ export default function UsersManagement() {
       if (!json.success) throw new Error(json.message || 'فشل تغيير الدور');
       setUsers(users.map(u => u.id === id ? { ...u, role: newRole } : u));
       setActiveMenu(null);
-      alert('تم تغيير الدور بنجاح');
+      showToast('تم تغيير الدور بنجاح', "success");
     } catch (error: any) {
-      alert('خطأ في تغيير الدور: ' + error.message);
+      showToast('خطأ في تغيير الدور: ' + error.message, "error");
     }
   };
 

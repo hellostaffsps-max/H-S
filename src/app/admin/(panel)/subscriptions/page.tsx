@@ -17,6 +17,7 @@ import {
 import { cn } from '@/lib/utils';
 import { motion } from 'motion/react';
 import Pagination from '@/components/Pagination';
+import { useToast } from "@/hooks/useToast";
 
 type Subscription = {
   id: string;
@@ -39,6 +40,7 @@ type Subscription = {
 };
 
 export default function AdminSubscriptions() {
+  const { showToast } = useToast();
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -102,7 +104,7 @@ export default function AdminSubscriptions() {
       ));
     } catch (error) {
       console.error('Error updating status:', error);
-      alert('حدث خطأ أثناء تحديث حالة الاشتراك');
+      showToast('حدث خطأ أثناء تحديث حالة الاشتراك', "error");
     }
   };
 
@@ -128,10 +130,10 @@ export default function AdminSubscriptions() {
         sub.id === subId ? result.data : sub
       ));
       setEditingSub(null);
-      alert('تم تحديث الخطة بنجاح');
+      showToast('تم تحديث الخطة بنجاح', "success");
     } catch (error) {
       console.error('Error upgrading plan:', error);
-      alert('حدث خطأ أثناء ترقية الخطة');
+      showToast('حدث خطأ أثناء ترقية الخطة', "error");
     } finally {
       setUpdatingPlan(false);
     }
@@ -320,7 +322,7 @@ export default function AdminSubscriptions() {
                               onClick={() => {
                                 if (!sub.plan_id) {
                                   setEditingSub(sub);
-                                  alert('هذا الطلب لا يحتوي على معرف خطة (Plan ID). يرجى اختيار الخطة المناسبة من القائمة.');
+                                  showToast('هذا الطلب لا يحتوي على معرف خطة (Plan ID). يرجى اختيار الخطة المناسبة من القائمة.', "info");
                                 } else {
                                   handleUpdateStatus(sub.id, 'active');
                                 }

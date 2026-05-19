@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/useToast";
 
 interface Reply {
   id: string;
@@ -44,6 +45,7 @@ const statusLabels: Record<string, string> = {
 };
 
 export default function SupportManagement() {
+  const { showToast } = useToast();
   const { profile } = useAuth();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
@@ -140,7 +142,7 @@ export default function SupportManagement() {
       ));
       fetchTickets();
     } catch (e: any) {
-      alert("خطأ في تحديث الحالة: " + e.message);
+      showToast("خطأ في تحديث الحالة: " + e.message, "error");
     } finally {
       setUpdatingStatus(null);
     }
@@ -187,9 +189,9 @@ export default function SupportManagement() {
         t.id === ticket.id ? { ...t, status: "closed" } : t
       ));
       
-      alert("تم قبول الطلب وتحديث حالة المستخدم بنجاح");
+      showToast("تم قبول الطلب وتحديث حالة المستخدم بنجاح", "success");
     } catch (e: any) {
-      alert("خطأ: " + e.message);
+      showToast("خطأ: " + e.message, "error");
     } finally {
       setUpdatingStatus(null);
     }
@@ -223,7 +225,7 @@ export default function SupportManagement() {
 
       fetchTickets();
     } catch (e: any) {
-      alert("خطأ: " + e.message);
+      showToast("خطأ: " + e.message, "error");
     }
   }
 
@@ -251,7 +253,7 @@ export default function SupportManagement() {
       setReplyText(prev => ({ ...prev, [ticket.id]: "" }));
       fetchTickets();
     } catch (e: any) {
-      alert("خطأ في إرسال الرد: " + e.message);
+      showToast("خطأ في إرسال الرد: " + e.message, "error");
     } finally {
       setSendingReply(null);
     }

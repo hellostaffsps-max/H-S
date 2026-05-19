@@ -21,6 +21,7 @@ import Link from 'next/link';
 import { motion } from 'motion/react';
 import Image from "next/image";
 import Pagination from '@/components/Pagination';
+import { useToast } from "@/hooks/useToast";
 
 type Article = {
   id: string;
@@ -38,6 +39,7 @@ type Article = {
 };
 
 export default function AdminArticles() {
+  const { showToast } = useToast();
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -103,7 +105,7 @@ export default function AdminArticles() {
       ));
     } catch (error) {
       console.error('Error updating article status:', error);
-      alert('حدث خطأ أثناء تحديث حالة المقال');
+      showToast('حدث خطأ أثناء تحديث حالة المقال', "error");
     }
   };
 
@@ -133,16 +135,16 @@ export default function AdminArticles() {
 
       if (isEditing) {
         setArticles(arts => arts.map(art => art.id === newArticle.id ? json.data : art));
-        alert('تم تعديل المقال بنجاح');
+        showToast('تم تعديل المقال بنجاح', "success");
       } else {
         setArticles([json.data, ...articles]);
-        alert('تم إنشاء المقال بنجاح');
+        showToast('تم إنشاء المقال بنجاح', "success");
       }
       setIsModalOpen(false);
       setNewArticle({ id: '', title: '', content: '', excerpt: '', cover_image: '', status: 'published' });
     } catch (error: any) {
       console.error('Error saving article:', error);
-      alert('حدث خطأ أثناء الحفظ: ' + error.message);
+      showToast('حدث خطأ أثناء الحفظ: ' + error.message, "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -176,10 +178,10 @@ export default function AdminArticles() {
       if (!json.success) throw new Error(json.message || 'Failed to delete article');
 
       setArticles(arts => arts.filter(art => art.id !== id));
-      alert('تم حذف المقال بنجاح');
+      showToast('تم حذف المقال بنجاح', "success");
     } catch (error: any) {
       console.error('Error deleting article:', error);
-      alert('حدث خطأ أثناء حذف المقال: ' + error.message);
+      showToast('حدث خطأ أثناء حذف المقال: ' + error.message, "error");
     }
   };
 
@@ -205,7 +207,7 @@ export default function AdminArticles() {
       setNewArticle({ ...newArticle, cover_image: publicUrl });
     } catch (error: any) {
       console.error('Error uploading image:', error.message);
-      alert('فشل رفع الصورة');
+      showToast('فشل رفع الصورة', "error");
     }
   };
 

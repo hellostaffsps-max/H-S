@@ -20,8 +20,10 @@ import {
   Loader2
 } from 'lucide-react';
 import Pagination from '@/components/Pagination';
+import { useToast } from "@/hooks/useToast";
 
 export default function JobsManagement() {
+  const { showToast } = useToast();
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -69,10 +71,10 @@ export default function JobsManagement() {
       if (json.success) {
         setJobs(jobs.filter(j => j.id !== id));
       } else {
-        alert(json.error || 'فشل الحذف');
+        showToast(json.error || 'فشل الحذف', "error");
       }
     } catch {
-      alert('حدث خطأ أثناء الحذف');
+      showToast('حدث خطأ أثناء الحذف', "error");
     }
   }
 
@@ -87,10 +89,10 @@ export default function JobsManagement() {
       if (json.success) {
         setJobs(jobs.map(j => j.id === id ? { ...j, status: json.data.status } : j));
       } else {
-        alert(json.error || 'فشل التحديث');
+        showToast(json.error || 'فشل التحديث', "error");
       }
     } catch {
-      alert('حدث خطأ أثناء التحديث');
+      showToast('حدث خطأ أثناء التحديث', "error");
     }
   }
 
@@ -109,10 +111,10 @@ export default function JobsManagement() {
       if (json.success) {
         fetchJobs();
       } else {
-        alert(json.error || 'فشل التجديد');
+        showToast(json.error || 'فشل التجديد', "error");
       }
     } catch {
-      alert('حدث خطأ أثناء التجديد');
+      showToast('حدث خطأ أثناء التجديد', "error");
     } finally {
       setRenewingId(null);
     }

@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Image from "next/image";
+import { useToast } from "@/hooks/useToast";
 
 type AdStatus = 'pending' | 'approved' | 'rejected' | 'archived';
 
@@ -55,6 +56,7 @@ type Ad = {
 };
 
 export default function AdminAds() {
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<'system' | 'requests' | 'active_employers' | 'cancellations' | 'archived'>('system');
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
@@ -151,7 +153,7 @@ export default function AdminAds() {
     const isImage = file.type.startsWith('image/');
     
     if (!isImage && !isVideo) {
-      alert('يرجى اختيار صورة أو فيديو فقط');
+      showToast('يرجى اختيار صورة أو فيديو فقط', "info");
       return;
     }
 
@@ -182,7 +184,7 @@ export default function AdminAds() {
       setUploadProgress(100);
     } catch (error: any) {
       console.error('Error uploading:', error.message);
-      alert('فشل رفع الملف');
+      showToast('فشل رفع الملف', "error");
     } finally {
       setIsSubmitting(false);
       setTimeout(() => setUploadProgress(0), 1000);
@@ -192,7 +194,7 @@ export default function AdminAds() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newAd.media_url) {
-      alert('يرجى رفع ملف إعلاني أولاً');
+      showToast('يرجى رفع ملف إعلاني أولاً', "info");
       return;
     }
 
@@ -225,7 +227,7 @@ export default function AdminAds() {
         order_index: 0
       });
     } catch (error: any) {
-      alert('حدث خطأ أثناء الحفظ: ' + error.message);
+      showToast('حدث خطأ أثناء الحفظ: ' + error.message, "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -241,7 +243,7 @@ export default function AdminAds() {
       if (error) throw error;
       setAds(ads.map(a => a.id === ad.id ? { ...a, is_active: !a.is_active } : a));
     } catch (error: any) {
-      alert('فشل تحديث الحالة');
+      showToast('فشل تحديث الحالة', "error");
     }
   };
 
@@ -263,7 +265,7 @@ export default function AdminAds() {
 
       setAds(ads.filter(a => a.id !== ad.id));
     } catch (error: any) {
-      alert('فشل حذف الإعلان');
+      showToast('فشل حذف الإعلان', "error");
     }
   };
 
@@ -300,7 +302,7 @@ export default function AdminAds() {
       setApprovalModal({ ...approvalModal, open: false });
       setSelectedAd(null);
     } catch (error: any) {
-      alert('فشل الموافقة على الإعلان');
+      showToast('فشل الموافقة على الإعلان', "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -308,7 +310,7 @@ export default function AdminAds() {
 
   const rejectAd = async () => {
     if (!selectedAd || !approvalModal.rejectionReason) {
-      alert('يرجى ذكر سبب الرفض');
+      showToast('يرجى ذكر سبب الرفض', "info");
       return;
     }
     setIsSubmitting(true);
@@ -335,7 +337,7 @@ export default function AdminAds() {
       setApprovalModal({ ...approvalModal, open: false });
       setSelectedAd(null);
     } catch (error: any) {
-      alert('فشل رفض الإعلان');
+      showToast('فشل رفض الإعلان', "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -351,7 +353,7 @@ export default function AdminAds() {
       if (error) throw error;
       setAds(ads.map(a => a.id === ad.id ? { ...a, status: 'archived' as AdStatus, is_active: false, cancellation_requested: false } : a));
     } catch (error) {
-      alert('فشل أرشفة الإعلان');
+      showToast('فشل أرشفة الإعلان', "error");
     }
   };
 
@@ -365,7 +367,7 @@ export default function AdminAds() {
       if (error) throw error;
       setAds(ads.map(a => a.id === ad.id ? { ...a, cancellation_requested: false } : a));
     } catch (error) {
-      alert('فشل رفض طلب الإلغاء');
+      showToast('فشل رفض طلب الإلغاء', "error");
     }
   };
 
@@ -373,7 +375,7 @@ export default function AdminAds() {
     const duration = prompt('أدخل عدد أيام النشر:', '30');
     if (!duration) return;
     const days = parseInt(duration);
-    if (isNaN(days) || days <= 0) { alert('يرجى إدخال رقم صحيح'); return; }
+    if (isNaN(days) || days <= 0) { showToast('يرجى إدخال رقم صحيح', "info"); return; }
 
     const startDate = new Date();
     const endDate = new Date();
@@ -396,7 +398,7 @@ export default function AdminAds() {
         start_date: startDate.toISOString(), end_date: endDate.toISOString()
       } : a));
     } catch (error) {
-      alert('فشل إعادة نشر الإعلان');
+      showToast('فشل إعادة نشر الإعلان', "error");
     }
   };
 

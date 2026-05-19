@@ -16,6 +16,7 @@ import {
   ImageIcon,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/useToast";
 
 interface TrustedEmployer {
   id: string;
@@ -28,6 +29,7 @@ interface TrustedEmployer {
 }
 
 export default function TrustedEmployersPage() {
+  const { showToast } = useToast();
   const [employers, setEmployers] = useState<TrustedEmployer[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -151,7 +153,7 @@ export default function TrustedEmployersPage() {
       .delete()
       .eq("id", id);
     if (error) {
-      alert("فشل الحذف: " + error.message);
+      showToast("فشل الحذف: " + error.message, "error");
     } else {
       setEmployers((prev) => prev.filter((e) => e.id !== id));
     }

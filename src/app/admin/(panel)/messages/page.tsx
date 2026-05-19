@@ -15,6 +15,7 @@ import {
 import { motion } from 'motion/react';
 import { useAuth } from '@/hooks/useAuth';
 import { createNotification } from '@/app/actions/notifications';
+import { useToast } from "@/hooks/useToast";
 
 type Message = {
   id: string;
@@ -29,6 +30,7 @@ type Message = {
 };
 
 export default function AdminMessages() {
+  const { showToast } = useToast();
   const { profile } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [users, setUsers] = useState<any[]>([]);
@@ -130,7 +132,7 @@ export default function AdminMessages() {
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (error) {
       console.error('Error sending message:', error);
-      alert('حدث خطأ أثناء الإرسال');
+      showToast('حدث خطأ أثناء الإرسال', "error");
     } finally {
       setSending(false);
     }

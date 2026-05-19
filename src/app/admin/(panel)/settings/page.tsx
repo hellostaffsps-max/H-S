@@ -15,8 +15,10 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import Image from "next/image";
+import { useToast } from "@/hooks/useToast";
 
 export default function PlatformSettings() {
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
@@ -90,7 +92,7 @@ export default function PlatformSettings() {
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (error: any) {
       console.error('Error saving settings:', error.message);
-      alert('خطأ في الحفظ: ' + error.message);
+      showToast('خطأ في الحفظ: ' + error.message, "error");
     } finally {
       setSaving(false);
     }
@@ -120,7 +122,7 @@ export default function PlatformSettings() {
       setSettings({ ...settings, [field]: publicUrl });
     } catch (error: any) {
       console.error('Error uploading file:', error.message);
-      alert('فشل رفع الملف. تأكد من إعدادات مستودع التخزين.');
+      showToast('فشل رفع الملف. تأكد من إعدادات مستودع التخزين.', "error");
     }
   };
 
